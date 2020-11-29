@@ -209,7 +209,7 @@ void CAboutDlg::OnStnClickedStaticHyper4()
 
 void CAboutDlg::OnStnClickedStaticIcon()
 {
-	ShellExecute(NULL, _T("open"), _T("https://twitter.com/Lx2vp"), NULL, NULL, SW_SHOWNORMAL);
+	ShellExecute(NULL, _T("open"), _T("https://twitter.com/X1LeP"), NULL, NULL, SW_SHOWNORMAL);
 }
 
 
@@ -426,7 +426,7 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 					break;
 				}
 			}
-			ret = Utility->DownloadFile(_T("https://dl.cdn.xyle-official.com/content/app/utils/ffmpeg/x64/ffmpeg-20200831-4a11a6f-win64-static.zip"), _T(".\\Resources\\ffmpeg.zip"), 1024);
+			ret = Utility->DownloadFile(_T("https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"), _T(".\\Resources\\ffmpeg.zip"), 1024);
 			if (ret) {
 				DIALOG->DestroyWindow();
 				delete DIALOG;
