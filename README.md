@@ -4,7 +4,7 @@
 
 ## ダウンロード
 
-[Release](https://github.com/XyLe-GBP/waifu2x-ncnn-vulkan-GUI/release)
+[Release](https://github.com/XyLe-GBP/waifu2x-ncnn-vulkan-GUI/releases)
 
 ## 概要
 
@@ -42,8 +42,8 @@
 <p>使用ツール</p>
 <p>OpenCV (image2png.exe)</p>
 <p>FFmpeg</p>
-[waifu2x-ncnn-vulkan.exe](https://github.com/nihui/waifu2x-ncnn-vulkan)
+waifu2x-ncnn-vulkan: https://github.com/nihui/waifu2x-ncnn-vulkan
 
-# ライセンスについて
+### ライセンスについて
 
 <p>このツールはMITライセンスでリリースされています。</p>
