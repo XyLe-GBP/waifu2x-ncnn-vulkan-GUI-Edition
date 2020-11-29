@@ -21,13 +21,15 @@
 ---
 
 ### 最低必須
+
 <p>OS: Windows 7 以上の 64bit PC (32ビット用exeはありません)</p>
 <p>CPU: Intel Core i3 以上(Core i5 以上推薦) または、AMD Ryzen 3 以上(Ryzen 5 以上推薦)</p>
 <p>RAM: 4GB以上(8GB以上あると尚良い)</p>
 <p>GPU: NVIDIA Geforce または NVIDIA TITAN もしくは AMD Radeon などのGPU(グラフィックボード)</p>
 <p>※グラフィックボードなしのCPU内臓グラフィックでも変換は可能ですが、動画の場合は動画の長さにもよりますが処理にものすごく時間が掛かります。</p>
-<br>
+
 ### 推薦
+
 <p>OS: Windows10 64bit</p>
 <p>CPU: Intel Core i7, AMD Ryzen 7</p>
 <p>RAM: 8GB 以上</p>
