@@ -2,9 +2,13 @@
 
 画像アップスケールツールのGUI版
 
+---
+
 ## ダウンロード
 
 [Release](https://github.com/XyLe-GBP/waifu2x-ncnn-vulkan-GUI/releases)
+
+---
 
 ## 概要
 
@@ -43,6 +47,8 @@
 <p>OpenCV (image2png.exe)</p>
 <p>FFmpeg</p>
 waifu2x-ncnn-vulkan: https://github.com/nihui/waifu2x-ncnn-vulkan
+
+---
 
 ### ライセンスについて
 
