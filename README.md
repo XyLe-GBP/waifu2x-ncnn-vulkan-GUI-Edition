@@ -33,9 +33,9 @@
 <p>その他</p>
 
 <p>使用ツール</p>
-<p>OpenCV</p>
-<p>ffmpeg</p>
-<p>waifu2x-ncnn-vulkan (コマンドライン版)</p>
+<p>OpenCV (image2png.exe)</p>
+<p>FFmpeg</p>
+[waifu2x-ncnn-vulkan (コマンドライン版)](https://github.com/nihui/waifu2x-ncnn-vulkan)
 
 # ライセンスについて
 
