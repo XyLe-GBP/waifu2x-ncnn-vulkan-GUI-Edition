@@ -1,0 +1,6 @@
+﻿; GUI.ResourcePack.def : DLL のモジュール パラメーターを宣言します。
+
+LIBRARY GUI.ResourcePack.dll
+
+EXPORTS
+    ; 明示的なエクスポートはここへ記述できます
