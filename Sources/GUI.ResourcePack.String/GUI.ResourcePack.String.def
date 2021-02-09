@@ -1,0 +1,19 @@
+﻿; GUI.ResourcePack.String.def : DLL のモジュール パラメーターを宣言します。
+
+LIBRARY GUI.ResourcePack.String.dll
+
+EXPORTS
+    ; MainString
+
+    CURRENT_DIR
+    RESOURCELIB_PATH
+    DEFAULTTEXT
+    READEDTEXT
+    NULLTEXT
+
+    ; VersionString
+
+    APP_VERSION_TEXT
+    CMD_VERSION_TEXT
+
+    ; 明示的なエクスポートはここへ記述できます
