@@ -1,6 +1,7 @@
 # waifu2x-ncnn-vulkan-GUI
 
-画像アップスケールツールのGUI版
+画像アップスケールツール(waifu2x-ncnn-vulkan)のGUI版。
+画像だけでなく、動画をアップスケーリングすることも可能。
 
 ---
 
@@ -39,14 +40,22 @@
 <p>RAM: 8GB 以上</p>
 <p>GPU: NVIDIA GeForce GTX 1060 以上</p>
 
+### 自身のテスト環境
+
+<p>Develpoment: Microsoft Visual Studio 2019</p>
+<p>OS: Windows10 Pro 64bit, 20H2</p>
+<p>CPU: Intel(R) Core(TM) i9-9900K CPU @ 3.60GHz</p>
+<p>GPU: NVIDIA Geforce GTX 1070Ti</p>
+<p>RAM: 32768MB</p>
+
 ---
 
 ### その他
 
 <p>使用ツール</p>
-<p>OpenCV (image2png.exe)</p>
-<p>FFmpeg</p>
-waifu2x-ncnn-vulkan: https://github.com/nihui/waifu2x-ncnn-vulkan
+<p>OpenCV: https://opencv.org/</p>
+<p>FFmpeg: https://ffmpeg.org</p>
+<p>waifu2x-ncnn-vulkan: https://github.com/nihui/waifu2x-ncnn-vulkan</p>
 
 ---
 
