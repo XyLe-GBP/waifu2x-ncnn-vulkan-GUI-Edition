@@ -1,7 +1,8 @@
 # waifu2x-ncnn-vulkan-GUI
 
-画像アップスケールツール(waifu2x-ncnn-vulkan)のGUI版。
-画像だけでなく、動画をアップスケーリングすることも可能。
+画像アップスケーリングツール([waifu2x-ncnn-vulkan](https://github.com/nihui/waifu2x-ncnn-vulkan))のGUI版。
+<p>waifu2x-ncnn-vulkan(コマンドライン)にユーザーインターフェース機能をを提供する。</p>
+<p>本ツールは画像だけでなく、動画をアップスケーリングすることも可能。</p>
 
 ---
 
@@ -23,20 +24,19 @@
 <code>MSVCP140.DLL</code>,<code>VCRUNTIME140.DLL</code>,<code>MFC140U.DLL</code>が最低限必要です。
 <p>(※v1.3 以前のバージョンでは必要ありません)</p>
 
+<p>注意として、waifu2xはGPUを使用してアップスケーリングを行います。内臓グラフィックでも処理は可能ですが、GPUを使用するとより高速に変換することが可能です。</p>
+<p>※CPU内臓グラフィックでも変換は可能ですが、動画の場合は一度フレーム分割を行ってからアップスケーリングを行うため、処理にものすごく時間が掛かります。</p>
+
 ---
 
 ### 最低必須
 
 <p>OS: Windows 7 以上の 64bit PC (32ビット用exeはありません)</p>
-<p>CPU: Intel Core i3 以上(Core i5 以上推薦) または、AMD Ryzen 3 以上(Ryzen 5 以上推薦)</p>
-<p>RAM: 4GB以上(8GB以上あると尚良い)</p>
-<p>GPU: NVIDIA Geforce または NVIDIA TITAN もしくは AMD Radeon などのGPU(グラフィックボード)</p>
-<p>※グラフィックボードなしのCPU内臓グラフィックでも変換は可能ですが、動画の場合は動画の長さにもよりますが処理にものすごく時間が掛かります。</p>
 
 ### 推薦
 
 <p>OS: Windows10 64bit</p>
-<p>CPU: Intel Core i7, AMD Ryzen 7</p>
+<p>CPU: Intel Core i3以上, AMD Ryzen 3以上</p>
 <p>RAM: 8GB 以上</p>
 <p>GPU: NVIDIA GeForce GTX 1060 以上</p>
 
