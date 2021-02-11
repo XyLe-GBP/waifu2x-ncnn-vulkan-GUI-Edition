@@ -1,7 +1,7 @@
 # waifu2x-ncnn-vulkan-GUI
 
 画像アップスケーリングツール([waifu2x-ncnn-vulkan](https://github.com/nihui/waifu2x-ncnn-vulkan))のGUI版。
-<p>waifu2x-ncnn-vulkan(コマンドライン)にユーザーインターフェース機能をを提供する。</p>
+<p>waifu2x-ncnn-vulkan(コマンドライン)にユーザーインターフェース機能を提供する。</p>
 <p>本ツールは画像だけでなく、動画をアップスケーリングすることも可能。</p>
 
 ---
