@@ -62,6 +62,6 @@ If you want to convert a video, you need to split the frame before upscaling, wh
 
 ---
 
-### ライセンスについて
+### About Licensing
 
 <p>This tool is released under the MIT license.</p>
