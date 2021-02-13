@@ -45,7 +45,7 @@ If you want to convert a video, you need to split the frame before upscaling, wh
 
 ### My own test environment
 
-<p>Develpoment: Microsoft Visual Studio 2019</p>
+<p>Development: Microsoft Visual Studio 2019</p>
 <p>OS: Windows10 Pro 64bit, 20H2</p>
 <p>CPU: Intel(R) Core(TM) i9-9900K CPU @ 3.60GHz</p>
 <p>GPU: NVIDIA Geforce GTX 1070Ti</p>
