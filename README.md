@@ -1,55 +1,67 @@
 # waifu2x-ncnn-vulkan-GUI
 
-画像アップスケールツールのGUI版
+GUI version of the image upscaling tool ([waifu2x-ncnn-vulkan](https://github.com/nihui/waifu2x-ncnn-vulkan)).
+<p>Provides user interface functionality to waifu2x-ncnn-vulkan (command line). </p>
+<p>This tool can upscale not only images but also videos. </p>
 
 ---
 
-## ダウンロード
+## Download
 
 [Release](https://github.com/XyLe-GBP/waifu2x-ncnn-vulkan-GUI/releases)
 
 ---
 
-## 概要
+## Description
 
-<p>本アプリケーション実行には、以下の再頒布パッケージのインストールが必要です。</p>
+The following redistribution package must be installed in order to run this application.
 
 [Microsoft Visual C++ Runtime](https://aka.ms/vs/16/release/VC_redist.x64.exe)
 
-<p>まだインストールしていない方は上記からダウンロードし、PCにインストールしてください。</p>
-<p>再頒布パッケージをインストールしたくない、という方は下記DLLを手動で<code>C:/Windows/System32/</code>に配置するかもしくはEXEと同階層に置くことでも起動可能です。</p>
+If you have not installed it yet, please download it from above and install it on your PC.
 
-<code>MSVCP140.DLL</code>,<code>VCRUNTIME140.DLL</code>,<code>MFC140U.DLL</code>が最低限必要です。
-<p>(※v1.3 以前のバージョンでは必要ありません)</p>
+If you do not want to install the redistribution package, you can start the program by manually placing the following DLLs in C:/Windows/System32/ or in the same directory as the EXE.
+
+At least <code>MSVCP140.DLL</code>, <code>VCRUNTIME140.DLL</code>, and <code>MFC140U.DLL</code> are required.
+
+(*Not required for v1.3 or earlier versions)
+
+As a reminder, waifu2x uses the GPU to do the upscaling. Although processing is possible with the built-in graphics, using the GPU allows for faster conversion.
+
+If you want to convert a video, you need to split the frame before upscaling, which takes a lot of time.
 
 ---
 
-### 最低必須
+### System Requirements
 
-<p>OS: Windows 7 以上の 64bit PC (32ビット用exeはありません)</p>
-<p>CPU: Intel Core i3 以上(Core i5 以上推薦) または、AMD Ryzen 3 以上(Ryzen 5 以上推薦)</p>
-<p>RAM: 4GB以上(8GB以上あると尚良い)</p>
-<p>GPU: NVIDIA Geforce または NVIDIA TITAN もしくは AMD Radeon などのGPU(グラフィックボード)</p>
-<p>※グラフィックボードなしのCPU内臓グラフィックでも変換は可能ですが、動画の場合は動画の長さにもよりますが処理にものすごく時間が掛かります。</p>
+<p>OS: Windows 7 or higher 64bit PC (There is no 32-bit exe.)</p>
 
-### 推薦
+### Recommended
 
 <p>OS: Windows10 64bit</p>
-<p>CPU: Intel Core i7, AMD Ryzen 7</p>
-<p>RAM: 8GB 以上</p>
-<p>GPU: NVIDIA GeForce GTX 1060 以上</p>
+<p>CPU: Intel Core i3 or adove, AMD Ryzen 3 or above</p>
+<p>RAM: 8GB or above</p>
+<p>GPU: NVIDIA GeForce GTX 1060 or above</p>
+
+### My own test environment
+
+<p>Development: Microsoft Visual Studio 2019</p>
+<p>OS: Windows10 Pro 64bit, 20H2</p>
+<p>CPU: Intel(R) Core(TM) i9-9900K CPU @ 3.60GHz</p>
+<p>GPU: NVIDIA Geforce GTX 1070Ti</p>
+<p>RAM: 32GB</p>
 
 ---
 
-### その他
+### Others
 
-<p>使用ツール</p>
-<p>OpenCV (image2png.exe)</p>
-<p>FFmpeg</p>
-waifu2x-ncnn-vulkan: https://github.com/nihui/waifu2x-ncnn-vulkan
+<p>Used tools</p>
+<p>OpenCV: https://opencv.org/</p>
+<p>FFmpeg: https://ffmpeg.org</p>
+<p>waifu2x-ncnn-vulkan: https://github.com/nihui/waifu2x-ncnn-vulkan</p>
 
 ---
 
-### ライセンスについて
+### About Licensing
 
-<p>このツールはMITライセンスでリリースされています。</p>
+<p>This tool is released under the MIT license.</p>
