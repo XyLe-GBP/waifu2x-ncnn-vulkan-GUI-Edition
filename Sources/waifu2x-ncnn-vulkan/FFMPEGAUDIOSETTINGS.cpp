@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "waifu2x-ncnn-vulkan.h"
+#include "waifu2x-ncnn-vulkanDlg.h"
 #include "FFMPEGAUDIOSETTINGS.h"
 #include "afxdialogex.h"
 
@@ -71,8 +72,23 @@ BOOL FFMPEGAUDIOSETTINGS::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	m_PRESET_A.AddString(_T("デフォルト"));
-	m_PRESET_A.AddString(_T("カスタム"));
+	UINT Lang;
+	Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+
+	if (Lang == 0) {
+		m_PRESET_A.AddString(_T("デフォルト"));
+		m_PRESET_A.AddString(_T("カスタム"));
+	}
+	else if (Lang == 1) {
+		m_PRESET_A.AddString(_T("Default"));
+		m_PRESET_A.AddString(_T("Custom"));
+	}
+	else {
+		m_PRESET_A.AddString(_T("デフォルト"));
+		m_PRESET_A.AddString(_T("カスタム"));
+	}
+	SetDlgLang();
+
 	m_STREAM_A.AddString(_T("signed 16-bit PCM"));
 	m_STREAM_A.AddString(_T("signed 24-bit PCM"));
 	m_STREAM_A.AddString(_T("signed 32-bit PCM"));
@@ -819,7 +835,7 @@ void FFMPEGAUDIOSETTINGS::OnEnChangeEditOutputName()
 			if (GetDlgItem(IDC_EDIT_OUTPUT_NAME_A)->GetWindowTextLength() != 0) {
 				UpdateData(FALSE);
 				OUTNAME_A = _T("");
-				MessageBox(_T("出力ディレクトリが指定されていません。\n先にディレクトリを指定してください。"), _T("エラー"), MB_ICONERROR | MB_OK);
+				MessageBox(ERROR_DIRECT, ERROR_TITLE, MB_ICONERROR | MB_OK);
 				CComboBox* preset = (CComboBox*)GetDlgItem(IDC_COMBO_PRESET_A);
 				if (preset != 0) {
 					CEdit* prm = (CEdit*)GetDlgItem(IDC_EDIT_COMMAND_PARAM_A);
@@ -893,7 +909,7 @@ void FFMPEGAUDIOSETTINGS::OnBnClickedButtonOutput()
 	binfo.hwndOwner = NULL;
 	binfo.pidlRoot = NULL;
 	binfo.pszDisplayName = (LPWSTR)name;
-	binfo.lpszTitle = L"フォルダの選択";
+	binfo.lpszTitle = TEXT_SELFOLDER;
 	binfo.ulFlags = BIF_RETURNONLYFSDIRS;
 	binfo.lpfn = NULL;
 	binfo.lParam = 0;
@@ -901,7 +917,7 @@ void FFMPEGAUDIOSETTINGS::OnBnClickedButtonOutput()
 
 	if ((idlist = SHBrowseForFolder(&binfo)) == NULL)
 	{
-		MessageBox(_T("キャンセルされました。"), _T("キャンセル"), MB_ICONWARNING | MB_OK);
+		MessageBox(WARN_CANCEL, WARN_CANCEL_TITLE, MB_ICONWARNING | MB_OK);
 		CoTaskMemFree(idlist);
 		CComboBox* preset = (CComboBox*)GetDlgItem(IDC_COMBO_PRESET_A);
 		if (preset != 0) {
@@ -984,21 +1000,21 @@ void FFMPEGAUDIOSETTINGS::OnBnClickedOk()
 
 	if (preset->GetCurSel() == 1) {
 		if (GetDlgItem(IDC_EDIT_OUTPUT_A)->GetWindowTextLength() == 0) {
-			MessageBox(_T("出力ディレクトリが指定されていません"), _T("エラー"), MB_ICONERROR | MB_OK);
+			MessageBox(ERROR_DIRECT2, ERROR_TITLE, MB_ICONERROR | MB_OK);
 			return;
 		}
 		else if (GetDlgItem(IDC_EDIT_OUTPUT_NAME_A)->GetWindowTextLength() == 0) {
-			MessageBox(_T("出力ファイル名が指定されていません"), _T("エラー"), MB_ICONERROR | MB_OK);
+			MessageBox(ERROR_FILE, ERROR_TITLE, MB_ICONERROR | MB_OK);
 			return;
 		}
 		else if (GetDlgItem(IDC_EDIT_COMMAND_PARAM_A)->GetWindowTextLength() == 0) {
-			MessageBox(_T("パラメーターが指定されていません"), _T("エラー"), MB_ICONERROR | MB_OK);
+			MessageBox(ERROR_PARAM, ERROR_TITLE, MB_ICONERROR | MB_OK);
 			return;
 		}
 	}
 	else if (preset->GetCurSel() == 0) {
 		if (FINALPARAM_A == L"") {
-			MessageBox(_T("設定エラー"), _T("エラー"), MB_ICONERROR | MB_OK);
+			MessageBox(_T("Setting error."), ERROR_TITLE, MB_ICONERROR | MB_OK);
 			return;
 		}
 	}
@@ -1101,6 +1117,60 @@ void FFMPEGAUDIOSETTINGS::OnDestroy()
 	CDialogEx::OnDestroy();
 
 	FreeLibrary(Core->hinst);
+	FreeLibrary(Core->Lang_hinst);
 	SAFE_DELETE(CORE_FUNC);
-	Core->FreeImageLibrary();
+}
+
+
+void FFMPEGAUDIOSETTINGS::SetDlgLang()
+{
+	UINT Lang;
+	Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+	if (Lang == 0) {
+		Core->LoadJPNLangLibrary();
+	}
+	else if (Lang == 1) {
+		Core->LoadENGLangLibrary();
+	}
+	else {
+		Core->LoadJPNLangLibrary();
+	}
+
+	LoadString(Core->Lang_hinst, IDS_FF_SNDDLG_TITLE, (LPTSTR)FF_SNDDLG_TITLE, 256);
+	SetWindowText(FF_SNDDLG_TITLE);
+	LoadString(Core->Lang_hinst, IDS_ERROR_TITLE, (LPTSTR)ERROR_TITLE, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_DIRECT, (LPTSTR)ERROR_DIRECT, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_DIRECT2, (LPTSTR)ERROR_DIRECT2, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_FILE, (LPTSTR)ERROR_FILE, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_PARAM, (LPTSTR)ERROR_PARAM, 256);
+	LoadString(Core->Lang_hinst, IDS_WARN_CANCEL, (LPTSTR)WARN_CANCEL, 256);
+	LoadString(Core->Lang_hinst, IDS_WARN_CANCEL_TITLE, (LPTSTR)WARN_CANCEL_TITLE, 256);
+	LoadString(Core->Lang_hinst, IDS_TEXT_SELFOLDER, (LPTSTR)TEXT_SELFOLDER, 256);
+	GetDlgItem(IDC_STATIC_GRP_GEN_A)->SetWindowText(STATIC_GRP_GENERAL);
+	LoadString(Core->Lang_hinst, IDS_BTN_CHK, (LPTSTR)BTN_CHK, 256);
+	GetDlgItem(IDC_BUTTON_OUTPUT_A)->SetWindowText(BTN_CHK);
+	LoadString(Core->Lang_hinst, IDS_CHECK_SNDONLY, (LPTSTR)CHECK_SNDONLY, 256);
+	GetDlgItem(IDC_CHECK_AUDIO_ONLY_A)->SetWindowText(CHECK_SNDONLY);
+	LoadString(Core->Lang_hinst, IDS_CHECK_DSTREAM, (LPTSTR)CHECK_DSTREAM, 256);
+	GetDlgItem(IDC_CHECK_D_STREAM_A)->SetWindowText(CHECK_DSTREAM);
+	LoadString(Core->Lang_hinst, IDS_CHECK_DSTREAM2, (LPTSTR)CHECK_DSTREAM2, 256);
+	GetDlgItem(IDC_CHECK_DN_A)->SetWindowText(CHECK_DSTREAM2);
+	LoadString(Core->Lang_hinst, IDS_CHECK_CHAPTERCPY, (LPTSTR)CHECK_CHAPTERCPY, 256);
+	GetDlgItem(IDC_CHECK_CHAPTER_A)->SetWindowText(CHECK_CHAPTERCPY);
+	LoadString(Core->Lang_hinst, IDS_CHECK_MTDATA, (LPTSTR)CHECK_MTDATA, 256);
+	GetDlgItem(IDC_CHECK_METADATA_A)->SetWindowText(CHECK_MTDATA);
+	LoadString(Core->Lang_hinst, IDS_CHECK_HIDEBANNER, (LPTSTR)CHECK_HIDEBANNER, 256);
+	GetDlgItem(IDC_CHECK_HIDE_BANNER_A)->SetWindowText(CHECK_HIDEBANNER);
+	LoadString(Core->Lang_hinst, IDS_CHECK_OVERWRITE, (LPTSTR)CHECK_OVERWRITE, 256);
+	GetDlgItem(IDC_CHECK_OVERWRITE_A)->SetWindowText(CHECK_OVERWRITE);
+	LoadString(Core->Lang_hinst, IDS_STATIC_PRESET, (LPTSTR)STATIC_PRESET, 256);
+	GetDlgItem(IDC_STATIC_PRE_A)->SetWindowText(STATIC_PRESET);
+	LoadString(Core->Lang_hinst, IDS_STATIC_SNDFMT, (LPTSTR)STATIC_SNDFMT, 256);
+	GetDlgItem(IDC_STATIC_SNDFMT)->SetWindowText(STATIC_SNDFMT);
+	LoadString(Core->Lang_hinst, IDS_STATIC_FILENAMENOEXT, (LPTSTR)STATIC_FILENAMENOEXT, 256);
+	GetDlgItem(IDC_STATIC_FNOEXT_A)->SetWindowText(STATIC_FILENAMENOEXT);
+	LoadString(Core->Lang_hinst, IDS_STATIC_OUTDIRECTRY, (LPTSTR)STATIC_OUTDIRECTRY, 256);
+	GetDlgItem(IDC_STATIC_OUTD_A)->SetWindowText(STATIC_OUTDIRECTRY);
+	LoadString(Core->Lang_hinst, IDS_STATIC_PARAM, (LPTSTR)STATIC_PARAM, 256);
+	GetDlgItem(IDC_STATIC_PRM_A)->SetWindowText(STATIC_PARAM);
 }

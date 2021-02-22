@@ -58,4 +58,5 @@ private:
 	CString OUTDIR_A;
 	CString OUTNAME_A;
 	CString DISABLEDATA_A;
+	void SetDlgLang();
 };

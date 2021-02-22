@@ -1,0 +1,336 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// 日本語 resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
+LANGUAGE LANG_JAPANESE, SUBLANG_NEUTRAL
+#pragma code_page(932)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_ERROR_TITLE         "エラー"
+    IDS_ERROR_INSTANCE      "インスタンスの取得に失敗しました"
+    IDS_ERROR_EXCEPTION     "予期せぬエラーが発生しました"
+    IDS_ERROR_SERVER        "サーバーとの通信に失敗しました"
+    IDS_ERROR_DOWNLOAD      "ダウンロードに失敗しました。インターネット接続がされているか確認してください。\nウイルス対策ソフトをインストールしている場合は接続を許可してください。"
+    IDS_ERROR_FFMPEG        "ffmpeg.exe が見つかりません。ダウンロードしますか？\n(ダウンロードにはインターネット接続が必要です)"
+    IDS_ERROR_WAIFU2X       "waifu2x-ncnn-vulkan.exe が見つかりません。"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_ERROR_IMAGE2PNG     "image2png.exe が見つかりません。"
+    IDS_ERROR_ABORT         "この操作は無視できません。"
+    IDS_ERROR_APPNOTFOUND   "ファイルが存在しないため、アプリケーションを続行することができません。\nアプリケーションを終了します。"
+    IDS_ERROR_NOTSELECTED   "ファイルが選択されていません。"
+    IDS_ERROR_SETTINGS      "変換設定が適切に設定されていません。"
+    IDS_ERROR_UPSCALE       "アップスケーリングに失敗しました。"
+    IDS_ERROR_REUPSCALE     "再アップスケーリングに失敗しました。"
+    IDS_ERROR_FAILED        "変換に失敗しました。"
+    IDS_ERROR_FOLDER        "フォルダ内にファイルが見つかりません"
+    IDS_ERROR_RESIZE        "解像度の変更に失敗しました。"
+    IDS_ERROR_SOUND         "音声の抜き出しに失敗しました。"
+    IDS_ERROR_UPDATE        "情報取得中にエラーが発生しました。\nインターネット接続がされているか確認してください。"
+    IDS_ERROR_UPDATE_ELSE   "情報取得中にエラーが発生しました。"
+    IDS_ERROR_BLOCKSIZE_LARGE "ブロックサイズ値が大きすぎます。\nブロックサイズ値は5000以内に設定してください。"
+    IDS_ERROR_BLOCKSIZE_SHORT "ブロックサイズ値が小さすぎます。\nブロックサイズ値は32以上を設定してください。"
+    IDS_UPDATE_LATEST       "最新バージョン："
+END
+
+STRINGTABLE
+BEGIN
+    IDS_UPDATE_CURRENT      "現在使用中のバージョン："
+    IDS_UPDATE_FFMPEG       "FFmpegのアップデートが可能です。アップデートしますか？"
+    IDS_UPDATE_FFMPEG_TITLE "FFmpeg アップデート確認"
+    IDS_INFO_TITLE          "完了"
+    IDS_INFO_DOWNLOAD       "ダウンロードが完了しました。"
+    IDS_INFO_UPSCALE        "アップスケーリングが完了しました。\nアップスケーリング動画を生成するには'FFmpegで結合'\nボタンをクリックしてください。\n更にアップスケーリングしたい場合は'再アップスケーリング開始'\nボタンをクリックしてください。"
+    IDS_INFO_UPSCALE_TITLE  "アップスケーリングの完了"
+    IDS_ERROR_UPSCALE_TITLE "アップスケーリング エラー"
+    IDS_INFO_REUPSCALE      "再アップスケーリングが完了しました。\nアップスケーリング動画を生成するには'FFmpegで結合'\nボタンをクリックしてください。\n更にアップスケーリングしたい場合は'再アップスケーリング開始'\nボタンをクリックしてください。"
+    IDS_INFO_REUPSCALE_TITLE "再アップスケーリングの完了"
+    IDS_ERROR_REUPSCALE_TITLE "再アップスケーリング エラー"
+    IDS_WARN_ABORT          "作業が中止されました。"
+    IDS_INFO_SUCCESS        "変換が完了しました。"
+    IDS_WARN_CANCEL         "キャンセルされました。"
+    IDS_WARN_SAVECANCEL     "保存がキャンセルされました。"
+    IDS_WARN_CONFIRM        "確認"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_WARN_EXIST          "指定されたディレクトリには既に他のファイルが存在します。\nこのまま画像ファイルを変換した場合、指定ディレクトリ内のファイルは\nすべて失われます。続行しますか？"
+    IDS_WARN_ABORT2         "作業が中止されました。\n保存先に指定したディレクトリ内のファイルは削除されました。"
+    IDS_INFO_RESIZE         "解像度の変更が完了しました。"
+    IDS_INFO_SOUND          "音声の抜き出しが完了しました。"
+    IDS_UPDATE_APP_LATEST   "アプリケーションのバージョンは最新です。"
+    IDS_UPDATE_APP_CONFIRM  "アプリケーションのアップデートが可能です。サイトを開きますか？"
+    IDS_UPDATE_APP_TITLE    "アップデート確認"
+    IDS_WARN_ADVANCED       "このオプションは上級者向けです。\n変更すると変換に不具合が生じる恐れがあります。有効にしますか？"
+    IDS_WARN_CAUTION_TITLE  "警告"
+    IDS_TEXT_UNKNOWN        "不明なバージョン"
+    IDS_WARN_CANCEL_TITLE   "キャンセル"
+    IDS_TEXT_SELFOLDER      "フォルダの選択"
+    IDS_TEXT_DIRECTORYS     " (ディレクトリ)"
+    IDS_TEXT_BYTES          " バイト)"
+    IDS_TEXT_SELOUTPUTFOLDER "出力フォルダの選択"
+    IDS_ERROR_IMAGENOT      "画像フォルダが選択されていません。"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_ERROR_IMAGENOT2     "画像ファイルが選択されていません。"
+    IDS_FILTER_MOVIE        "動画ファイル (*.avi,*.mp4,*.wmv,*.webm,*.mkv,*.mov)|*.avi;*.mp4;*.wmv;*.webm;*.mkv;*.mov;||"
+    IDS_FILTER_IMAGE        "Bitmap Image (*.bmp,*.dib)|*.bmp;*.dib;|Encapsulated PostScript File/Format (*.eps)|*.eps;|Google webp (*.webp)|*.webp;|Graphics Interchange Format (*.gif)|*.gif;|Icon (*.ico,*.icns)|*.ico;*.icns;|Joint Photographic Experts Group (*.jfif,*.jpg,*.jpe,*.jpeg,*.pjpeg,*.pjp)|*.jfif;*.jpg;*.jpe;*.jpeg;*.pjpeg;*.pjp;|Portable Network Graphics (*.png)|*.png;|QuickDraw Picture (*.pict)|*.pict;|Scalable Vector Graphics (*.svg,*.svgz)|*.svg;*.svgz;|Tagged Image File Format (*.tif,*.tiff)|*.tif;*.tiff;|すべてのファイル (*.*)|*.*;||"
+    IDS_FILTER_JPEG         "JPEGイメージ (*.jpg)|*.jpg;||"
+    IDS_FILTER_PNG          "PNGイメージ (*.png)|*.png;||"
+    IDS_FILTER_WEBP         "WEBPイメージ (*.webp)|*.webp;||"
+    IDS_FILTER_SOUND        "音声ファイル (*.wav,*.mp3,*.m4a,*.wma,*.oga,*.ogg,*.opus)|*.wav;*.mp3;*.m4a;*.wma;*.oga;*.ogg;*.opus;||"
+    IDS_MENU_FILE           "ファイル (&F)"
+    IDS_MENU_CONFIG         "設定 (&C)"
+    IDS_MENU_TOOL           "ツール (&T)"
+    IDS_MENULIST_READFILE   "ファイル・フォルダーの読み込み"
+    IDS_MENULIST_IMG        "画像 (&I)"
+    IDS_MENULIST_IMGM       "画像一括変換 (&M)"
+    IDS_MENULIST_MOV        "動画 (&V)"
+    IDS_MENULIST_TEMPFILE   "テンポラリファイルの削除 (&D)"
+    IDS_MENULIST_ENDAPP     "アプリケーション終了 (&X)"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_MENULIST_WAIFU2X    "waifu2x 変換設定 (&W)"
+    IDS_MENULIST_FFMPEG     "FFmpeg 変換設定"
+    IDS_MENULIST_FF_OUT     "出力設定 (&M)"
+    IDS_MENULIST_FF_VID     "動画変換設定 (&V)"
+    IDS_MENULIST_FF_AUD     "音声変換設定 (&A)"
+    IDS_MENULIST_RESIZE     "動画解像度変更 (&S)"
+    IDS_MENULIST_SOUND      "動画音声抜き出し (&D)"
+    IDS_MENULIST_UPDATE     "更新の確認 (&U)"
+    IDS_STATIC_HEADER       "waifu2x - 畳み込みニューラルネットワーク 画像超解像度化 API\nwaifu2x-ncnn-vulkan GUI"
+    IDS_STATIC_GRP_FILE     "ファイル情報"
+    IDS_STATIC_FILEREAD     "読み込み状況："
+    IDS_STATIC_FILENAME     "ファイル："
+    IDS_STATIC_FILEPATH     "ファイルパス："
+    IDS_STATIC_NOTREAD      "なにも読み込んでいません"
+    IDS_STATIC_READED       "読み込み完了"
+    IDS_STATIC_GRP_IMG      "ファイル操作 (画像)"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_STATIC_GRP_IMGM     "ファイル一括操作"
+    IDS_STATIC_GRP_VID      "ファイル操作 (動画)"
+    IDS_STATIC_GRP_INFO     "その他情報"
+    IDS_STATIC_CPU          "CPU情報："
+    IDS_STATIC_GPU          "GPU情報："
+    IDS_BTN_UPSCALE         "アップスケーリング開始"
+    IDS_BTN_REUPSCALE       "再アップスケーリング開始"
+    IDS_BTN_MULTIUPSCALE    "一括アップスケーリング開始"
+    IDS_BTN_FINALENC        "FFmpegで結合"
+    IDS_2X_TITLE            "waifu2x 変換設定"
+    IDS_GRP_GENERAL         "汎用設定"
+    IDS_GRP_ADVANCED        "詳細設定"
+    IDS_STATIC_DENOISE      "ノイズ除去レベル："
+    IDS_STATIC_UPSCALELV    "アップスケールレベル："
+    IDS_STATIC_USEGPU       "変換に使用するGPU："
+    IDS_STATIC_BLOCKSIZE    "GPUブロックサイズ："
+END
+
+STRINGTABLE
+BEGIN
+    IDS_STATIC_BLOCK        "ブロック"
+    IDS_CHECK_ADVANCED      "詳細設定を有効にする"
+    IDS_STATIC_THREAD       "スレッド使用数："
+    IDS_STATIC_FORMAT       "画像出力形式："
+    IDS_STATIC_MODEL        "アップスケーリング時に使用するwaifu2xのモデル："
+    IDS_CHECK_VERBOSE       "詳細な出力を有効にする (Verbose output)"
+    IDS_CHECK_TTA           "TTAを有効にする (Enable TTA)"
+    IDS_STATIC_PARAM        "コマンドライン パラメーター："
+    IDS_FF_SETTING_TITLE    "FFmpeg 出力設定"
+    IDS_FF_VIDDLG_TITLE     "FFmpeg 動画変換設定"
+    IDS_FF_SNDDLG_TITLE     "FFmpeg 音声変換設定"
+    IDS_STATIC_PRESET       "変換設定："
+    IDS_STATIC_VIDFPS       "動画のFPS："
+    IDS_STATIC_VIDFPS2      "FPS (この値は変換前の動画ファイルと同一に設定)"
+    IDS_STATIC_VIDCODEC     "動画コーデック："
+    IDS_STATIC_SNDCODEC     "音声コーデック："
+END
+
+STRINGTABLE
+BEGIN
+    IDS_STATIC_SNDBIT       "音声ビットレート："
+    IDS_BTN_FINDCODEC       "コーデックを調べる"
+    IDS_CHECK_HIDEBANNER    "不要な情報を非表示"
+    IDS_CHECK_OVERWRITE     "出力ファイルを上書き"
+    IDS_CHECK_ENABLEAAC     "内臓AACを有効にする"
+    IDS_CHECK_NVENC_CRF     "NVENC CRFを使用"
+    IDS_STATIC_CRFLEVEL     "CRF エンコードレベル："
+    IDS_STATIC_CRFLEVEL2    "[0：ロスレス (規定) 51：圧縮優先]"
+    IDS_STATIC_FFPATH       "FFmpeg.exeのパス (変更不可)："
+    IDS_FF_CODEC_TITLE      "FFmpeg コーデックリスト"
+    IDS_STATIC_SNDFMT       "音声形式："
+    IDS_CHECK_SNDONLY       "音声のみ出力"
+    IDS_CHECK_DSTREAM       "字幕ストリームを無効にする"
+    IDS_CHECK_DSTREAM2      "データストリームを無効にする"
+    IDS_CHECK_CHAPTERCPY    "チャプターコピー"
+    IDS_CHECK_MTDATA        "メタデータ情報設定"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_STATIC_FILENAMENOEXT "出力ファイル名 (拡張子なし)："
+    IDS_STATIC_OUTDIRECTRY  "出力ディレクトリ："
+    IDS_BTN_CHK             "…"
+    IDS_CHK_VIDMULTI        "連番出力を有効にする"
+    IDS_RESIZE_TITLE        "動画解像度の指定"
+    IDS_GRP_ASPCT           "アスペクト比"
+    IDS_GRP_SIZE            "解像度"
+    IDS_STATIC_WAITDLG      "変換が終了するまでお待ちください。(動画の場合は変換に時間が掛かります)\n(別ウインドウを閉じると変換に失敗しますのでご注意ください。)"
+    IDS_STATIC_THREADDLG    "アップスケーリング処理中です...\n処理には時間が掛かります。しばらくお待ちください。"
+    IDS_BTN_ABORT           "中止"
+    IDS_STATIC_POPUPDLG     "処理中です...しばらくお待ちください。"
+    IDS_STATIC_DLDLG        "必要なファイルをダウンロード中です。しばらくお待ちください。\n(ウイルス対策ソフトをインストールしている場合は通信を許可してください)"
+    IDS_STATIC_DELETEDLG    "ファイルを削除中です。しばらくお待ちください。"
+    IDS_STATIC_ABT_HEADER   "waifu2x-ncnn-vulkan GUI Edition - 画像超解像度化ユーティリティ -"
+    IDS_STATIC_ABT_VER1     "waifu2x-ncnn-vulkan GUI Edition - バージョン："
+    IDS_STATIC_ABT_VER2     "waifu2x-ncnn-vulkan command line - バージョン："
+END
+
+STRINGTABLE
+BEGIN
+    IDS_STATIC_ABT_VER3     "FFmpeg - バージョン："
+    IDS_STATIC_ABT_HYPER1   "waifu2x-ncnn-vulkan (コマンドライン版)"
+    IDS_STATIC_ABT_HYPER2   "waifu2x (オリジナル版)"
+    IDS_DESCRIPTION1        "ノイズ除去レベルを指定します。\r\nレベルを強くするほど、画像のノイズが除去されます。\r\n除去レベルを強くしすぎると細部が消える恐れがあります。\r\n'除去しない'を選択すると、ノイズ除去処理は行われません。"
+    IDS_DESCRIPTION2        "アップスケーリングレベルを指定します。\r\n'2倍'を選択すると元画像の2倍のピクセルに拡大されて出力されます。\r\n'1倍'を選択すると元画像と同じサイズで出力されます。"
+    IDS_DESCRIPTION3        "どのグラフィックボードを使用して変換するかを指定します。\r\n'自動'を選択すると自動的に使用されるGPUが決定されます。\r\n'iGPU'を選択するとCPU内臓グラフィックで変換を行います。\r\nマルチGPU環境の場合は、dGPUのいずれかを指定することも可能です。"
+    IDS_DESCRIPTION4        "load:proc:save の順で使用するスレッド数を指定します。\r\nこの項目はマルチGPU環境の場合のみ、変更可能です。\r\n通常は'1:2:2'を指定してください。"
+    IDS_DESCRIPTION5        "アップスケーリングに使用するモデルを指定します。\r\nCUnet: 標準的なモデルです。デフォルトではこちらになっています。\r\nRGB: 二次元イラスト等をアップスケーリングする際に適したモデルです。\r\nPhoto: 写真やアニメ画像をアップスケーリングする際に適したモデルです。"
+    IDS_DESCRIPTION6        "画像出力形式を指定します。デフォルトでは'PNG'が指定されています。\r\nPNGイメージ以外の形式で出力したい場合は、この項目を変更してください。"
+    IDS_DESCRIPTION7        "詳細設定の項目を有効にします。"
+    IDS_DESCRIPTION8        "詳細な出力 (Verbose Output)を有効にします。\r\nよくわからない場合はチェックを付けないでください。"
+    IDS_DESCRIPTION9        "TTAモードを有効にします。\r\nこの項目を有効にするとより画質は向上しますが、変換にかなりの時間を要します。"
+    IDS_DESCRIPTION10       "GPUブロックサイズを指定します。32以上の値を指定してください。\r\n値を大きくするほど変換が高速になりますが、GPUメモリの使用量が増加します。\r\n'0'を入力すると自動でブロックサイズを割り当てます。\r\nこの項目はGPU性能に大きく依存するため、値を大きくしすぎると変換に失敗します。\r\n基本は'0'指定で問題ありません。"
+    IDS_DESCRIPTION11       "コマンドライン パラメーターを指定します。"
+    IDS_WARN_ABORT_CONFIRM  "アップスケーリング処理が進行中です。\n中止すると現在処理中の内容はすべて失われます。\n続行しますか？"
+    IDS_MENU_HELP           "ヘルプ (&H)"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_ERROR_DIRCT         "出力ディレクトリが指定されていません。\n先にディレクトリを指定してください。"
+    IDS_ERROR_DIRECT2       "出力ディレクトリが指定されていません"
+    IDS_ERROR_FILE          "出力ファイル名が指定されていません"
+    IDS_ERROR_PARAM         "パラメーターが指定されていません"
+    IDS_ERROR_SIZE          "解像度が適切に設定されていません。"
+END
+
+#endif    // 日本語 resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// 日本語 (日本) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
+LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
+#pragma code_page(932)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,1,222
+ PRODUCTVERSION 1,0,1,222
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "041104b0"
+        BEGIN
+            VALUE "CompanyName", "XyLe"
+            VALUE "FileDescription", "waifu2xnvgui.Japanese.dll"
+            VALUE "FileVersion", "1.0.1.222"
+            VALUE "InternalName", "waifu2xnvgui.Japanese"
+            VALUE "LegalCopyright", "Copyright (C) 2021 - XyLe. All Rights Reserved."
+            VALUE "OriginalFilename", "waifu2xnvgui.Japanese"
+            VALUE "ProductName", "waifu2xnvgui: ja-JP Language Library"
+            VALUE "ProductVersion", "1.0.1.222"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x411, 1200
+    END
+END
+
+#endif    // 日本語 (日本) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

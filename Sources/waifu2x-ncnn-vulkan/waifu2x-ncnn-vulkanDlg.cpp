@@ -37,17 +37,22 @@
 #define WM_USER_COMPLETE_COUNT_THREAD (WM_APP + 0x50)
 #define WM_USER_COMPLETE_COUNT_DLG_THREAD (WM_APP + 0x60)
 #define WM_USER_COMPLETE_DELETE_LOAD_XML (WM_APP + 0x70)
+#define WM_USER_COMPLETE_DELETE_MAIN_LOAD_XML (WM_APP + 0x80)
 
 UINT Cwaifu2xncnnvulkanDlg::DLThreadFlag = 0;
-UINT Cwaifu2xncnnvulkanDlg::DLFlag = 0;
+UINT Cwaifu2xncnnvulkanDlg::DLErrorFlag = 0;
 UINT Cwaifu2xncnnvulkanDlg::DLCount = 0;
 UINT Cwaifu2xncnnvulkanDlg::DLCurCount = 0;
 UINT Cwaifu2xncnnvulkanDlg::FILECOUNT = 0;
 UINT Cwaifu2xncnnvulkanDlg::UPSCALE_COUNT = 0;
-UINT Cwaifu2xncnnvulkanDlg::DELETECOUNT = 0;
+UINT Cwaifu2xncnnvulkanDlg::DELETECURCOUNT = 0;
+UINT Cwaifu2xncnnvulkanDlg::DELETEMAINCOUNT = 0;
+UINT Cwaifu2xncnnvulkanDlg::DELETESUBCOUNT = 0;
 UINT Cwaifu2xncnnvulkanDlg::ProgressThreadFlag = 0;
+UINT Cwaifu2xncnnvulkanDlg::UpscaleExceptionFlag = 0;
 UINT Cwaifu2xncnnvulkanDlg::Waifu2xThreadFlag = 0;
 UINT Cwaifu2xncnnvulkanDlg::Waifu2xReUpscalingFlag = 0;
+UINT Cwaifu2xncnnvulkanDlg::DeleteExceptionFlag = 0;
 UINT Cwaifu2xncnnvulkanDlg::DeleteFileThreadFlag = 0;
 UINT Cwaifu2xncnnvulkanDlg::SuspendFlag = 0;
 
@@ -82,8 +87,8 @@ public:
 	afx_msg void OnStnClickedStaticHyper4();
 	afx_msg void OnStnClickedStaticIcon();
 	afx_msg void OnDestroy();
+	void SetDlgLang();
 	HICON ICO;
-	HINSTANCE hInst = AfxGetInstanceHandle();
 	CStatic xv_Static_AppVersionText, xv_Static_CmdVersionText, m_hyper1, m_hyper2, m_hyper3, m_hyper4, ICON;
 	COLORREF m_hyperlink;
 	CFont m_hlfont;
@@ -124,21 +129,22 @@ BOOL CAboutDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 	Core->LoadImageLibrary();
-	if (hInst != NULL) {
-		ICO = ExtractIcon(hInst, RES_LIBRARY, 0);//LoadIcon(Core->hinst, MAKEINTRESOURCE(1003));
+	ICO = ExtractIcon(AfxGetInstanceHandle(), RES_LIBRARY, 0);//LoadIcon(Core->hinst, MAKEINTRESOURCE(1003));
+	if (!ICO) {
+		MessageBox(ERROR_INSTANCE, ERROR_TITLE, MB_ICONERROR | MB_OK);
 	}
 	else {
-		MessageBox(_T("リソースの読み込みに失敗しました"), _T("エラー"), MB_ICONERROR | MB_OK);
+		CStatic* box = (CStatic*)GetDlgItem(IDC_STATIC_ICON);
+		box->SetIcon(ICO);
+		box->InvalidateRect(NULL, 1);
 	}
-	CStatic* box = (CStatic*)GetDlgItem(IDC_STATIC_ICON);
-	box->SetIcon(ICO);
-	box->InvalidateRect(NULL, 1);
+	SetDlgLang();
 
 	this->xv_Static_AppVersionText.SetWindowText(APP_VERSION);
 	this->xv_Static_CmdVersionText.SetWindowText(CMD_VERSION);
 	this->xv_Static_FFmpeg_VersionText.SetWindowText(FF_VERSION);
 
-	m_hyperlink = RGB(0, 0, 255);
+	m_hyperlink = RGB(51, 102, 187);
 	CFont* pFont = m_hyper1.GetFont();
 	LOGFONT lFont;
 	pFont->GetLogFont(&lFont);
@@ -239,15 +245,44 @@ void CAboutDlg::OnStnClickedStaticIcon()
 }
 
 
+void CAboutDlg::SetDlgLang()
+{
+	UINT Lang;
+	Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+	if (Lang == 0) {
+		Core->LoadJPNLangLibrary();
+	}
+	else if (Lang == 1) {
+		Core->LoadENGLangLibrary();
+	}
+	else {
+		Core->LoadJPNLangLibrary();
+	}
+
+	LoadString(Core->Lang_hinst, IDS_STATIC_ABT_HEADER, (LPTSTR)STATIC_ABT_HEADER, 256);
+	GetDlgItem(IDC_STATIC_HED)->SetWindowText(STATIC_ABT_HEADER);
+	LoadString(Core->Lang_hinst, IDS_STATIC_ABT_VER1, (LPTSTR)STATIC_ABT_VER1, 256);
+	GetDlgItem(IDC_STATIC_V1)->SetWindowText(STATIC_ABT_VER1);
+	LoadString(Core->Lang_hinst, IDS_STATIC_ABT_VER2, (LPTSTR)STATIC_ABT_VER2, 256);
+	GetDlgItem(IDC_STATIC_V2)->SetWindowText(STATIC_ABT_VER2);
+	LoadString(Core->Lang_hinst, IDS_STATIC_ABT_VER3, (LPTSTR)STATIC_ABT_VER3, 256);
+	GetDlgItem(IDC_STATIC_V3)->SetWindowText(STATIC_ABT_VER3);
+	LoadString(Core->Lang_hinst, IDS_STATIC_ABT_HYPER1, (LPTSTR)STATIC_ABT_HYPER1, 256);
+	GetDlgItem(IDC_STATIC_HYPER1)->SetWindowText(STATIC_ABT_HYPER1);
+	LoadString(Core->Lang_hinst, IDS_STATIC_ABT_HYPER2, (LPTSTR)STATIC_ABT_HYPER2, 256);
+	GetDlgItem(IDC_STATIC_HYPER2)->SetWindowText(STATIC_ABT_HYPER2);
+}
+
+
 void CAboutDlg::OnDestroy()
 {
 	CDialogEx::OnDestroy();
 
 	FreeLibrary(Core->hinst);
+	FreeLibrary(Core->Lang_hinst);
 	SAFE_DELETE(CORE_FUNC);
 	SAFE_DELETE(MAINSTR_FUNC);
 	SAFE_DELETE(VERSIONSTR_FUNC);
-	Core->FreeImageLibrary();
 }
 
 // Cwaifu2xncnnvulkanDlg ダイアログ
@@ -266,6 +301,7 @@ Cwaifu2xncnnvulkanDlg::Cwaifu2xncnnvulkanDlg(CWnd* pParent /*=nullptr*/)
 	IMAGEPATH = _T("");
 	IMAGEPATH_M = _T("");
 	VIDEOPATH = _T("");
+	DELETEPATH = _T("");
 }
 
 void Cwaifu2xncnnvulkanDlg::DoDataExchange(CDataExchange* pDX)
@@ -307,11 +343,14 @@ BEGIN_MESSAGE_MAP(Cwaifu2xncnnvulkanDlg, CDialogEx)
 	ON_MESSAGE(WM_USER_COMPLETE_DOWNLOAD_LOAD_XML, Cwaifu2xncnnvulkanDlg::OnCompleteDLThread)// UserMessage
 	ON_MESSAGE(WM_USER_COMPLETE_DOWNLOAD_COUNT_LOAD_XML, Cwaifu2xncnnvulkanDlg::OnCompleteDLCountThread)// UserMessage
 	ON_MESSAGE(WM_USER_COMPLETE_DELETE_LOAD_XML, Cwaifu2xncnnvulkanDlg::OnCompleteDeleteThread)// UserMessage
+	ON_MESSAGE(WM_USER_COMPLETE_DELETE_MAIN_LOAD_XML, Cwaifu2xncnnvulkanDlg::OnCompleteDeleteMainThread)// UserMessage
 	ON_MESSAGE(WM_USER_COMPLETE_COUNT_THREAD, Cwaifu2xncnnvulkanDlg::OnCompleteWaifu2xCountThread)// UserMessage
 	ON_MESSAGE(WM_USER_COMPLETE_COUNT_DLG_THREAD, Cwaifu2xncnnvulkanDlg::OnCompleteWaifu2xCountDlgThread)// UserMessage
 	ON_COMMAND(ID_VIDEORESIZE, &Cwaifu2xncnnvulkanDlg::OnVideoresize)
 	ON_COMMAND(ID_VIDEOAUDIOEXPORT, &Cwaifu2xncnnvulkanDlg::OnVideoaudioexport)
 	ON_COMMAND(ID_UPDATECHECK, &Cwaifu2xncnnvulkanDlg::OnUpdatecheck)
+	ON_COMMAND(ID_LANGUAGE_JAPANESE, &Cwaifu2xncnnvulkanDlg::OnLanguageJapanese)
+	ON_COMMAND(ID_LANGUAGE_ENGLISH, &Cwaifu2xncnnvulkanDlg::OnLanguageEnglish)
 END_MESSAGE_MAP()
 
 
@@ -350,79 +389,51 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 	//_CrtSetBreakAlloc(15935297);
 
 	// TODO: 初期化をここに追加します。
-	SetWindowText(_T("waifu2x-ncnn-vulkan GUI Edition [") + APP_VERSION + _T(", Feb. 9, 2021]"));
+	CFileFind init;
+
+	if (init.FindFile(RES_LIBRARY)) {
+		if (init.FindFile(JPN_RES_LIBRARY)) {
+			if (init.FindFile(ENG_RES_LIBRARY)) {
+				LoadDlgStr();
+			}
+			else {
+				MessageBox(_T("'waifu2xnvgui.English.dll' cannot be found, so the code execution cannot continue. Reinstalling the program may resolve this issue."), _T("waifu2xnvgui.exe - System error"), MB_ICONERROR | MB_OK);
+				EndDialog(IDCANCEL);
+				PostMessage(WM_COMMAND, IDCANCEL);
+				return FALSE;
+			}
+		}
+		else {
+			MessageBox(_T("'waifu2xnvgui.Japanese.dll' cannot be found, so the code execution cannot continue. Reinstalling the program may resolve this issue."), _T("waifu2xnvgui.exe - System error"), MB_ICONERROR | MB_OK);
+			EndDialog(IDCANCEL);
+			PostMessage(WM_COMMAND, IDCANCEL);
+			return FALSE;
+		}
+	}
+	else {
+		MessageBox(_T("'App.General.resLib.dll' cannot be found, so the code execution cannot continue. Reinstalling the program may resolve this issue."), _T("waifu2xnvgui.exe - System error"), MB_ICONERROR | MB_OK);
+		EndDialog(IDCANCEL);
+		PostMessage(WM_COMMAND, IDCANCEL);
+		return FALSE;
+	}
+
+	SetWindowText(_T("waifu2x-ncnn-vulkan GUI Edition [") + APP_VERSION + _T(", Feb. 22, 2021]"));
+	Utility->GetGPUInfo();
 
 	MSG msg;
-	CFileFind init;
+	
 	CString resdir = _T("\\Resources");
-	CString initbat = _T("\\Resources\\gpu.bat");
 	CString init1 = _T("\\Resources\\ffmpeg\\ffmpeg.exe");
 	CString init2 = _T("\\Resources\\waifu2x-ncnn-vulkan\\waifu2x-ncnn-vulkan.exe");
 	CString init3 = _T("\\Resources\\image2png.exe");
 	CString tmp = CURRENT_PATH + resdir + _T("\\tmp");
 	CString ffzip = CURRENT_PATH + resdir + _T("\\ffmpeg.zip");
-	CString initbatch = CURRENT_PATH + initbat;
 	CString initPath1 = CURRENT_PATH + init1;
 	CString initPath2 = CURRENT_PATH + init2;
 	CString initPath3 = CURRENT_PATH + init3;
-	std::ofstream batchout(initbatch, std::ios::out | std::ios::trunc);
-	if (!batchout) {
-		MessageBox(_T("読み込みエラー"), _T("エラー"), MB_ICONERROR | MB_OK);
-		AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-		AfxGetMainWnd()->DestroyWindow();
-		PostQuitMessage(0);
-		return TRUE;
-	}
-	batchout << "@echo off\nset GPUINFO=%~dp0gpuinfo.gl\nfor /F \"tokens=* skip=1\" %%n in ('WMIC path Win32_VideoController get Name ^| findstr \".\"') do set GPU_NAME=%%n\necho %GPU_NAME% >> %GPUINFO%\nexit 0\n";
-	batchout.close();
 
-	if (init.FindFile(initbatch)) {
-		std::ifstream batch(initbatch, std::ios::in);
-		if (!batch) {
-			MessageBox(_T("読み込みエラー"), _T("エラー"), MB_ICONERROR | MB_OK);
-			AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-			AfxGetMainWnd()->DestroyWindow();
-			PostQuitMessage(0);
-		}
-		OutputDebugString(_T("CFileFind init.FindFile(") + initbatch + _T("): File readed success.\n"));
-		std::string batfile = "@echo off\n";
-		std::string batfilefull = "@echo off\nset GPUINFO=%~dp0gpuinfo.gl\nfor /F \"tokens=* skip=1\" %%n in ('WMIC path Win32_VideoController get Name ^| findstr \".\"') do set GPU_NAME=%%n\necho %GPU_NAME% >> %GPUINFO%\nexit 0\n";
-		std::string batf = batfilefull;
-		std::stringstream batch_stream;
-		batch_stream << batch.rdbuf();
-		std::string batch_string = batch_stream.str();
-		size_t linepos = batch_string.find(batfile);
-		if (linepos == std::string::npos) {
-			batch.close();
-			MessageBox(_T("このバッチファイルは不正です。"), _T("ファイル改竄エラー"), MB_ICONERROR | MB_OK);
-			AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-			AfxGetMainWnd()->DestroyWindow();
-			PostQuitMessage(0);
-			return TRUE;
-		}
-		else if (batch_string != batf) {
-			initbatch.Empty();
-			batch.close();
-			MessageBox(_T("このバッチファイルは不正、または変更されています。"), _T("ファイル改竄エラー"), MB_ICONERROR | MB_OK);
-			AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-			AfxGetMainWnd()->DestroyWindow();
-			PostQuitMessage(0);
-			return TRUE;
-		}
-		else {
-			OutputDebugString(_T("delete (") + initbatch + _T("): Empty.\n"));
-			initbatch.Empty();
-			batch.close();
-		}
-	}
-	else {
-		CString Err;
-		Err.Format(_T("ファイル読み込みエラー: 0x%X"), -1);
-		OutputDebugString(_T("Error.\n"));
-		MessageBox(_T("ファイルが存在しません。\nアプリケーションを終了します。"), Err, MB_ICONERROR | MB_OK);
-		AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-		AfxGetMainWnd()->DestroyWindow();
-		PostQuitMessage(0);
+	if (init.FindFile(ffzip)) {
+		DeleteFile(ffzip);
 	}
 
 	GetPrivateProfileString(L"WAIFU2X_SETTINGS", L"0x20FF", NULL, Waifu2x->waifu2x_prm, 256, L".\\settings.ini");
@@ -430,109 +441,46 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 	GetPrivateProfileString(L"FFMPEG_VIDEO_SETTINGS", L"0x20FF", NULL, Waifu2x->FFmpeg_video_prm, 256, L".\\settings.ini");
 	GetPrivateProfileString(L"FFMPEG_AUDIO_SETTINGS", L"0x20FF", NULL, Waifu2x->FFmpeg_audio_prm, 256, L".\\settings.ini");
 
-	if (Waifu2x->waifu2x_prm != L"") {
+	if (_tcscmp(Waifu2x->waifu2x_prm, _T("")) != 0) {
 		waifu2x_param = Waifu2x->waifu2x_prm;
 	}
 	else {
-		waifu2x_param = L"";
+		waifu2x_param = _T("");
 	}
-	if (Waifu2x->FFmpeg_prm != L"") {
+	if (_tcscmp(Waifu2x->FFmpeg_prm, _T("")) != 0) {
 		ffmpeg_mainparam = Waifu2x->FFmpeg_prm;
 	}
 	else {
-		ffmpeg_mainparam = L"";
+		ffmpeg_mainparam = _T("");
 	}
-	if (Waifu2x->FFmpeg_video_prm != L"") {
+	if (_tcscmp(Waifu2x->FFmpeg_video_prm, _T("")) != 0) {
 		ffmpeg_videoparam = Waifu2x->FFmpeg_video_prm;
 	}
 	else {
-		ffmpeg_videoparam = L"";
+		ffmpeg_videoparam = _T("");
 	}
-	if (Waifu2x->FFmpeg_audio_prm != L"") {
+	if (_tcscmp(Waifu2x->FFmpeg_audio_prm, _T("")) != 0) {
 		ffmpeg_audioparam = Waifu2x->FFmpeg_audio_prm;
 	}
 	else {
-		ffmpeg_audioparam = L"";
+		ffmpeg_audioparam = _T("");
 	}
 
-	int CPUInfo[5] = { -1 };
-	__cpuid(CPUInfo, 0x80000000);
-	if (CPUInfo[0] >= 0x80000004)
-	{
-		CHAR szCPUBrandString[0x41] = { 0 };
-		__cpuid(CPUInfo, 0x80000002);
-		memcpy(szCPUBrandString, CPUInfo, sizeof(CPUInfo));
-		__cpuid(CPUInfo, 0x80000003);
-		memcpy(szCPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
-		__cpuid(CPUInfo, 0x80000004);
-		memcpy(szCPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
+	CString CPUInfo = Utility->GetCPUInfo();
+	CString GPUInfo = Utility->GetGPUInfo();
 
-		const int tchrSize = sizeof(szCPUBrandString) + 1;
-		TCHAR tchrText2[tchrSize] = { _T('¥0') };
-		int res = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, szCPUBrandString, sizeof(szCPUBrandString), tchrText2, tchrSize);
+	OutputDebugString(_T("Detected CPU: ") + CPUInfo);
+	OutputDebugString(_T("Detected GPU: ") + GPUInfo + _T("\n"));
 
-		CString CPUText = CString(tchrText2);
-		CString CPUID = L"" + CPUText + L"\n";
+	ZeroMemory(&Waifu2x->cpuinfo[0], 256);
+	ZeroMemory(&Waifu2x->gpuinfo[0], 256);
+	_tcscpy_s(&Waifu2x->cpuinfo[0], 256, CPUInfo);
+	_tcscpy_s(&Waifu2x->gpuinfo[0], 256, GPUInfo);
 
-		CString glcmd = L"cmd /c .\\Resources\\gpu.bat";
-		TCHAR* glcmdT = (TCHAR*)malloc(sizeof(TCHAR) * 256); // Convert CString to TCHAR.
-		if (NULL == glcmdT) {
-			perror("can not malloc");
-			OutputDebugString(_T("TCHAR syntax (glcmdT) malloc failed.\n"));
-			AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-			AfxGetMainWnd()->DestroyWindow();
-			PostQuitMessage(0);
-		}
-		else {
-			ZeroMemory(&glcmdT[0], 256);
-			_tcscpy_s(&glcmdT[0], 256, glcmd);
-		}
-		
-		STARTUPINFO si;
-		memset(&si, 0, sizeof(STARTUPINFO));
-		PROCESS_INFORMATION pi;
-		memset(&pi, 0, sizeof(PROCESS_INFORMATION));
-		si.dwFlags = STARTF_USESHOWWINDOW;
-		si.wShowWindow = SW_HIDE;
-		::CreateProcess(NULL, glcmdT, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
-		CloseHandle(pi.hThread);
-		WaitForSingleObject(pi.hProcess, INFINITE);
-		CloseHandle(pi.hProcess);
-		SAFE_FREE(glcmdT);
-
-		std::ifstream gl(CURRENT_PATH + L"\\Resources\\gpuinfo.gl", std::ios::in);
-		if (!gl) {
-			MessageBox(_T("読み込みエラー"), _T("エラー"), MB_ICONERROR | MB_OK);
-			AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-			AfxGetMainWnd()->DestroyWindow();
-			PostQuitMessage(0);
-		}
-		
-		std::stringstream gl_stream;
-		gl_stream << gl.rdbuf();
-		std::string gl_string = gl_stream.str();
-		std::string glinfo;
-		gl.close();
-		DeleteFile(CURRENT_PATH + L"\\Resources\\gpu.bat");
-		DeleteFile(CURRENT_PATH + L"\\Resources\\gpuinfo.gl");
-		SetCurrentDirectory(CURRENT_PATH);
-
-		CString GPUInfo(gl_string.c_str());
-		CString Info = CPUID;
-
-		OutputDebugString(_T("Detected CPU: ") + CPUID);
-		OutputDebugString(_T("Detected GPU: ") + GPUInfo);
-
-		ZeroMemory(&Waifu2x->cpuinfo[0], 256);
-		ZeroMemory(&Waifu2x->gpuinfo[0], 256);
-		_tcscpy_s(&Waifu2x->cpuinfo[0], 256, CPUID);
-		_tcscpy_s(&Waifu2x->gpuinfo[0], 256, GPUInfo);
-
-		CEdit* edit1 = (CEdit*)GetDlgItem(IDC_EDIT2);
-		CEdit* edit2 = (CEdit*)GetDlgItem(IDC_EDIT4);
-		edit1->SetWindowText(Waifu2x->cpuinfo);
-		edit2->SetWindowText(Waifu2x->gpuinfo);
-	}
+	CEdit* edit1 = (CEdit*)GetDlgItem(IDC_EDIT2);
+	CEdit* edit2 = (CEdit*)GetDlgItem(IDC_EDIT4);
+	edit1->SetWindowText(Waifu2x->cpuinfo);
+	edit2->SetWindowText(Waifu2x->gpuinfo);
 
 	Waifu2x->StFont1 = xv_Static_ReadStatus.GetFont();
 	LOGFONT lf1;
@@ -550,7 +498,7 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 		GetPrivateProfileString(L"FFMPEG_LATEST_VERSION", L"0x00000", NULL, (LPWSTR)ver, 48, L".\\settings.ini");
 		CString VER;
 		if (_tcscmp(ver, _T("")) == 0) {
-			VER = _T("不明なバージョン");
+			VER = TEXT_UNKNOWN;
 			FLAG = 0;
 		}
 		else {
@@ -559,7 +507,7 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 		}
 		if (FLAG == 0) {
 			UINT ret;
-			ret = MessageBox(_T("最新バージョン：") + Utility->FFmpegVersionCheck() + _T("\n現在使用中のバージョン：") + VER + _T("\nFFmpegのアップデートが可能です。アップデートしますか？"), _T("FFmpeg アップデート確認"), MB_ICONINFORMATION | MB_YESNO);
+			ret = MessageBox(UPDATE_LATEST + Utility->FFmpegVersionCheck() + _T("\n") + UPDATE_CURRENT + VER + _T("\n") + UPDATE_FFMPEG, UPDATE_FFMPEG_TITLE, MB_ICONINFORMATION | MB_YESNO);
 			if (ret == IDYES) {
 				Utility->DeleteDirectory(_T(".\\Resources\\ffmpeg"));
 				bool ret;
@@ -578,10 +526,10 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 				OutputDebugString(_T("Server connecting...\nHTTP Status code:") + STATUSCODE);
 				if (Utility->FFmpegServerCheck() != HTTP_STATUS_OK) {
 					OutputDebugString(_T("Server connected error."));
-					MessageBox(_T("サーバーとの通信に失敗しました。\nHTTP Status Code:") + STATUSCODE, _T("エラー"), MB_ICONERROR | MB_OK);
-					AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-					AfxGetMainWnd()->DestroyWindow();
-					PostQuitMessage(0);
+					MessageBox(ERROR_SERVER, ERROR_TITLE, MB_ICONERROR | MB_OK);
+					EndDialog(IDCANCEL);
+					PostMessage(WM_COMMAND, IDCANCEL);
+					return FALSE;
 				}
 				OutputDebugString(_T("Server connected.\n"));
 				ret = Utility->DownloadFile(DOWNLOAD_URL_STRING, _T(".\\Resources\\ffmpeg.zip"), 4096);
@@ -589,27 +537,21 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 
 				DeleteFile(_T(".\\Resources\\ffmpeg.zip"));
 
-				pDLThread = AfxBeginThread(DLThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
-				ASSERT(pDLThread);
-				if (pDLThread)
-				{
-					pDLThread->m_pMainWnd = this;
-					pDLThread->m_bAutoDelete = TRUE;
-					pDLThread->ResumeThread();
-				}
 				pDLCountThread = AfxBeginThread(DLCountThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
-				ASSERT(pDLCountThread);
 				if (pDLCountThread)
 				{
 					pDLCountThread->m_pMainWnd = this;
 					pDLCountThread->m_bAutoDelete = TRUE;
 					pDLCountThread->ResumeThread();
+
+					DLDIALOG DLG;
+					DLG.DoModal();
 				}
 
-				DLDIALOG DLG;
-				DLG.DoModal();
-
-				WritePrivateProfileString(L"FFMPEG_LATEST_VERSION", L"0x00000", Utility->FFmpegVersionCheck(), L".\\settings.ini");
+				if (DLErrorFlag == 1) {
+					DeleteFile(_T(".\\Resources\\ffmpeg.zip"));
+					DLErrorFlag = 0;
+				}
 
 				while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
 					if (!AfxGetApp()->PumpMessage())
@@ -635,17 +577,17 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 					hr = CoCreateInstance(CLSID_Shell, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pShellDisp));
 					if (FAILED(hr)) {
 						CoUninitialize();
-						AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-						AfxGetMainWnd()->DestroyWindow();
-						PostQuitMessage(0);
+						EndDialog(IDCANCEL);
+						PostMessage(WM_COMMAND, IDCANCEL);
+						return FALSE;
 					}
 					TCHAR* ffzipT = (TCHAR*)malloc(sizeof(TCHAR) * 256); // Convert CString to TCHAR.
 					if (NULL == ffzipT) {
 						perror("can not malloc");
 						OutputDebugString(_T("TCHAR syntax (tmpT) malloc failed.\n"));
-						AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-						AfxGetMainWnd()->DestroyWindow();
-						PostQuitMessage(0);
+						EndDialog(IDCANCEL);
+						PostMessage(WM_COMMAND, IDCANCEL);
+						return FALSE;
 					}
 					else {
 						ZeroMemory(&ffzipT[0], 256);
@@ -655,9 +597,9 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 					if (NULL == tmpT) {
 						perror("can not malloc");
 						OutputDebugString(_T("TCHAR syntax (tmpT) malloc failed.\n"));
-						AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-						AfxGetMainWnd()->DestroyWindow();
-						PostQuitMessage(0);
+						EndDialog(IDCANCEL);
+						PostMessage(WM_COMMAND, IDCANCEL);
+						return FALSE;
 					}
 					else {
 						ZeroMemory(&tmpT[0], 256);
@@ -677,23 +619,27 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 						OutputDebugString(_T("DeleteDirectory(") + tmp + _T("): Delete error.\n"));
 					}
 					if (init.FindFile(initPath1)) {
-						MessageBox(_T("ダウンロードが完了しました。"), _T("完了"), MB_ICONINFORMATION | MB_OK);
+						WritePrivateProfileString(L"FFMPEG_LATEST_VERSION", L"0x00000", Utility->FFmpegVersionCheck(), L".\\settings.ini");
+						MessageBox(INFO_DOWNLOAD, INFO_TITLE, MB_ICONINFORMATION | MB_OK);
 						OutputDebugString(_T("CFileFind init.FindFile(") + initPath1 + _T("): File readed success.\n"));
 						initPath1.Empty();
 					}
 					else {
 						OutputDebugString(_T("CFileFind init.FindFile(") + initPath1 + _T("): File readed error.\n"));
 						initPath1.Empty();
-						MessageBox(_T("予期せぬエラーが発生しました。"), _T("エラー"), MB_ICONERROR | MB_OK);
-						AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-						AfxGetMainWnd()->DestroyWindow();
-						PostQuitMessage(0);
+						MessageBox(ERROR_EXCEPTION, ERROR_TITLE, MB_ICONERROR | MB_OK);
+						EndDialog(IDCANCEL);
+						PostMessage(WM_COMMAND, IDCANCEL);
+						return FALSE;
 					}
 				}
 				else {
 					DIALOG->DestroyWindow();
 					SAFE_DELETE(DIALOG);
-					MessageBox(_T("ダウンロードに失敗しました。インターネット接続がされているか確認してください。\nウイルス対策ソフトをインストールしている場合は接続を許可してください。"), _T("エラー"), MB_ICONERROR | MB_OK);
+					MessageBox(ERROR_DOWNLOAD, ERROR_TITLE, MB_ICONERROR | MB_OK);
+					EndDialog(IDCANCEL);
+					PostMessage(WM_COMMAND, IDCANCEL);
+					return FALSE;
 				}
 			}
 			else if (ret == IDNO) {
@@ -706,7 +652,7 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 		else if (FLAG == 1) {
 			if (Utility->FFmpegVersionCheck() > VER) {
 				UINT ret;
-				ret = MessageBox(_T("最新バージョン：") + Utility->FFmpegVersionCheck() + _T("\n現在使用中のバージョン：") + VER + _T("\nFFmpegのアップデートが可能です。アップデートしますか？"), _T("FFmpeg アップデート確認"), MB_ICONINFORMATION | MB_YESNO);
+				ret = MessageBox(UPDATE_LATEST + Utility->FFmpegVersionCheck() + _T("\n") + UPDATE_CURRENT + VER + _T("\n") + UPDATE_FFMPEG, UPDATE_FFMPEG_TITLE, MB_ICONINFORMATION | MB_YESNO);
 				if (ret == IDYES) {
 					Utility->DeleteDirectory(_T(".\\Resources\\ffmpeg"));
 					bool ret;
@@ -725,10 +671,10 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 					OutputDebugString(_T("Server connecting...\nHTTP Status code:") + STATUSCODE);
 					if (Utility->FFmpegServerCheck() != HTTP_STATUS_OK) {
 						OutputDebugString(_T("Server connected error."));
-						MessageBox(_T("サーバーとの通信に失敗しました。\nHTTP Status Code:") + STATUSCODE, _T("エラー"), MB_ICONERROR | MB_OK);
-						AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-						AfxGetMainWnd()->DestroyWindow();
-						PostQuitMessage(0);
+						MessageBox(ERROR_SERVER, ERROR_TITLE, MB_ICONERROR | MB_OK);
+						EndDialog(IDCANCEL);
+						PostMessage(WM_COMMAND, IDCANCEL);
+						return FALSE;
 					}
 					OutputDebugString(_T("Server connected.\n"));
 					ret = Utility->DownloadFile(DOWNLOAD_URL_STRING, _T(".\\Resources\\ffmpeg.zip"), 4096);
@@ -736,27 +682,21 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 
 					DeleteFile(_T(".\\Resources\\ffmpeg.zip"));
 
-					pDLThread = AfxBeginThread(DLThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
-					ASSERT(pDLThread);
-					if (pDLThread)
-					{
-						pDLThread->m_pMainWnd = this;
-						pDLThread->m_bAutoDelete = TRUE;
-						pDLThread->ResumeThread();
-					}
 					pDLCountThread = AfxBeginThread(DLCountThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
-					ASSERT(pDLCountThread);
 					if (pDLCountThread)
 					{
 						pDLCountThread->m_pMainWnd = this;
 						pDLCountThread->m_bAutoDelete = TRUE;
 						pDLCountThread->ResumeThread();
+
+						DLDIALOG DLG;
+						DLG.DoModal();
 					}
 
-					DLDIALOG DLG;
-					DLG.DoModal();
-
-					WritePrivateProfileString(L"FFMPEG_LATEST_VERSION", L"0x00000", Utility->FFmpegVersionCheck(), L".\\settings.ini");
+					if (DLErrorFlag == 1) {
+						DeleteFile(_T(".\\Resources\\ffmpeg.zip"));
+						DLErrorFlag = 0;
+					}
 
 					while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
 						if (!AfxGetApp()->PumpMessage())
@@ -782,17 +722,17 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 						hr = CoCreateInstance(CLSID_Shell, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pShellDisp));
 						if (FAILED(hr)) {
 							CoUninitialize();
-							AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-							AfxGetMainWnd()->DestroyWindow();
-							PostQuitMessage(0);
+							EndDialog(IDCANCEL);
+							PostMessage(WM_COMMAND, IDCANCEL);
+							return FALSE;
 						}
 						TCHAR* ffzipT = (TCHAR*)malloc(sizeof(TCHAR) * 256); // Convert CString to TCHAR.
 						if (NULL == ffzipT) {
 							perror("can not malloc");
 							OutputDebugString(_T("TCHAR syntax (tmpT) malloc failed.\n"));
-							AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-							AfxGetMainWnd()->DestroyWindow();
-							PostQuitMessage(0);
+							EndDialog(IDCANCEL);
+							PostMessage(WM_COMMAND, IDCANCEL);
+							return FALSE;
 						}
 						else {
 							ZeroMemory(&ffzipT[0], 256);
@@ -802,9 +742,9 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 						if (NULL == tmpT) {
 							perror("can not malloc");
 							OutputDebugString(_T("TCHAR syntax (tmpT) malloc failed.\n"));
-							AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-							AfxGetMainWnd()->DestroyWindow();
-							PostQuitMessage(0);
+							EndDialog(IDCANCEL);
+							PostMessage(WM_COMMAND, IDCANCEL);
+							return FALSE;
 						}
 						else {
 							ZeroMemory(&tmpT[0], 256);
@@ -824,23 +764,27 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 							OutputDebugString(_T("DeleteDirectory(") + tmp + _T("): Delete error.\n"));
 						}
 						if (init.FindFile(initPath1)) {
-							MessageBox(_T("ダウンロードが完了しました。"), _T("完了"), MB_ICONINFORMATION | MB_OK);
+							WritePrivateProfileString(L"FFMPEG_LATEST_VERSION", L"0x00000", Utility->FFmpegVersionCheck(), L".\\settings.ini");
+							MessageBox(INFO_DOWNLOAD, INFO_TITLE, MB_ICONINFORMATION | MB_OK);
 							OutputDebugString(_T("CFileFind init.FindFile(") + initPath1 + _T("): File readed success.\n"));
 							initPath1.Empty();
 						}
 						else {
 							OutputDebugString(_T("CFileFind init.FindFile(") + initPath1 + _T("): File readed error.\n"));
 							initPath1.Empty();
-							MessageBox(_T("予期せぬエラーが発生しました。"), _T("エラー"), MB_ICONERROR | MB_OK);
-							AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-							AfxGetMainWnd()->DestroyWindow();
-							PostQuitMessage(0);
+							MessageBox(ERROR_EXCEPTION, ERROR_TITLE, MB_ICONERROR | MB_OK);
+							EndDialog(IDCANCEL);
+							PostMessage(WM_COMMAND, IDCANCEL);
+							return FALSE;
 						}
 					}
 					else {
 						DIALOG->DestroyWindow();
 						SAFE_DELETE(DIALOG);
-						MessageBox(_T("ダウンロードに失敗しました。インターネット接続がされているか確認してください。\nウイルス対策ソフトをインストールしている場合は接続を許可してください。"), _T("エラー"), MB_ICONERROR | MB_OK);
+						MessageBox(ERROR_DOWNLOAD, ERROR_TITLE, MB_ICONERROR | MB_OK);
+						EndDialog(IDCANCEL);
+						PostMessage(WM_COMMAND, IDCANCEL);
+						return FALSE;
 					}
 				}
 				else if (ret == IDNO) {
@@ -860,11 +804,7 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 	}
 	else
 	{
-		initbatch.Empty();
-		CString Err;
-		Err.Format(_T("ファイル読み込みエラー : 0x%X"), -1);
-
-		INT_PTR sel = MessageBox(_T("ffmpeg.exe が見つかりません。ダウンロードしますか？\n(ダウンロードにはインターネット接続が必要です)"), Err, MB_ICONERROR | MB_YESNO);
+		INT_PTR sel = MessageBox(ERROR_FFMPEG, ERROR_TITLE, MB_ICONERROR | MB_YESNO);
 		if (sel == IDYES)
 		{
 			bool ret;
@@ -883,10 +823,10 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 			OutputDebugString(_T("Server connecting...\nHTTP Status code:") + STATUSCODE);
 			if (Utility->FFmpegServerCheck() != HTTP_STATUS_OK) {
 				OutputDebugString(_T("Server connected error."));
-				MessageBox(_T("サーバーとの通信に失敗しました。\nHTTP Status Code:") + STATUSCODE, _T("エラー"), MB_ICONERROR | MB_OK);
-				AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-				AfxGetMainWnd()->DestroyWindow();
-				PostQuitMessage(0);
+				MessageBox(ERROR_SERVER, ERROR_TITLE, MB_ICONERROR | MB_OK);
+				EndDialog(IDCANCEL);
+				PostMessage(WM_COMMAND, IDCANCEL);
+				return FALSE;
 			}
 			OutputDebugString(_T("Server connected.\n"));
 			ret = Utility->DownloadFile(DOWNLOAD_URL_STRING, _T(".\\Resources\\ffmpeg.zip"), 4096);
@@ -894,27 +834,21 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 
 			DeleteFile(_T(".\\Resources\\ffmpeg.zip"));
 
-			pDLThread = AfxBeginThread(DLThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
-			ASSERT(pDLThread);
-			if (pDLThread)
-			{
-				pDLThread->m_pMainWnd = this;
-				pDLThread->m_bAutoDelete = TRUE;
-				pDLThread->ResumeThread();
-			}
 			pDLCountThread = AfxBeginThread(DLCountThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
-			ASSERT(pDLCountThread);
 			if (pDLCountThread)
 			{
 				pDLCountThread->m_pMainWnd = this;
 				pDLCountThread->m_bAutoDelete = TRUE;
 				pDLCountThread->ResumeThread();
+
+				DLDIALOG DLG;
+				DLG.DoModal();
 			}
 
-			DLDIALOG DLG;
-			DLG.DoModal();
-
-			WritePrivateProfileString(L"FFMPEG_LATEST_VERSION", L"0x00000", Utility->FFmpegVersionCheck(), L".\\settings.ini");
+			if (DLErrorFlag == 1) {
+				DeleteFile(_T(".\\Resources\\ffmpeg.zip"));
+				DLErrorFlag = 0;
+			}
 
 			while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
 				if (!AfxGetApp()->PumpMessage())
@@ -940,17 +874,17 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 				hr = CoCreateInstance(CLSID_Shell, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pShellDisp));
 				if (FAILED(hr)) {
 					CoUninitialize();
-					AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-					AfxGetMainWnd()->DestroyWindow();
-					PostQuitMessage(0);
+					EndDialog(IDCANCEL);
+					PostMessage(WM_COMMAND, IDCANCEL);
+					return FALSE;
 				}
 				TCHAR* ffzipT = (TCHAR*)malloc(sizeof(TCHAR) * 256); // Convert CString to TCHAR.
 				if (NULL == ffzipT) {
 					perror("can not malloc");
 					OutputDebugString(_T("TCHAR syntax (tmpT) malloc failed.\n"));
-					AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-					AfxGetMainWnd()->DestroyWindow();
-					PostQuitMessage(0);
+					EndDialog(IDCANCEL);
+					PostMessage(WM_COMMAND, IDCANCEL);
+					return FALSE;
 				}
 				else {
 					ZeroMemory(&ffzipT[0], 256);
@@ -960,9 +894,9 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 				if (NULL == tmpT) {
 					perror("can not malloc");
 					OutputDebugString(_T("TCHAR syntax (tmpT) malloc failed.\n"));
-					AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-					AfxGetMainWnd()->DestroyWindow();
-					PostQuitMessage(0);
+					EndDialog(IDCANCEL);
+					PostMessage(WM_COMMAND, IDCANCEL);
+					return FALSE;
 				}
 				else {
 					ZeroMemory(&tmpT[0], 256);
@@ -982,84 +916,81 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 					OutputDebugString(_T("DeleteDirectory(") + tmp + _T("): Delete error.\n"));
 				}
 				if (init.FindFile(initPath1)) {
-					MessageBox(_T("ダウンロードが完了しました。"), _T("完了"), MB_ICONINFORMATION | MB_OK);
+					MessageBox(INFO_DOWNLOAD, INFO_TITLE, MB_ICONINFORMATION | MB_OK);
+					WritePrivateProfileString(L"FFMPEG_LATEST_VERSION", L"0x00000", Utility->FFmpegVersionCheck(), L".\\settings.ini");
 					OutputDebugString(_T("CFileFind init.FindFile(") + initPath1 + _T("): File readed success.\n"));
 					initPath1.Empty();
-					Err.Empty();
 				}
 				else {
 					OutputDebugString(_T("CFileFind init.FindFile(") + initPath1 + _T("): File readed error.\n"));
-					MessageBox(_T("予期せぬエラーが発生しました。"), _T("エラー"), MB_ICONERROR | MB_OK);
-					AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-					AfxGetMainWnd()->DestroyWindow();
-					PostQuitMessage(0);
+					MessageBox(ERROR_EXCEPTION, ERROR_TITLE, MB_ICONERROR | MB_OK);
+					EndDialog(IDCANCEL);
+					PostMessage(WM_COMMAND, IDCANCEL);
+					return FALSE;
 				}
 			}
 			else {
 				DIALOG->DestroyWindow();
 				SAFE_DELETE(DIALOG);
-				MessageBox(_T("ダウンロードに失敗しました。インターネット接続がされているか確認してください。\nウイルス対策ソフトをインストールしている場合は接続を許可してください。"), _T("エラー"), MB_ICONERROR | MB_OK);
+				MessageBox(ERROR_DOWNLOAD, ERROR_TITLE, MB_ICONERROR | MB_OK);
+				EndDialog(IDCANCEL);
+				PostMessage(WM_COMMAND, IDCANCEL);
+				return FALSE;
 			}
 		}
 		else if (sel == IDNO)
 		{
-			MessageBox(_T("ファイルが存在しないため、アプリケーションを続行することができません。\nアプリケーションを終了します。"), _T("エラー"), MB_ICONERROR | MB_OK);
+			MessageBox(ERROR_APPNOTFOUND, ERROR_TITLE, MB_ICONERROR | MB_OK);
 			OutputDebugString(_T("CFileFind init.FindFile(") + initPath1 + _T("): File readed error.\n"));
-			AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-			AfxGetMainWnd()->DestroyWindow();
-			PostQuitMessage(0);
-			return TRUE;
+			EndDialog(IDCANCEL);
+			PostMessage(WM_COMMAND, IDCANCEL);
+			return FALSE;
 		}
 		else {
-			AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-			AfxGetMainWnd()->DestroyWindow();
-			PostQuitMessage(0);
+			EndDialog(IDCANCEL);
+			PostMessage(WM_COMMAND, IDCANCEL);
+			return FALSE;
 		}
 	}
 
 	if (init.FindFile(initPath2)) {
 		OutputDebugString(_T("CFileFind init.FindFile(") + initPath2 + _T("): File readed success.\n"));
 		initPath2.Empty();
-		initbatch.Empty();
 	}
 	else
 	{
-		initbatch.Empty();
-		CString Err;
-		Err.Format(_T("ファイル読み込みエラー : 0x%X"), -1);
-		INT_PTR sel = MessageBox(_T("waifu2x.exe が見つかりません。"), Err, MB_ICONERROR | MB_ABORTRETRYIGNORE);
+		INT_PTR sel = MessageBox(ERROR_WAIFU2X, ERROR_TITLE, MB_ICONERROR | MB_ABORTRETRYIGNORE);
 		if (sel == IDABORT)
 		{
-			AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-			AfxGetMainWnd()->DestroyWindow();
-			PostQuitMessage(0);
+			EndDialog(IDCANCEL);
+			PostMessage(WM_COMMAND, IDCANCEL);
+			return FALSE;
 		}
 		else if (sel == IDRETRY)
 		{
 			if (init.FindFile(initPath2)) {
 				OutputDebugString(_T("CFileFind init.FindFile(") + initPath2 + _T("): File readed success.\n"));
-				Err.Empty();
 				initPath2.Empty();
 			}
 			else {
-				MessageBox(_T("ファイルが存在しません。\nアプリケーションを終了します。"), _T("エラー"), MB_ICONERROR | MB_OK);
+				MessageBox(ERROR_APPNOTFOUND, ERROR_TITLE, MB_ICONERROR | MB_OK);
 				OutputDebugString(_T("CFileFind init.FindFile(") + initPath2 + _T("): File readed error.\n"));
-				AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-				AfxGetMainWnd()->DestroyWindow();
-				PostQuitMessage(0);
+				EndDialog(IDCANCEL);
+				PostMessage(WM_COMMAND, IDCANCEL);
+				return FALSE;
 			}
 		}
 		else if (sel == IDIGNORE)
 		{
-			MessageBox(_T("この操作は無視できません。"), _T("エラー"), MB_ICONERROR | MB_OK);
-			AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-			AfxGetMainWnd()->DestroyWindow();
-			PostQuitMessage(0);
+			MessageBox(ERROR_ABORT, ERROR_TITLE, MB_ICONERROR | MB_OK);
+			EndDialog(IDCANCEL);
+			PostMessage(WM_COMMAND, IDCANCEL);
+			return FALSE;
 		}
 		else {
-			AfxGetMainWnd()->SendMessage(WM_CLOSE, 0, 0);
-			AfxGetMainWnd()->DestroyWindow();
-			PostQuitMessage(0);
+			EndDialog(IDCANCEL);
+			PostMessage(WM_COMMAND, IDCANCEL);
+			return FALSE;
 		}
 	}
 
@@ -1069,41 +1000,42 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 	}
 	else
 	{
-		CString Err;
-		Err.Format(_T("ファイル読み込みエラー : 0x%X"), -1);
-		INT_PTR sel = MessageBox(_T("image2png.exe が見つかりません。"), Err, MB_ICONERROR | MB_ABORTRETRYIGNORE);
+		INT_PTR sel = MessageBox(ERROR_IMAGE2PNG, ERROR_TITLE, MB_ICONERROR | MB_ABORTRETRYIGNORE);
 		if (sel == IDABORT)
 		{
-			Err.Empty();
 			initPath3.Empty();
-			exit(EXIT_FAILURE);
+			EndDialog(IDCANCEL);
+			PostMessage(WM_COMMAND, IDCANCEL);
+			return FALSE;
 		}
 		else if (sel == IDRETRY)
 		{
 			if (init.FindFile(initPath2)) {
 				OutputDebugString(_T("CFileFind init.FindFile(") + initPath3 + _T("): File readed success.\n"));
-				Err.Empty();
 				initPath3.Empty();
 			}
 			else {
-				MessageBox(_T("ファイルが存在しません。\nアプリケーションを終了します。"), _T("エラー"), MB_ICONERROR | MB_OK);
+				MessageBox(ERROR_APPNOTFOUND, ERROR_TITLE, MB_ICONERROR | MB_OK);
 				OutputDebugString(_T("CFileFind init.FindFile(") + initPath3 + _T("): File readed error.\n"));
-				Err.Empty();
 				initPath3.Empty();
-				exit(EXIT_FAILURE);
+				EndDialog(IDCANCEL);
+				PostMessage(WM_COMMAND, IDCANCEL);
+				return FALSE;
 			}
 		}
 		else if (sel == IDIGNORE)
 		{
-			MessageBox(_T("この操作は無視できません。"), _T("エラー"), MB_ICONERROR | MB_OK);
-			Err.Empty();
+			MessageBox(ERROR_ABORT, ERROR_TITLE, MB_ICONERROR | MB_OK);
 			initPath3.Empty();
-			exit(EXIT_FAILURE);
+			EndDialog(IDCANCEL);
+			PostMessage(WM_COMMAND, IDCANCEL);
+			return FALSE;
 		}
 		else {
-			Err.Empty();
 			initPath3.Empty();
-			exit(EXIT_FAILURE);
+			EndDialog(IDCANCEL);
+			PostMessage(WM_COMMAND, IDCANCEL);
+			return FALSE;
 		}
 	}
 
@@ -1190,27 +1122,27 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton1()
 	OutputDebugString(_T("Button clicked: button1\n"));
 	if (VIDEOPATH.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("ファイルが選択されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_NOTSELECTED, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	else if (waifu2x_param.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("変換設定が適切に設定されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_SETTINGS, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	else if (ffmpeg_mainparam.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("変換設定が適切に設定されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_SETTINGS, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	else if (ffmpeg_audioparam.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("変換設定が適切に設定されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_SETTINGS, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	else if (ffmpeg_videoparam.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("変換設定が適切に設定されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_SETTINGS, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	else
@@ -1219,7 +1151,6 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton1()
 			waifu2x_param = Waifu2x->waifu2x_prm;
 		}
 		CString EXT;
-		MSG msg;
 		CString outDir = _T("\\Resources\\takeout\\");
 		CString currentPath = CURRENT_PATH + outDir;
 
@@ -1264,34 +1195,27 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton1()
 		char currentPathC[1024];
 		WideCharToMultiByte(CP_ACP, 0, currentPath, -1, currentPathC, sizeof(currentPathC), NULL, NULL);
 
-		DELETEDIALOG* delDlg = new DELETEDIALOG;
-		delDlg->Create(IDD_DELETEDIALOG);
-		delDlg->ShowWindow(SW_SHOW);
-		while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-			if (!AfxGetApp()->PumpMessage())
+		if (PathFileExists(currentPath)) {
+			OutputDebugString(_T("Path: '") + currentPath + _T("' file exists.\n"));
+			DELETEPATH = currentPath;
+			DELETEMAINCOUNT = Utility->GetDirectoryFileCount(DELETEPATH.GetString());
+			pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+			if (pDeleteThread)
 			{
-				::PostQuitMessage(0);
-				break;
+				pDeleteThread->m_pMainWnd = this;
+				pDeleteThread->m_bAutoDelete = TRUE;
+				if (DeleteFileThreadFlag != FALSE) {
+					DeleteFileThreadFlag = FALSE;
+				}
+				pDeleteThread->ResumeThread();
+
+				DELETEDIALOG DIALOG;
+				DIALOG.DoModal();
 			}
 		}
-
-		SHFILEOPSTRUCT tSHDeleteFile{};
-		tSHDeleteFile.hwnd = ::GetDesktopWindow();
-		tSHDeleteFile.wFunc = FO_DELETE;
-		tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-		tSHDeleteFile.fAnyOperationsAborted = TRUE;
-		tSHDeleteFile.hNameMappings = NULL;
-		tSHDeleteFile.lpszProgressTitle = L"";
-
-		// パス名のCStringの末尾に\0をつけて設定  
-		currentPath += "?";
-		currentPath.SetAt(currentPath.GetLength() - 1, NULL);
-		tSHDeleteFile.pFrom = currentPath;
-		tSHDeleteFile.pTo = NULL;
-		SHFileOperation(&tSHDeleteFile);
-		WaitForSingleObject(&tSHDeleteFile, INFINITE);
-		delDlg->DestroyWindow();
-		SAFE_DELETE(delDlg);
+		else {
+			OutputDebugString(_T("Path: '") + currentPath + _T("' file doesn't exist.\n"));
+		}
 
 		if (_mkdir(currentPathC) == 0) {
 			if (_mkdir("Resources\\takeout\\_temp-project") == 0) {
@@ -1326,8 +1250,8 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton1()
 			pFFmpegThread->m_pMainWnd = this;
 			pFFmpegThread->m_bAutoDelete = TRUE;
 			pFFmpegThread->ResumeThread();
+			WaitForSingleObject(pFFmpegThread->m_hThread, INFINITE);
 		}
-		WaitForSingleObject(pFFmpegThread->m_hThread, INFINITE);
 
 		pWaifu2xCountThread = AfxBeginThread(waifu2xCountThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
 		if (pWaifu2xCountThread)
@@ -1344,33 +1268,74 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton1()
 		}
 
 		while (ProgressThreadFlag != TRUE) {
+			if (SuspendFlag == TRUE) {
+				while (pThread->m_Dlg.m_hWnd) {
+					if (pThread->m_Dlg.m_hWnd == 0) {
+						break;
+					}
+				}
+
+				if (PathFileExists(currentPath)) {
+					OutputDebugString(_T("Path: '") + currentPath + _T("' file exists.\n"));
+					DELETEPATH = currentPath;
+					DELETEMAINCOUNT = Utility->GetDirectoryFileCount(DELETEPATH.GetString());
+					pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+					if (pDeleteThread)
+					{
+						pDeleteThread->m_pMainWnd = this;
+						pDeleteThread->m_bAutoDelete = TRUE;
+						if (DeleteFileThreadFlag != FALSE) {
+							DeleteFileThreadFlag = FALSE;
+						}
+						pDeleteThread->ResumeThread();
+
+						DELETEDIALOG DIALOG;
+						DIALOG.DoModal();
+					}
+				}
+				else {
+					OutputDebugString(_T("Path: '") + currentPath + _T("' file doesn't exist.\n"));
+				}
+
+				MessageBox(WARN_ABORT, INFO_TITLE, MB_ICONWARNING | MB_OK);
+				CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
+				CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
+				CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
+				CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON2);
+				CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON6);
+				button1->EnableWindow(FALSE);
+				button2->EnableWindow(FALSE);
+				button3->EnableWindow(FALSE);
+				button4->EnableWindow(FALSE);
+				button5->EnableWindow(FALSE);
+				this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+				this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+				this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
+				CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
+				static1->InvalidateRect(NULL, 1);
+				if (Waifu2xThreadFlag != FALSE) {
+					Waifu2xThreadFlag = FALSE;
+				}
+				if (ProgressThreadFlag != FALSE) {
+					ProgressThreadFlag = FALSE;
+				}
+				if (SuspendFlag != FALSE) {
+					SuspendFlag = FALSE;
+				}
+				return;
+			}
 		}
 		while (pThread->m_Dlg.m_hWnd) {
-		}
-		ProgressThreadFlag = FALSE;
-		
-		if (SuspendFlag == TRUE) {
-			while (pThread->m_Dlg.m_hWnd) {
+			if (pThread->m_Dlg.m_hWnd == 0) {
+				break;
 			}
+		}
+
+		if (ProgressThreadFlag != FALSE) {
+			ProgressThreadFlag = FALSE;
+		}
+		if (SuspendFlag != FALSE) {
 			SuspendFlag = FALSE;
-			Utility->DeleteDirectory(CURRENT_PATH + _T("\\Resources\\takeout"));
-			MessageBox(_T("作業が中止されました。"), _T("完了"), MB_ICONWARNING | MB_OK);
-			CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
-			CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
-			CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
-			CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON2);
-			CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON6);
-			button1->EnableWindow(FALSE);
-			button2->EnableWindow(FALSE);
-			button3->EnableWindow(FALSE);
-			button4->EnableWindow(FALSE);
-			button5->EnableWindow(FALSE);
-			this->xv_Static_ReadStatus.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_File.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_FilePath.SetWindowText(DEFAULT_TEXT);
-			CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
-			static1->InvalidateRect(NULL, 1);
-			return;
 		}
 
 		if (EXT == L"JPG") {
@@ -1405,7 +1370,55 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton1()
 		button4->EnableWindow(FALSE);
 		button5->EnableWindow(FALSE);
 
-		MessageBox(_T("アップスケールが完了しました。\n更にアップスケール変換したい場合は、再変換ボタンをクリックしてください。"), _T("完了"), MB_ICONINFORMATION | MB_OK);
+		if (Waifu2xThreadFlag != FALSE) {
+			Waifu2xThreadFlag = FALSE;
+		}
+
+		if (UpscaleExceptionFlag == 1) {
+			UpscaleExceptionFlag = 0;
+			CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
+			CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
+			CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
+			CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON6);
+			CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON2);
+			button1->EnableWindow(FALSE);
+			button2->EnableWindow(FALSE);
+			button3->EnableWindow(FALSE);
+			button4->EnableWindow(FALSE);
+			button5->EnableWindow(FALSE);
+			MessageBox(ERROR_UPSCALE, ERROR_UPSCALE_TITLE, MB_ICONINFORMATION | MB_OK);
+			return;
+		}
+		else {
+			if (PathFileExists(w2xout)) {
+				CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
+				CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
+				CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
+				CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON6);
+				CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON2);
+				button1->EnableWindow(FALSE);
+				button2->EnableWindow(TRUE);
+				button3->EnableWindow(TRUE);
+				button4->EnableWindow(FALSE);
+				button5->EnableWindow(FALSE);
+				MessageBox(INFO_UPSCALE, INFO_UPSCALE_TITLE, MB_ICONINFORMATION | MB_OK);
+				return;
+			}
+			else {
+				CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
+				CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
+				CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
+				CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON6);
+				CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON2);
+				button1->EnableWindow(FALSE);
+				button2->EnableWindow(FALSE);
+				button3->EnableWindow(FALSE);
+				button4->EnableWindow(FALSE);
+				button5->EnableWindow(FALSE);
+				MessageBox(ERROR_UPSCALE, ERROR_UPSCALE_TITLE, MB_ICONINFORMATION | MB_OK);
+				return;
+			}
+		}
 	}
 }
 
@@ -1413,32 +1426,32 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton3()
 {
 	// TODO: ここにコントロール通知ハンドラー コードを追加します。
 	OutputDebugString(_T("Button clicked: button3\n"));
-	Waifu2xReUpscalingFlag = TRUE;
 	if (VIDEOPATH.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("ファイルが選択されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_NOTSELECTED, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	else if (waifu2x_param.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("変換設定が適切に設定されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_SETTINGS, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	else if (ffmpeg_mainparam.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("変換設定が適切に設定されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_SETTINGS, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	else if (ffmpeg_audioparam.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("変換設定が適切に設定されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_SETTINGS, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	else if (ffmpeg_videoparam.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("変換設定が適切に設定されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_SETTINGS, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
+	Waifu2xReUpscalingFlag = TRUE;
 
 	if (_tcscmp(Waifu2x->waifu2x_prm, _T("")) != 0) {
 		waifu2x_param = Waifu2x->waifu2x_prm;
@@ -1448,10 +1461,9 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton3()
 	MSG msg;
 	CString outDir = L"\\Resources\\takeout\\_temp-project\\image-frames\\*.*";
 	CString currentPath = CURRENT_PATH + outDir;
-	CString current = L"\\Resources\\takeout\\";
-	CString imgcurrentPath = CURRENT_PATH + current;
-	CString w2xin = imgcurrentPath + L"_temp-project\\image-frames\\";
-	CString w2xout = imgcurrentPath + L"_temp-project\\image-frames2x\\";
+	CString current = CURRENT_PATH + L"\\Resources\\takeout\\";
+	CString w2xin = current + L"_temp-project\\image-frames\\";
+	CString w2xout = current + L"_temp-project\\image-frames2x\\";
 
 	ext = GetPrivateProfileInt(L"WAIFU2X_SETTINGS", L"0x0005", INFINITE, L".\\settings.ini");
 	if (ext == 0) {
@@ -1467,34 +1479,27 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton3()
 	Utility->AfxReplaceStr(waifu2x_param, L"$InFile", w2xin);
 	Utility->AfxReplaceStr(waifu2x_param, L"$OutFile", w2xout);
 
-	DELETEDIALOG* delDlg = new DELETEDIALOG;
-	delDlg->Create(IDD_DELETEDIALOG);
-	delDlg->ShowWindow(SW_SHOW);
-	while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-		if (!AfxGetApp()->PumpMessage())
+	if (PathFileExists(w2xin)) {
+		OutputDebugString(_T("Path: '") + currentPath + _T("' file exists.\n"));
+		DELETEPATH = currentPath;
+		DELETEMAINCOUNT = Utility->GetDirectoryFileCount(w2xin.GetString());
+		pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+		if (pDeleteThread)
 		{
-			::PostQuitMessage(0);
-			break;
+			pDeleteThread->m_pMainWnd = this;
+			pDeleteThread->m_bAutoDelete = TRUE;
+			if (DeleteFileThreadFlag != FALSE) {
+				DeleteFileThreadFlag = FALSE;
+			}
+			pDeleteThread->ResumeThread();
+
+			DELETEDIALOG DIALOG;
+			DIALOG.DoModal();
 		}
 	}
-
-	SHFILEOPSTRUCT tSHDeleteFile{};
-	tSHDeleteFile.hwnd = ::GetDesktopWindow();
-	tSHDeleteFile.wFunc = FO_DELETE;
-	tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-	tSHDeleteFile.fAnyOperationsAborted = TRUE;
-	tSHDeleteFile.hNameMappings = NULL;
-	tSHDeleteFile.lpszProgressTitle = L"";
-
-	// パス名のCStringの末尾に\0をつけて設定  
-	currentPath += "?";
-	currentPath.SetAt(currentPath.GetLength() - 1, NULL);
-	tSHDeleteFile.pFrom = currentPath;
-	tSHDeleteFile.pTo = NULL;
-	SHFileOperation(&tSHDeleteFile);
-	WaitForSingleObject(&tSHDeleteFile, INFINITE);
-	delDlg->DestroyWindow();
-	SAFE_DELETE(delDlg);
+	else {
+		OutputDebugString(_T("Path: '") + currentPath + _T("' file doesn't exist.\n"));
+	}
 
 	POPUPDlg* POPUP = new POPUPDlg;
 	POPUP->Create(IDD_POPUP);
@@ -1536,21 +1541,12 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton3()
 		_tcscpy_s(&cmdT[0], 256, cmd);
 	}
 
-	STARTUPINFO si/* = { sizeof(STARTUPINFO) }*/;
-	memset(&si, 0, sizeof(STARTUPINFO));
-	PROCESS_INFORMATION pi;
-	memset(&pi, 0, sizeof(PROCESS_INFORMATION));
-	si.dwFlags = STARTF_USESHOWWINDOW;
-	si.wShowWindow = SW_HIDE;
-	::CreateProcess(NULL, cmdT, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
-	CloseHandle(pi.hThread);
-	WaitForSingleObject(pi.hProcess, INFINITE);
-	CloseHandle(pi.hProcess);
+	Utility->RunProcess(cmdT, SW_HIDE);
+
 	SAFE_FREE(cmdT);
 
 	POPUP->DestroyWindow();
 	SAFE_DELETE(POPUP);
-	POPUP = NULL;
 
 	pWaifu2xCountThread = AfxBeginThread(waifu2xCountThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
 	if (pWaifu2xCountThread)
@@ -1567,33 +1563,77 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton3()
 	}
 
 	while (ProgressThreadFlag != TRUE) {
+		if (SuspendFlag == TRUE) {
+			while (pThread->m_Dlg.m_hWnd) {
+				if (pThread->m_Dlg.m_hWnd == 0) {
+					break;
+				}
+			}
+
+			if (PathFileExists(current)) {
+				OutputDebugString(_T("Path: '") + current + _T("' file exists.\n"));
+				DELETEPATH = current;
+				DELETEMAINCOUNT = Utility->GetDirectoryFileCount(DELETEPATH.GetString());
+				pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+				if (pDeleteThread)
+				{
+					pDeleteThread->m_pMainWnd = this;
+					pDeleteThread->m_bAutoDelete = TRUE;
+					if (DeleteFileThreadFlag != FALSE) {
+						DeleteFileThreadFlag = FALSE;
+					}
+					pDeleteThread->ResumeThread();
+
+					DELETEDIALOG DIALOG;
+					DIALOG.DoModal();
+				}
+			}
+			else {
+				OutputDebugString(_T("Path: '") + current + _T("' file doesn't exist.\n"));
+			}
+
+			MessageBox(WARN_ABORT, INFO_TITLE, MB_ICONWARNING | MB_OK);
+			CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
+			CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
+			CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
+			CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON2);
+			CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON6);
+			button1->EnableWindow(FALSE);
+			button2->EnableWindow(FALSE);
+			button3->EnableWindow(FALSE);
+			button4->EnableWindow(FALSE);
+			button5->EnableWindow(FALSE);
+			this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+			this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+			this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
+			CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
+			static1->InvalidateRect(NULL, 1);
+			if (Waifu2xThreadFlag != FALSE) {
+				Waifu2xThreadFlag = FALSE;
+			}
+			if (ProgressThreadFlag != FALSE) {
+				ProgressThreadFlag = FALSE;
+			}
+			if (Waifu2xReUpscalingFlag != FALSE) {
+				Waifu2xReUpscalingFlag = FALSE;
+			}
+			if (SuspendFlag != FALSE) {
+				SuspendFlag = FALSE;
+			}
+			return;
+		}
 	}
 	while (pThread->m_Dlg.m_hWnd) {
-	}
-	ProgressThreadFlag = FALSE;
-
-	if (SuspendFlag == TRUE) {
-		while (pThread->m_Dlg.m_hWnd) {
+		if (pThread->m_Dlg.m_hWnd == 0) {
+			break;
 		}
+	}
+
+	if (ProgressThreadFlag != FALSE) {
+		ProgressThreadFlag = FALSE;
+	}
+	if (SuspendFlag != FALSE) {
 		SuspendFlag = FALSE;
-		Utility->DeleteDirectory(CURRENT_PATH + _T("\\Resources\\takeout"));
-		MessageBox(_T("作業が中止されました。"), _T("完了"), MB_ICONWARNING | MB_OK);
-		CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
-		CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
-		CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
-		CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON2);
-		CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON6);
-		button1->EnableWindow(FALSE);
-		button2->EnableWindow(FALSE);
-		button3->EnableWindow(FALSE);
-		button4->EnableWindow(FALSE);
-		button5->EnableWindow(FALSE);
-		this->xv_Static_ReadStatus.SetWindowText(DEFAULT_TEXT);
-		this->xv_Static_File.SetWindowText(DEFAULT_TEXT);
-		this->xv_Static_FilePath.SetWindowText(DEFAULT_TEXT);
-		CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
-		static1->InvalidateRect(NULL, 1);
-		return;
 	}
 
 	if (EXT == L"JPG") {
@@ -1613,8 +1653,58 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton3()
 		ShellExecute(NULL, L"open", L"cmd.exe", prenameComext, CURRENT_PATH + L"\\Resources\\takeout\\_temp-project\\image-frames2x\\", SW_HIDE);
 	}
 
-	Waifu2xReUpscalingFlag = FALSE;
-	MessageBox(_T("アップスケールが完了しました。\n更にアップスケール変換したい場合は、再変換ボタンをクリックしてください。"), _T("完了"), MB_ICONINFORMATION | MB_OK);
+	if (Waifu2xReUpscalingFlag != FALSE) {
+		Waifu2xReUpscalingFlag = FALSE;
+	}
+	if (Waifu2xThreadFlag != FALSE) {
+		Waifu2xThreadFlag = FALSE;
+	}
+
+	if (UpscaleExceptionFlag == 1) {
+		UpscaleExceptionFlag = 0;
+		CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
+		CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
+		CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
+		CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON2);
+		CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON6);
+		button1->EnableWindow(FALSE);
+		button2->EnableWindow(FALSE);
+		button3->EnableWindow(FALSE);
+		button4->EnableWindow(FALSE);
+		button5->EnableWindow(FALSE);
+		this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+		this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+		this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
+		CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
+		static1->InvalidateRect(NULL, 1);
+		MessageBox(ERROR_REUPSCALE, ERROR_REUPSCALE_TITLE, MB_ICONINFORMATION | MB_OK);
+		return;
+	}
+	else {
+		if (PathFileExists(w2xout)) {
+			MessageBox(INFO_REUPSCALE, INFO_REUPSCALE_TITLE, MB_ICONINFORMATION | MB_OK);
+			return;
+		}
+		else {
+			CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
+			CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
+			CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
+			CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON2);
+			CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON6);
+			button1->EnableWindow(FALSE);
+			button2->EnableWindow(FALSE);
+			button3->EnableWindow(FALSE);
+			button4->EnableWindow(FALSE);
+			button5->EnableWindow(FALSE);
+			this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+			this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+			this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
+			CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
+			static1->InvalidateRect(NULL, 1);
+			MessageBox(ERROR_REUPSCALE, ERROR_REUPSCALE_TITLE, MB_ICONINFORMATION | MB_OK);
+			return;
+		}
+	}
 }
 
 
@@ -1624,27 +1714,27 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton4()
 	OutputDebugString(_T("Button clicked: button4\n"));
 	if (VIDEOPATH.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("ファイルが選択されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_NOTSELECTED, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	else if (waifu2x_param.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("変換設定が適切に設定されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_SETTINGS, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	else if (ffmpeg_mainparam.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("変換設定が適切に設定されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_SETTINGS, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	else if (ffmpeg_audioparam.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("変換設定が適切に設定されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_SETTINGS, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	else if (ffmpeg_videoparam.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("変換設定が適切に設定されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_SETTINGS, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 
@@ -1656,7 +1746,7 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton4()
 	CString outDir = L"\\Resources\\takeout\\";
 	CString currentPath = CURRENT_PATH + outDir;
 
-	CString filter("動画ファイル (*.avi,*.mp4,*.wmv,*.webm,*.mkv,*.mov)|*.avi;*.mp4;*.wmv;*.webm;*.mkv;*.mov;||");
+	CString filter = FILTER_MOVIE;
 	CFileDialog selDlg(FALSE, _T("mp4"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, filter);
 	intptr_t file = selDlg.DoModal();
 	if (file == IDOK) {
@@ -1717,6 +1807,7 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton4()
 		Utility->AfxReplaceStr(ffmpeg_mainparam, L"ffmpeg", _T(".\\Resources\\ffmpeg\\ffmpeg.exe"));
 		Utility->AfxReplaceStr(ffmpeg_mainparam, L"$InFile1", inImageDir);
 		Utility->AfxReplaceStr(ffmpeg_mainparam, L"$InFile2", inAudioDir);
+		Utility->AfxReplaceStr(ffmpeg_mainparam, L"$OutFile", _T("\"$OutFile\""));
 		Utility->AfxReplaceStr(ffmpeg_mainparam, L"$OutFile", lpPath);
 		TCHAR* ffmpegcmdT = (TCHAR*)malloc(sizeof(TCHAR) * 512); // Convert CString to TCHAR.
 		if (NULL == ffmpegcmdT) {
@@ -1742,16 +1833,7 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton4()
 			}
 		}
 
-		STARTUPINFO si/* = { sizeof(STARTUPINFO) }*/;
-		memset(&si, 0, sizeof(STARTUPINFO));
-		PROCESS_INFORMATION pi;
-		memset(&pi, 0, sizeof(PROCESS_INFORMATION));
-		si.dwFlags = STARTF_USESHOWWINDOW;
-		si.wShowWindow = SW_SHOW;
-		::CreateProcess(NULL, ffmpegcmdT, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
-		CloseHandle(pi.hThread);
-		WaitForSingleObject(pi.hProcess, INFINITE);
-		CloseHandle(pi.hProcess);
+		Utility->RunProcess(ffmpegcmdT, SW_SHOW);
 
 		waitDlg->DestroyWindow();
 		SAFE_DELETE(waitDlg);
@@ -1767,100 +1849,65 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton4()
 		button4->EnableWindow(FALSE);
 		button5->EnableWindow(FALSE);
 
-		DELETEDIALOG* delDlg = new DELETEDIALOG;
-		delDlg->Create(IDD_DELETEDIALOG);
-		delDlg->ShowWindow(SW_SHOW);
-		while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-			if (!AfxGetApp()->PumpMessage())
-			{
-				::PostQuitMessage(0);
-				break;
-			}
-		}
-
 		if (_tcscmp(audiopath, _T("")) != 0) {
 			CString ap = (LPCTSTR)audiopath;
 			ap += _T("\\*.*");
 			if (_tcscmp(aname, _T("")) != 0) {
-				SHFILEOPSTRUCT tSHDeleteFile{};
-				tSHDeleteFile.hwnd = ::GetDesktopWindow();
-				tSHDeleteFile.wFunc = FO_DELETE;
-				tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-				tSHDeleteFile.fAnyOperationsAborted = TRUE;
-				tSHDeleteFile.hNameMappings = NULL;
-				tSHDeleteFile.lpszProgressTitle = L"";
-
-				// パス名のCStringの末尾に\0をつけて設定  
-				ap += "?";
-				ap.SetAt(ap.GetLength() - 1, NULL);
-				tSHDeleteFile.pFrom = ap;
-				tSHDeleteFile.pTo = NULL;
-				SHFileOperation(&tSHDeleteFile);
-				WaitForSingleObject(&tSHDeleteFile, INFINITE);
+				Utility->DeleteALLFiles(ap);
 			}
 		}
 		if (_tcscmp(videopath, _T("")) != 0) {
 			CString vp = (LPCTSTR)videopath;
 			vp += _T("\\*.*");
 			if (_tcscmp(vname, _T("")) != 0) {
-				SHFILEOPSTRUCT tSHDeleteFile{};
-				tSHDeleteFile.hwnd = ::GetDesktopWindow();
-				tSHDeleteFile.wFunc = FO_DELETE;
-				tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-				tSHDeleteFile.fAnyOperationsAborted = TRUE;
-				tSHDeleteFile.hNameMappings = NULL;
-				tSHDeleteFile.lpszProgressTitle = L"";
-
-				// パス名のCStringの末尾に\0をつけて設定  
-				vp += "?";
-				vp.SetAt(vp.GetLength() - 1, NULL);
-				tSHDeleteFile.pFrom = vp;
-				tSHDeleteFile.pTo = NULL;
-				SHFileOperation(&tSHDeleteFile);
-				WaitForSingleObject(&tSHDeleteFile, INFINITE);
+				Utility->DeleteALLFiles(vp);
 			}
 		}
 
-		SHFILEOPSTRUCT tSHDeleteFile{};
-		tSHDeleteFile.hwnd = ::GetDesktopWindow();
-		tSHDeleteFile.wFunc = FO_DELETE;
-		tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-		tSHDeleteFile.fAnyOperationsAborted = TRUE;
-		tSHDeleteFile.hNameMappings = NULL;
-		tSHDeleteFile.lpszProgressTitle = L"";
+		if (PathFileExists(currentPath)) {
+			OutputDebugString(_T("Path: '") + currentPath + _T("' file exists.\n"));
+			DELETEPATH = currentPath;
+			DELETEMAINCOUNT = Utility->GetDirectoryFileCount(DELETEPATH.GetString());
+			pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+			if (pDeleteThread)
+			{
+				pDeleteThread->m_pMainWnd = this;
+				pDeleteThread->m_bAutoDelete = TRUE;
+				if (DeleteFileThreadFlag != FALSE) {
+					DeleteFileThreadFlag = FALSE;
+				}
+				pDeleteThread->ResumeThread();
 
-		// パス名のCStringの末尾に\0をつけて設定  
-		currentPath += "?";
-		currentPath.SetAt(currentPath.GetLength() - 1, NULL);
-		tSHDeleteFile.pFrom = currentPath;
-		tSHDeleteFile.pTo = NULL;
-		SHFileOperation(&tSHDeleteFile);
-		WaitForSingleObject(&tSHDeleteFile, INFINITE);
-		delDlg->DestroyWindow();
-		SAFE_DELETE(delDlg);
+				DELETEDIALOG DIALOG;
+				DIALOG.DoModal();
+			}
+		}
+		else {
+			OutputDebugString(_T("Path: '") + currentPath + _T("' file doesn't exist.\n"));
+		}
 
 		SAFE_FREE(lpPath);
 		SAFE_FREE(ffmpegcmdT);
 
 		if (find.FindFile(OutPath)) {
-			MessageBox(_T("変換が完了しました。"), _T("完了"), MB_ICONINFORMATION | MB_OK);
-			this->xv_Static_ReadStatus.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_File.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_FilePath.SetWindowText(DEFAULT_TEXT);
+			MessageBox(INFO_SUCCESS, INFO_TITLE, MB_ICONINFORMATION | MB_OK);
+			this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+			this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+			this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
 			CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
 			static1->InvalidateRect(NULL, 1);
 		}
 		else {
-			MessageBox(_T("変換に失敗しました。"), _T("エラー"), MB_ICONERROR | MB_OK);
-			this->xv_Static_ReadStatus.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_File.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_FilePath.SetWindowText(DEFAULT_TEXT);
+			MessageBox(ERROR_FAILED, ERROR_TITLE, MB_ICONERROR | MB_OK);
+			this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+			this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+			this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
 			CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
 			static1->InvalidateRect(NULL, 1);
 		}
 	}
 	else {
-		MessageBox(_T("保存がキャンセルされました。"), _T("キャンセルされました。"), MB_ICONWARNING | MB_OK);
+		MessageBox(WARN_SAVECANCEL, WARN_CANCEL, MB_ICONWARNING | MB_OK);
 
 		wchar_t aext[10]{}, aname[MAX_PATH]{}, audiopath[MAX_PATH]{}, vext[10]{}, vname[MAX_PATH]{}, videopath[MAX_PATH]{};
 		UINT pseta, psetv;
@@ -1873,18 +1920,6 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton4()
 		pseta = GetPrivateProfileInt(L"FFMPEG_AUDIO_SETTINGS", L"0x0000", INFINITE, L".\\settings.ini");
 		psetv = GetPrivateProfileInt(L"FFMPEG_VIDEO_SETTINGS", L"0x0000", INFINITE, L".\\settings.ini");
 
-		DELETEDIALOG* delDlg = new DELETEDIALOG;
-		delDlg->Create(IDD_DELETEDIALOG);
-		delDlg->ShowWindow(SW_SHOW);
-		MSG msg;
-		while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-			if (!AfxGetApp()->PumpMessage())
-			{
-				::PostQuitMessage(0);
-				break;
-			}
-		}
-
 		if (pseta == 0) {
 			OutputDebugString(_T("Audio settings preset detected: Default preset"));
 		}
@@ -1893,22 +1928,7 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton4()
 				CString ap = (LPCTSTR)audiopath;
 				ap += _T("\\*.*");
 				if (_tcscmp(aname, _T("")) != 0) {
-					SHFILEOPSTRUCT tSHDeleteFile{};
-					tSHDeleteFile.hwnd = ::GetDesktopWindow();
-					tSHDeleteFile.wFunc = FO_DELETE;
-					tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-					tSHDeleteFile.fAnyOperationsAborted = TRUE;
-					tSHDeleteFile.hNameMappings = NULL;
-					tSHDeleteFile.lpszProgressTitle = L"";
-
-					// パス名のCStringの末尾に\0をつけて設定  
-					ap += "?";
-					ap.SetAt(ap.GetLength() - 1, NULL);
-					tSHDeleteFile.pFrom = ap;
-					tSHDeleteFile.pTo = NULL;
-					SHFileOperation(&tSHDeleteFile);
-					WaitForSingleObject(&tSHDeleteFile, INFINITE);
-					ZeroMemory(&tSHDeleteFile, sizeof(SHFILEOPSTRUCT));
+					Utility->DeleteALLFiles(ap);
 				}
 			}
 		}
@@ -1920,43 +1940,32 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton4()
 				CString vp = (LPCTSTR)videopath;
 				vp += _T("\\*.*");
 				if (_tcscmp(vname, _T("")) != 0) {
-					SHFILEOPSTRUCT tSHDeleteFile{};
-					tSHDeleteFile.hwnd = ::GetDesktopWindow();
-					tSHDeleteFile.wFunc = FO_DELETE;
-					tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-					tSHDeleteFile.fAnyOperationsAborted = TRUE;
-					tSHDeleteFile.hNameMappings = NULL;
-					tSHDeleteFile.lpszProgressTitle = L"";
-
-					// パス名のCStringの末尾に\0をつけて設定  
-					vp += "?";
-					vp.SetAt(vp.GetLength() - 1, NULL);
-					tSHDeleteFile.pFrom = vp;
-					tSHDeleteFile.pTo = NULL;
-					SHFileOperation(&tSHDeleteFile);
-					WaitForSingleObject(&tSHDeleteFile, INFINITE);
+					Utility->DeleteALLFiles(vp);
 				}
 			}
 		}
 
-		SHFILEOPSTRUCT tSHDeleteFile{};
-		tSHDeleteFile.hwnd = ::GetDesktopWindow();
-		tSHDeleteFile.wFunc = FO_DELETE;
-		tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-		tSHDeleteFile.fAnyOperationsAborted = TRUE;
-		tSHDeleteFile.hNameMappings = NULL;
-		tSHDeleteFile.lpszProgressTitle = L"";
+		if (PathFileExists(currentPath)) {
+			OutputDebugString(_T("Path: '") + currentPath + _T("' file exists.\n"));
+			DELETEPATH = currentPath;
+			DELETEMAINCOUNT = Utility->GetDirectoryFileCount(DELETEPATH.GetString());
+			pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+			if (pDeleteThread)
+			{
+				pDeleteThread->m_pMainWnd = this;
+				pDeleteThread->m_bAutoDelete = TRUE;
+				if (DeleteFileThreadFlag != FALSE) {
+					DeleteFileThreadFlag = FALSE;
+				}
+				pDeleteThread->ResumeThread();
 
-		// パス名のCStringの末尾に\0をつけて設定  
-		currentPath += "?";
-		currentPath.SetAt(currentPath.GetLength() - 1, NULL);
-		tSHDeleteFile.pFrom = currentPath;
-		tSHDeleteFile.pTo = NULL;
-		SHFileOperation(&tSHDeleteFile);
-		WaitForSingleObject(&tSHDeleteFile, INFINITE);
-
-		delDlg->DestroyWindow();
-		SAFE_DELETE(delDlg);
+				DELETEDIALOG DIALOG;
+				DIALOG.DoModal();
+			}
+		}
+		else {
+			OutputDebugString(_T("Path: '") + currentPath + _T("' file doesn't exist.\n"));
+		}
 
 		CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
 		CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
@@ -1968,9 +1977,9 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton4()
 		button3->EnableWindow(FALSE);
 		button4->EnableWindow(FALSE);
 		button5->EnableWindow(FALSE);
-		this->xv_Static_ReadStatus.SetWindowText(DEFAULT_TEXT);
-		this->xv_Static_File.SetWindowText(DEFAULT_TEXT);
-		this->xv_Static_FilePath.SetWindowText(DEFAULT_TEXT);
+		this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+		this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+		this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
 		CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
 		static1->InvalidateRect(NULL, 1);
 		return;
@@ -1987,12 +1996,12 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton6()
 	OutputDebugString(_T("Button clicked: button6\n"));
 	if (IMAGEPATH.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("画像ファイルが選択されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_IMAGENOT2, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	else if (waifu2x_param.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("変換設定が適切に設定されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_SETTINGS, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	else
@@ -2008,7 +2017,7 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton6()
 			EXT = L"WEBP";
 		}
 		_tsplitpath_s(IMAGEPATH, Drive, Dir, Name, Ext);
-		CString PRM = CURRENT_PATH + _T("\\Resources\\image2png ") + IMAGEPATH;
+		CString PRM = CURRENT_PATH + _T("\\Resources\\image2png \"") + IMAGEPATH + _T("\"");
 		TCHAR* PRMT = (TCHAR*)malloc(sizeof(TCHAR) * 256); // Convert CString to TCHAR.
 		if (NULL == PRMT) {
 			perror("can not malloc");
@@ -2020,16 +2029,8 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton6()
 			_tcscpy_s(&PRMT[0], 256, PRM);
 		}
 		
-		STARTUPINFO si;
-		memset(&si, 0, sizeof(STARTUPINFO));
-		PROCESS_INFORMATION pi;
-		memset(&pi, 0, sizeof(PROCESS_INFORMATION));
-		si.dwFlags = STARTF_USESHOWWINDOW;
-		si.wShowWindow = SW_SHOW;
-		::CreateProcess(NULL, PRMT, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
-		CloseHandle(pi.hThread);
-		WaitForSingleObject(pi.hProcess, INFINITE);
-		CloseHandle(pi.hProcess);
+		Utility->RunProcess(PRMT, SW_SHOW);
+
 		SAFE_FREE(PRMT);
 		SetCurrentDirectory(CURRENT_PATH);
 		CString TDir = Dir;
@@ -2044,26 +2045,10 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton6()
 		CString InPath = CURRENT_PATH + _T("\\Resources\\tmp\\") + TName + _T("_e.png");
 		CString OutPath;
 
-		SHFILEOPSTRUCT tSHMoveFile{};
-		tSHMoveFile.hwnd = ::GetDesktopWindow();
-		tSHMoveFile.wFunc = FO_MOVE;
-		tSHMoveFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-		tSHMoveFile.fAnyOperationsAborted = TRUE;
-		tSHMoveFile.hNameMappings = NULL;
-		tSHMoveFile.lpszProgressTitle = L"";
-
-		// パス名のCStringの末尾に\0をつけて設定  
-		TIMAGEPATH += "0";
-		TIMAGEPATH.SetAt(TIMAGEPATH.GetLength() - 1, NULL);
-		InPath += "0";
-		InPath.SetAt(InPath.GetLength() - 1, NULL);
-		tSHMoveFile.pFrom = TIMAGEPATH;
-		tSHMoveFile.pTo = InPath;
-		SHFileOperation(&tSHMoveFile);
-		WaitForSingleObject(&tSHMoveFile, INFINITE);
+		Utility->CopyALLFiles(TIMAGEPATH, InPath);
 		
 		if (EXT == L"JPG") {
-			CString filter("JPEGイメージ (*.jpg)|*.jpg;||");
+			CString filter = FILTER_JPEG;
 			CFileDialog selDlg(FALSE, _T("jpg"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, filter);
 			intptr_t file = selDlg.DoModal();
 			if (file == IDOK) {
@@ -2076,34 +2061,8 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton6()
 				else {
 					OutputDebugString(_T("DeleteDirectory failed.\n"));
 				}
-				MessageBox(_T("保存がキャンセルされました。"), _T("キャンセルされました。"), MB_ICONWARNING | MB_OK);
-				DELETEDIALOG* delDlg = new DELETEDIALOG;
-				delDlg->Create(IDD_DELETEDIALOG);
-				delDlg->ShowWindow(SW_SHOW);
-				while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-					if (!AfxGetApp()->PumpMessage())
-					{
-						::PostQuitMessage(0);
-						break;
-					}
-				}
-				SHFILEOPSTRUCT tSHDeleteFile{};
-				tSHDeleteFile.hwnd = ::GetDesktopWindow();
-				tSHDeleteFile.wFunc = FO_DELETE;
-				tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-				tSHDeleteFile.fAnyOperationsAborted = TRUE;
-				tSHDeleteFile.hNameMappings = NULL;
-				tSHDeleteFile.lpszProgressTitle = L"";
+				MessageBox(WARN_SAVECANCEL, WARN_CANCEL, MB_ICONWARNING | MB_OK);
 
-				// パス名のCStringの末尾に\0をつけて設定  
-				currentPath += "?";
-				currentPath.SetAt(currentPath.GetLength() - 1, NULL);
-				tSHDeleteFile.pFrom = currentPath;
-				tSHDeleteFile.pTo = NULL;
-				SHFileOperation(&tSHDeleteFile);
-				WaitForSingleObject(&tSHDeleteFile, INFINITE);
-				delDlg->DestroyWindow();
-				SAFE_DELETE(delDlg);
 				CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
 				CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
 				CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
@@ -2114,16 +2073,16 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton6()
 				button3->EnableWindow(FALSE);
 				button4->EnableWindow(FALSE);
 				button5->EnableWindow(FALSE);
-				this->xv_Static_ReadStatus.SetWindowText(DEFAULT_TEXT);
-				this->xv_Static_File.SetWindowText(DEFAULT_TEXT);
-				this->xv_Static_FilePath.SetWindowText(DEFAULT_TEXT);
+				this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+				this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+				this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
 				CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
 				static1->InvalidateRect(NULL, 1);
 				return;
 			}
 		}
 		else if (EXT == L"PNG") {
-			CString filter("PNGイメージ (*.png)|*.png;||");
+			CString filter = FILTER_PNG;
 			CFileDialog selDlg(FALSE, _T("png"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, filter);
 			intptr_t file = selDlg.DoModal();
 			if (file == IDOK) {
@@ -2136,34 +2095,8 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton6()
 				else {
 					OutputDebugString(_T("DeleteDirectory failed.\n"));
 				}
-				MessageBox(_T("保存がキャンセルされました。"), _T("キャンセルされました。"), MB_ICONWARNING | MB_OK);
-				DELETEDIALOG* delDlg = new DELETEDIALOG;
-				delDlg->Create(IDD_DELETEDIALOG);
-				delDlg->ShowWindow(SW_SHOW);
-				while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-					if (!AfxGetApp()->PumpMessage())
-					{
-						::PostQuitMessage(0);
-						break;
-					}
-				}
-				SHFILEOPSTRUCT tSHDeleteFile{};
-				tSHDeleteFile.hwnd = ::GetDesktopWindow();
-				tSHDeleteFile.wFunc = FO_DELETE;
-				tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-				tSHDeleteFile.fAnyOperationsAborted = TRUE;
-				tSHDeleteFile.hNameMappings = NULL;
-				tSHDeleteFile.lpszProgressTitle = L"";
-
-				// パス名のCStringの末尾に\0をつけて設定  
-				currentPath += "?";
-				currentPath.SetAt(currentPath.GetLength() - 1, NULL);
-				tSHDeleteFile.pFrom = currentPath;
-				tSHDeleteFile.pTo = NULL;
-				SHFileOperation(&tSHDeleteFile);
-				WaitForSingleObject(&tSHDeleteFile, INFINITE);
-				delDlg->DestroyWindow();
-				SAFE_DELETE(delDlg);
+				MessageBox(WARN_SAVECANCEL, WARN_CANCEL, MB_ICONWARNING | MB_OK);
+				
 				CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
 				CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
 				CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
@@ -2174,16 +2107,16 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton6()
 				button3->EnableWindow(FALSE);
 				button4->EnableWindow(FALSE);
 				button5->EnableWindow(FALSE);
-				this->xv_Static_ReadStatus.SetWindowText(DEFAULT_TEXT);
-				this->xv_Static_File.SetWindowText(DEFAULT_TEXT);
-				this->xv_Static_FilePath.SetWindowText(DEFAULT_TEXT);
+				this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+				this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+				this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
 				CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
 				static1->InvalidateRect(NULL, 1);
 				return;
 			}
 		}
 		else if (EXT == L"WEBP") {
-			CString filter("WEBPイメージ (*.webp)|*.webp;||");
+			CString filter = FILTER_WEBP;
 			CFileDialog selDlg(FALSE, _T("webp"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, filter);
 			intptr_t file = selDlg.DoModal();
 			if (file == IDOK) {
@@ -2196,34 +2129,8 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton6()
 				else {
 					OutputDebugString(_T("DeleteDirectory failed.\n"));
 				}
-				MessageBox(_T("保存がキャンセルされました。"), _T("キャンセルされました。"), MB_ICONWARNING | MB_OK);
-				DELETEDIALOG* delDlg = new DELETEDIALOG;
-				delDlg->Create(IDD_DELETEDIALOG);
-				delDlg->ShowWindow(SW_SHOW);
-				while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-					if (!AfxGetApp()->PumpMessage())
-					{
-						::PostQuitMessage(0);
-						break;
-					}
-				}
-				SHFILEOPSTRUCT tSHDeleteFile{};
-				tSHDeleteFile.hwnd = ::GetDesktopWindow();
-				tSHDeleteFile.wFunc = FO_DELETE;
-				tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-				tSHDeleteFile.fAnyOperationsAborted = TRUE;
-				tSHDeleteFile.hNameMappings = NULL;
-				tSHDeleteFile.lpszProgressTitle = L"";
-
-				// パス名のCStringの末尾に\0をつけて設定  
-				currentPath += "?";
-				currentPath.SetAt(currentPath.GetLength() - 1, NULL);
-				tSHDeleteFile.pFrom = currentPath;
-				tSHDeleteFile.pTo = NULL;
-				SHFileOperation(&tSHDeleteFile);
-				WaitForSingleObject(&tSHDeleteFile, INFINITE);
-				delDlg->DestroyWindow();
-				SAFE_DELETE(delDlg);
+				MessageBox(WARN_SAVECANCEL, WARN_CANCEL, MB_ICONWARNING | MB_OK);
+				
 				CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
 				CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
 				CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
@@ -2234,9 +2141,9 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton6()
 				button3->EnableWindow(FALSE);
 				button4->EnableWindow(FALSE);
 				button5->EnableWindow(FALSE);
-				this->xv_Static_ReadStatus.SetWindowText(DEFAULT_TEXT);
-				this->xv_Static_File.SetWindowText(DEFAULT_TEXT);
-				this->xv_Static_FilePath.SetWindowText(DEFAULT_TEXT);
+				this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+				this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+				this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
 				CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
 				static1->InvalidateRect(NULL, 1);
 				return;
@@ -2255,6 +2162,7 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton6()
 		else {
 			ZeroMemory(&OutPathT[0], 256);
 			_tcscpy_s(&OutPathT[0], 256, OutPath);
+			Utility->AfxReplaceStr(waifu2x_param, _T("$OutFile"), _T("\"$OutFile\""));
 			Utility->AfxReplaceStr(waifu2x_param, _T("$OutFile"), OutPathT);
 		}
 		TCHAR* InPathT = (TCHAR*)malloc(sizeof(TCHAR) * 256); // Convert CString to TCHAR.
@@ -2266,12 +2174,13 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton6()
 		else {
 			ZeroMemory(&InPathT[0], 256);
 			_tcscpy_s(&InPathT[0], 256, InPath);
+			Utility->AfxReplaceStr(waifu2x_param, _T("$InFile"), _T("\"$InFile\""));
 			Utility->AfxReplaceStr(waifu2x_param, _T("$InFile"), InPathT);
 		}
 
-		DELETEDIALOG* delDlg = new DELETEDIALOG;
-		delDlg->Create(IDD_DELETEDIALOG);
-		delDlg->ShowWindow(SW_SHOW);
+		POPUPDlg* POPUP = new POPUPDlg;
+		POPUP->Create(IDD_POPUP);
+		POPUP->ShowWindow(SW_SHOW);
 		while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
 			if (!AfxGetApp()->PumpMessage())
 			{
@@ -2279,54 +2188,18 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton6()
 				break;
 			}
 		}
-		SHFILEOPSTRUCT tSHDeleteFile{};
-		tSHDeleteFile.hwnd = ::GetDesktopWindow();
-		tSHDeleteFile.wFunc = FO_DELETE;
-		tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-		tSHDeleteFile.fAnyOperationsAborted = TRUE;
-		tSHDeleteFile.hNameMappings = NULL;
-		tSHDeleteFile.lpszProgressTitle = L"";
-
-		// パス名のCStringの末尾に\0をつけて設定  
-		currentPath += "?";
-		currentPath.SetAt(currentPath.GetLength() - 1, NULL);
-		tSHDeleteFile.pFrom = currentPath;
-		tSHDeleteFile.pTo = NULL;
-		SHFileOperation(&tSHDeleteFile);
-		WaitForSingleObject(&tSHDeleteFile, INFINITE);
-
-		delDlg->DestroyWindow();
-		SAFE_DELETE(delDlg);
-
-		WAITDIALOG* waitDlg = new WAITDIALOG;
-
-		waitDlg->Create(IDD_WAITDIALOG);
-		waitDlg->ShowWindow(SW_SHOW);
-
-
-		while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-			if (!AfxGetApp()->PumpMessage())
-			{
-				::PostQuitMessage(0);
-				break;
-			}
-		}
-
-		AfxGetMainWnd()->EnableWindow(FALSE);
 
 		pWaifu2xThread = AfxBeginThread(waifu2xThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
 		if (pWaifu2xThread)
 		{
 			pWaifu2xThread->m_pMainWnd = this;
 			pWaifu2xThread->m_bAutoDelete = TRUE;
-			// スレッド処理の開始
 			pWaifu2xThread->ResumeThread();
+			WaitForSingleObject(pWaifu2xThread->m_hThread, INFINITE);
 		}
-		WaitForSingleObject(pWaifu2xThread->m_hThread, INFINITE);
 
-		waitDlg->DestroyWindow();
-		SAFE_DELETE(waitDlg);
-		AfxGetMainWnd()->EnableWindow(TRUE);
+		POPUP->DestroyWindow();
+		SAFE_DELETE(POPUP);
 
 		if (Utility->DeleteDirectory(_T(".\\Resources\\tmp"))) {
 			OutputDebugString(_T("DeleteDirectory successed.\n"));
@@ -2350,23 +2223,29 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton6()
 		if (find.FindFile(OutPathT)) {
 			SAFE_FREE(OutPathT);
 			OutPath.Empty();
-			MessageBox(_T("変換が完了しました。"), _T("完了"), MB_ICONINFORMATION | MB_OK);
-			this->xv_Static_ReadStatus.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_File.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_FilePath.SetWindowText(DEFAULT_TEXT);
+			MessageBox(INFO_SUCCESS, INFO_TITLE, MB_ICONINFORMATION | MB_OK);
+			this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+			this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+			this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
 			CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
 			static1->InvalidateRect(NULL, 1);
+			if (Waifu2xThreadFlag != FALSE) {
+				Waifu2xThreadFlag = FALSE;
+			}
 			return;
 		}
 		else {
 			SAFE_FREE(OutPathT);
 			OutPath.Empty();
-			MessageBox(_T("変換に失敗しました。"), _T("エラー"), MB_ICONERROR | MB_OK);
-			this->xv_Static_ReadStatus.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_File.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_FilePath.SetWindowText(DEFAULT_TEXT);
+			MessageBox(ERROR_FAILED, ERROR_TITLE, MB_ICONERROR | MB_OK);
+			this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+			this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+			this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
 			CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
 			static1->InvalidateRect(NULL, 1);
+			if (Waifu2xThreadFlag != FALSE) {
+				Waifu2xThreadFlag = FALSE;
+			}
 			return;
 		}
 	}
@@ -2382,12 +2261,12 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton2()
 	OutputDebugString(_T("Button clicked: button2\n"));
 	if (IMAGEPATH_M.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("画像フォルダが選択されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_IMAGENOT, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	else if (waifu2x_param.IsEmpty() == TRUE)
 	{
-		MessageBox(_T("変換設定が適切に設定されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_SETTINGS, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	else
@@ -2409,7 +2288,6 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton2()
 		CString TName = Name;
 		CString TIMAGEPATH = TDrive + TDir + TName;
 		Utility->checkExistenceOfFolder(".\\Resources\\tmp");
-		MSG msg;
 		CFileFind find;
 		CString outDir = L"\\Resources\\tmp\\";
 		CString currentPath = CURRENT_PATH + outDir;
@@ -2423,7 +2301,7 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton2()
 		binfo.hwndOwner = NULL;
 		binfo.pidlRoot = NULL;
 		binfo.pszDisplayName = (LPWSTR)name;
-		binfo.lpszTitle = L"出力フォルダの選択";
+		binfo.lpszTitle = TEXT_SELOUTPUTFOLDER;
 		binfo.ulFlags = BIF_RETURNONLYFSDIRS;
 		binfo.lpfn = NULL;
 		binfo.lParam = 0;
@@ -2431,35 +2309,35 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton2()
 
 		if ((idlist = SHBrowseForFolder(&binfo)) == NULL)
 		{
-			MessageBox(_T("キャンセルされました。"), _T("キャンセル"), MB_ICONWARNING | MB_OK);
-			CoTaskMemFree(idlist);
-			DELETEDIALOG* delDlg = new DELETEDIALOG;
-			delDlg->Create(IDD_DELETEDIALOG);
-			delDlg->ShowWindow(SW_SHOW);
-			while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-				if (!AfxGetApp()->PumpMessage())
-				{
-					::PostQuitMessage(0);
-					break;
+			if (PathFileExists(currentPath)) {
+				OutputDebugString(_T("Path: '") + currentPath + _T("' file exists.\n"));
+				DELETEPATH = currentPath;
+				DELETEMAINCOUNT = Utility->GetDirectoryFileCount(DELETEPATH.GetString());
+				if (DELETEMAINCOUNT <= 500) {
+					Utility->DeleteDirectory(DELETEPATH);
+				}
+				else {
+					pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+					if (pDeleteThread)
+					{
+						pDeleteThread->m_pMainWnd = this;
+						pDeleteThread->m_bAutoDelete = TRUE;
+						if (DeleteFileThreadFlag != FALSE) {
+							DeleteFileThreadFlag = FALSE;
+						}
+						pDeleteThread->ResumeThread();
+
+						DELETEDIALOG DIALOG;
+						DIALOG.DoModal();
+					}
 				}
 			}
-			SHFILEOPSTRUCT tSHDeleteFile{};
-			tSHDeleteFile.hwnd = ::GetDesktopWindow();
-			tSHDeleteFile.wFunc = FO_DELETE;
-			tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-			tSHDeleteFile.fAnyOperationsAborted = TRUE;
-			tSHDeleteFile.hNameMappings = NULL;
-			tSHDeleteFile.lpszProgressTitle = L"";
+			else {
+				OutputDebugString(_T("Path: '") + currentPath + _T("' file doesn't exist.\n"));
+			}
 
-			// パス名のCStringの末尾に\0をつけて設定  
-			currentPath += "?";
-			currentPath.SetAt(currentPath.GetLength() - 1, NULL);
-			tSHDeleteFile.pFrom = currentPath;
-			tSHDeleteFile.pTo = NULL;
-			SHFileOperation(&tSHDeleteFile);
-			WaitForSingleObject(&tSHDeleteFile, INFINITE);
-			delDlg->DestroyWindow();
-			SAFE_DELETE(delDlg);
+			MessageBox(WARN_CANCEL, WARN_CANCEL_TITLE, MB_ICONWARNING | MB_OK);
+			CoTaskMemFree(idlist);
 			CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
 			CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
 			CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
@@ -2470,9 +2348,9 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton2()
 			button3->EnableWindow(FALSE);
 			button4->EnableWindow(FALSE);
 			button5->EnableWindow(FALSE);
-			this->xv_Static_ReadStatus.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_File.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_FilePath.SetWindowText(DEFAULT_TEXT);
+			this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+			this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+			this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
 			CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
 			static1->InvalidateRect(NULL, 1);
 			return;
@@ -2488,71 +2366,52 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton2()
 			}
 			else {
 				intptr_t selectbox;
-				selectbox = MessageBox(_T("指定されたディレクトリには既に他のファイルが存在します。\nこのまま画像ファイルを変換した場合、指定ディレクトリ内のファイルは\nすべて失われます。続行しますか？"), _T("確認"), MB_ICONWARNING | MB_OKCANCEL);
-				if (selectbox == IDOK) {
+				selectbox = MessageBox(WARN_EXIST, WARN_CONFIRM, MB_ICONWARNING | MB_YESNO);
+				if (selectbox == IDYES) {
 					OutPath = (LPCTSTR)dir;
 					MultipleOutPath = (LPCTSTR)dir;
 					CString del = _T("\\*.*");
 					del = OutPath + del;
 
-					DELETEDIALOG* delDlg = new DELETEDIALOG;
-					delDlg->Create(IDD_DELETEDIALOG);
-					delDlg->ShowWindow(SW_SHOW);
-					while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-						if (!AfxGetApp()->PumpMessage())
-						{
-							::PostQuitMessage(0);
-							break;
+					if (PathFileExists(OutPath)) {
+						OutputDebugString(_T("Path: '") + OutPath + _T("' file exists.\n"));
+						DELETEPATH = del;
+						DELETEMAINCOUNT = Utility->GetDirectoryFileCount(OutPath.GetString());
+						if (DELETEMAINCOUNT <= 500) {
+							Utility->DeleteALLFiles(DELETEPATH);
+						}
+						else {
+							pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+							if (pDeleteThread)
+							{
+								pDeleteThread->m_pMainWnd = this;
+								pDeleteThread->m_bAutoDelete = TRUE;
+								if (DeleteFileThreadFlag != FALSE) {
+									DeleteFileThreadFlag = FALSE;
+								}
+								pDeleteThread->ResumeThread();
+
+								DELETEDIALOG DIALOG;
+								DIALOG.DoModal();
+							}
 						}
 					}
-					SHFILEOPSTRUCT tSHDeleteFile{};
-					tSHDeleteFile.hwnd = ::GetDesktopWindow();
-					tSHDeleteFile.wFunc = FO_DELETE;
-					tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-					tSHDeleteFile.fAnyOperationsAborted = TRUE;
-					tSHDeleteFile.hNameMappings = NULL;
-					tSHDeleteFile.lpszProgressTitle = L"";
-
-					// パス名のCStringの末尾に\0をつけて設定  
-					del += "?";
-					del.SetAt(del.GetLength() - 1, NULL);
-					tSHDeleteFile.pFrom = del;
-					tSHDeleteFile.pTo = NULL;
-					SHFileOperation(&tSHDeleteFile);
-					WaitForSingleObject(&tSHDeleteFile, INFINITE);
-
-					delDlg->DestroyWindow();
-					SAFE_DELETE(delDlg);
-					del.Empty();
+					else {
+						OutputDebugString(_T("Path: '") + OutPath + _T("' file doesn't exist.\n"));
+					}
 
 					CoTaskMemFree(idlist);
 				}
-				else if (selectbox == IDCANCEL) {
+				else if (selectbox == IDNO) {
 					CoTaskMemFree(idlist);
 					return;
 				}
 			}
 		}
 
-		SHFILEOPSTRUCT tSHMoveFile{};
-		tSHMoveFile.hwnd = ::GetDesktopWindow();
-		tSHMoveFile.wFunc = FO_COPY;
-		tSHMoveFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-		tSHMoveFile.fAnyOperationsAborted = TRUE;
-		tSHMoveFile.hNameMappings = NULL;
-		tSHMoveFile.lpszProgressTitle = L"";
+		Utility->CopyALLFiles(TIMAGEPATH, InPath);
 
-		// パス名のCStringの末尾に\0をつけて設定  
-		TIMAGEPATH += "0";
-		TIMAGEPATH.SetAt(TIMAGEPATH.GetLength() - 1, NULL);
-		InPath += "0";
-		InPath.SetAt(InPath.GetLength() - 1, NULL);
-		tSHMoveFile.pFrom = TIMAGEPATH;
-		tSHMoveFile.pTo = InPath;
-		SHFileOperation(&tSHMoveFile);
-		WaitForSingleObject(&tSHMoveFile, INFINITE);
-
-		CString PRM = CURRENT_PATH + _T("\\Resources\\image2png ") + IMAGEPATH_M;
+		CString PRM = CURRENT_PATH + _T("\\Resources\\image2png \"") + IMAGEPATH_M + _T("\"");
 		TCHAR* PRMT = (TCHAR*)malloc(sizeof(TCHAR) * 256); // Convert CString to TCHAR.
 		if (NULL == PRMT) {
 			perror("can not malloc");
@@ -2564,16 +2423,8 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton2()
 			_tcscpy_s(&PRMT[0], 256, PRM);
 		}
 		
-		STARTUPINFO si;
-		memset(&si, 0, sizeof(STARTUPINFO));
-		PROCESS_INFORMATION pi;
-		memset(&pi, 0, sizeof(PROCESS_INFORMATION));
-		si.dwFlags = STARTF_USESHOWWINDOW;
-		si.wShowWindow = SW_SHOW;
-		::CreateProcess(NULL, PRMT, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
-		CloseHandle(pi.hThread);
-		WaitForSingleObject(pi.hProcess, INFINITE);
-		CloseHandle(pi.hProcess);
+		Utility->RunProcess(PRMT, SW_SHOW);
+
 		SAFE_FREE(PRMT);
 		SetCurrentDirectory(CURRENT_PATH);
 
@@ -2589,6 +2440,7 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton2()
 		else {
 			ZeroMemory(&OutPathT[0], 256);
 			_tcscpy_s(&OutPathT[0], 256, OutPath);
+			Utility->AfxReplaceStr(waifu2x_param, _T("$OutFile"), _T("\"$OutFile\""));
 			Utility->AfxReplaceStr(waifu2x_param, _T("$OutFile"), OutPathT);
 		}
 		TCHAR* InPathT = (TCHAR*)malloc(sizeof(TCHAR) * 256); // Convert CString to TCHAR.
@@ -2600,19 +2452,9 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton2()
 		else {
 			ZeroMemory(&InPathT[0], 256);
 			_tcscpy_s(&InPathT[0], 256, InPath);
+			Utility->AfxReplaceStr(waifu2x_param, _T("$InFile"), _T("\"$InFile\""));
 			Utility->AfxReplaceStr(waifu2x_param, _T("$InFile"), InPathT);
 		}
-
-		/*pWaifu2xThread = AfxBeginThread(waifu2xThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
-		ASSERT(pWaifu2xThread);
-		if (pWaifu2xThread)
-		{
-			pWaifu2xThread->m_pMainWnd = this;
-			pWaifu2xThread->m_bAutoDelete = TRUE;
-			// スレッド処理の開始
-			pWaifu2xThread->ResumeThread();
-		}
-		WaitForSingleObject(pWaifu2xThread->m_hThread, INFINITE);*/
 
 		FILECOUNT = Utility->GetDirectoryFileCount(IMAGEPATH_M.GetString());
 		ImageUpScaleFlag = TRUE;
@@ -2631,40 +2473,114 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton2()
 		}
 
 		while (ProgressThreadFlag != TRUE) {
+			if (SuspendFlag == TRUE) {
+				while (pThread->m_Dlg.m_hWnd) {
+					if (pThread->m_Dlg.m_hWnd == 0) {
+						break;
+					}
+				}
+				if (PathFileExists(currentPath)) {
+					OutputDebugString(_T("Path: '") + currentPath + _T("' file exists.\n"));
+					DELETEPATH = currentPath;
+					DELETEMAINCOUNT = Utility->GetDirectoryFileCount(DELETEPATH.GetString());
+					if (DELETEMAINCOUNT <= 500) {
+						Utility->DeleteDirectory(DELETEPATH);
+					}
+					else {
+						pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+						if (pDeleteThread)
+						{
+							pDeleteThread->m_pMainWnd = this;
+							pDeleteThread->m_bAutoDelete = TRUE;
+							if (DeleteFileThreadFlag != FALSE) {
+								DeleteFileThreadFlag = FALSE;
+							}
+							pDeleteThread->ResumeThread();
+
+							DELETEDIALOG DIALOG;
+							DIALOG.DoModal();
+						}
+					}
+				}
+				else {
+					OutputDebugString(_T("Path: '") + currentPath + _T("' file doesn't exist.\n"));
+				}
+
+				if (PathFileExists(OutPath)) {
+					OutputDebugString(_T("Path: '") + OutPath + _T("' file exists.\n"));
+					DELETEPATH = OutPath + _T("\\*.*");
+					DELETEMAINCOUNT = Utility->GetDirectoryFileCount(OutPath.GetString());
+					if (DELETEMAINCOUNT <= 500) {
+						Utility->DeleteALLFiles(DELETEPATH);
+					}
+					else {
+						pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+						if (pDeleteThread)
+						{
+							pDeleteThread->m_pMainWnd = this;
+							pDeleteThread->m_bAutoDelete = TRUE;
+							if (DeleteFileThreadFlag != FALSE) {
+								DeleteFileThreadFlag = FALSE;
+							}
+							pDeleteThread->ResumeThread();
+
+							DELETEDIALOG DIALOG;
+							DIALOG.DoModal();
+						}
+					}
+				}
+				else {
+					OutputDebugString(_T("Path: '") + OutPath + _T("' file doesn't exist.\n"));
+				}
+
+				MessageBox(WARN_ABORT2, INFO_TITLE, MB_ICONWARNING | MB_OK);
+				CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
+				CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
+				CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
+				CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON2);
+				CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON6);
+				button1->EnableWindow(FALSE);
+				button2->EnableWindow(FALSE);
+				button3->EnableWindow(FALSE);
+				button4->EnableWindow(FALSE);
+				button5->EnableWindow(FALSE);
+				this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+				this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+				this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
+				CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
+				static1->InvalidateRect(NULL, 1);
+				SAFE_FREE(InPathT);
+				SAFE_FREE(OutPathT);
+				if (ImageUpScaleFlag != FALSE) {
+					ImageUpScaleFlag = FALSE;
+				}
+				if (Waifu2xThreadFlag != FALSE) {
+					Waifu2xThreadFlag = FALSE;
+				}
+				if (ProgressThreadFlag != FALSE) {
+					ProgressThreadFlag = FALSE;
+				}
+				if (SuspendFlag != FALSE) {
+					SuspendFlag = FALSE;
+				}
+				return;
+			}
 		}
 		while (pThread->m_Dlg.m_hWnd) {
-		}
-		ProgressThreadFlag = FALSE;
-
-		if (SuspendFlag == TRUE) {
-			while (pThread->m_Dlg.m_hWnd) {
+			if (pThread->m_Dlg.m_hWnd == 0) {
+				break;
 			}
-			SuspendFlag = FALSE;
-			Utility->DeleteDirectory(CURRENT_PATH + _T("\\Resources\\tmp"));
-			Utility->DeleteDirectory(OutPathT);
-			MessageBox(_T("作業が中止されました。\n保存先に指定したディレクトリは削除されました。"), _T("完了"), MB_ICONWARNING | MB_OK);
-			CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
-			CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
-			CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
-			CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON2);
-			CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON6);
-			button1->EnableWindow(FALSE);
-			button2->EnableWindow(FALSE);
-			button3->EnableWindow(FALSE);
-			button4->EnableWindow(FALSE);
-			button5->EnableWindow(FALSE);
-			this->xv_Static_ReadStatus.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_File.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_FilePath.SetWindowText(DEFAULT_TEXT);
-			CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
-			static1->InvalidateRect(NULL, 1);
-			ImageUpScaleFlag = FALSE;
-			SAFE_FREE(InPathT);
-			SAFE_FREE(OutPathT);
-			return;
 		}
-		ImageUpScaleFlag = FALSE;
-		WaitForSingleObject(&pWaifu2xCountThread->m_hThread, INFINITE);
+
+		if (ProgressThreadFlag != FALSE) {
+			ProgressThreadFlag = FALSE;
+		}
+		if (ImageUpScaleFlag != FALSE) {
+			ImageUpScaleFlag = FALSE;
+		}
+		if (SuspendFlag != FALSE) {
+			SuspendFlag = FALSE;
+		}
 
 		if (EXT == L"JPG") {
 			CString jrenameCom = L"/c ren *.jpg.jpg *.\nexit 0";
@@ -2703,41 +2619,33 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton2()
 			ShellExecute(NULL, L"open", L"cmd.exe", wrenameCom, OutPathT, SW_HIDE);
 		}
 
-		DELETEDIALOG* delDlg = new DELETEDIALOG;
-		delDlg->Create(IDD_DELETEDIALOG);
-		delDlg->ShowWindow(SW_SHOW);
-		while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-			if (!AfxGetApp()->PumpMessage())
-			{
-				::PostQuitMessage(0);
-				break;
+		if (PathFileExists(currentPath)) {
+			OutputDebugString(_T("Path: '") + currentPath + _T("' file exists.\n"));
+			DELETEPATH = currentPath;
+			DELETEMAINCOUNT = Utility->GetDirectoryFileCount(DELETEPATH.GetString());
+			if (DELETEMAINCOUNT <= 500) {
+				Utility->DeleteDirectory(DELETEPATH);
+			}
+			else {
+				pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+				if (pDeleteThread)
+				{
+					pDeleteThread->m_pMainWnd = this;
+					pDeleteThread->m_bAutoDelete = TRUE;
+					if (DeleteFileThreadFlag != FALSE) {
+						DeleteFileThreadFlag = FALSE;
+					}
+					pDeleteThread->ResumeThread();
+
+					DELETEDIALOG DIALOG;
+					DIALOG.DoModal();
+				}
 			}
 		}
-		SHFILEOPSTRUCT tSHDeleteFile{};
-		tSHDeleteFile.hwnd = ::GetDesktopWindow();
-		tSHDeleteFile.wFunc = FO_DELETE;
-		tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-		tSHDeleteFile.fAnyOperationsAborted = TRUE;
-		tSHDeleteFile.hNameMappings = NULL;
-		tSHDeleteFile.lpszProgressTitle = L"";
-
-		// パス名のCStringの末尾に\0をつけて設定  
-		currentPath += "?";
-		currentPath.SetAt(currentPath.GetLength() - 1, NULL);
-		tSHDeleteFile.pFrom = currentPath;
-		tSHDeleteFile.pTo = NULL;
-		SHFileOperation(&tSHDeleteFile);
-		WaitForSingleObject(&tSHDeleteFile, INFINITE);
-
-		delDlg->DestroyWindow();
-		SAFE_DELETE(delDlg);
-
-		if (Utility->DeleteDirectory(_T(".\\Resources\\tmp"))) {
-			OutputDebugString(_T("DeleteDirectory successed.\n"));
-		}
 		else {
-			OutputDebugString(_T("DeleteDirectory failed.\n"));
+			OutputDebugString(_T("Path: '") + currentPath + _T("' file doesn't exist.\n"));
 		}
+
 		SAFE_FREE(InPathT);
 
 		CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
@@ -2751,25 +2659,47 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton2()
 		button4->EnableWindow(FALSE);
 		button5->EnableWindow(FALSE);
 
-		if (PathIsDirectoryEmpty(OutPathT)) {
+		if (UpscaleExceptionFlag == 1) {
+			UpscaleExceptionFlag = 0;
 			SAFE_FREE(OutPathT);
-			MessageBox(_T("変換に失敗しました。"), _T("エラー"), MB_ICONERROR | MB_OK);
-			this->xv_Static_ReadStatus.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_File.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_FilePath.SetWindowText(DEFAULT_TEXT);
+			MessageBox(INFO_SUCCESS, INFO_TITLE, MB_ICONINFORMATION | MB_OK);
+			this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+			this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+			this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
 			CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
 			static1->InvalidateRect(NULL, 1);
+			if (Waifu2xThreadFlag != FALSE) {
+				Waifu2xThreadFlag = FALSE;
+			}
 			return;
 		}
 		else {
-			SAFE_FREE(OutPathT);
-			MessageBox(_T("変換が完了しました。"), _T("完了"), MB_ICONINFORMATION | MB_OK);
-			this->xv_Static_ReadStatus.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_File.SetWindowText(DEFAULT_TEXT);
-			this->xv_Static_FilePath.SetWindowText(DEFAULT_TEXT);
-			CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
-			static1->InvalidateRect(NULL, 1);
-			return;
+			if (PathIsDirectoryEmpty(OutPathT)) {
+				SAFE_FREE(OutPathT);
+				MessageBox(ERROR_FAILED, ERROR_TITLE, MB_ICONERROR | MB_OK);
+				this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+				this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+				this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
+				CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
+				static1->InvalidateRect(NULL, 1);
+				if (Waifu2xThreadFlag != FALSE) {
+					Waifu2xThreadFlag = FALSE;
+				}
+				return;
+			}
+			else {
+				SAFE_FREE(OutPathT);
+				MessageBox(INFO_SUCCESS, INFO_TITLE, MB_ICONINFORMATION | MB_OK);
+				this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+				this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+				this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
+				CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
+				static1->InvalidateRect(NULL, 1);
+				if (Waifu2xThreadFlag != FALSE) {
+					Waifu2xThreadFlag = FALSE;
+				}
+				return;
+			}
 		}
 	}
 }
@@ -2780,7 +2710,7 @@ void Cwaifu2xncnnvulkanDlg::OnReadImage()
 	// TODO: ここにコマンド ハンドラー コードを追加します。
 	OutputDebugString(_T("Menu clicked: OnReadImage\n"));
 	POPUPDlg* POPUP = new POPUPDlg;
-	CString filter("画像ファイル (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.bmp,*.gif,*.webp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.webp;||");
+	CString filter = FILTER_IMAGE;
 	CFileDialog selDlg(TRUE, NULL, NULL, OFN_CREATEPROMPT | OFN_HIDEREADONLY, filter);
 	CFileFind find;
 	wchar_t Drive[5], Dir[MAX_PATH], Name[MAX_PATH], Ext[MAX_PATH];
@@ -2798,8 +2728,8 @@ void Cwaifu2xncnnvulkanDlg::OnReadImage()
 		CString fsizeCS;
 		fsizeCS.Format(_T("%u"), fsize);
 		Num.MakeUpper();
-		CString NumFinal = Num + _T(" ( ") + fsizeCS + _T(" バイト)");
-		this->xv_Static_ReadStatus.SetWindowText(READED_TEXT);
+		CString NumFinal = Num + _T(" ( ") + fsizeCS + TEXT_BYTES;
+		this->xv_Static_ReadStatus.SetWindowText(STATIC_READED);
 		this->xv_Static_File.SetWindowText(NumFinal);
 		this->xv_Static_FilePath.SetWindowText(IMAGEPATH);
 		CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
@@ -2850,7 +2780,7 @@ void Cwaifu2xncnnvulkanDlg::OnReadImageMulti()
 	binfo.hwndOwner = NULL;
 	binfo.pidlRoot = NULL;
 	binfo.pszDisplayName = (LPWSTR)name;
-	binfo.lpszTitle = L"フォルダの選択";
+	binfo.lpszTitle = TEXT_SELFOLDER;
 	binfo.ulFlags = BIF_RETURNONLYFSDIRS;
 	binfo.lpfn = NULL;
 	binfo.lParam = 0;
@@ -2858,7 +2788,7 @@ void Cwaifu2xncnnvulkanDlg::OnReadImageMulti()
 
 	if ((idlist = SHBrowseForFolder(&binfo)) == NULL)
 	{
-		MessageBox(_T("キャンセルされました。"), _T("キャンセル"), MB_ICONWARNING | MB_OK);
+		MessageBox(WARN_CANCEL, WARN_CANCEL_TITLE, MB_ICONWARNING | MB_OK);
 		CoTaskMemFree(idlist);
 		SAFE_DELETE(POPUP);
 	}
@@ -2866,7 +2796,7 @@ void Cwaifu2xncnnvulkanDlg::OnReadImageMulti()
 	{
 		SHGetPathFromIDList(idlist, (LPWSTR)dir);
 		if (PathIsDirectoryEmpty((LPCTSTR)dir)) {
-			MessageBox(_T("フォルダ内にファイルが見つかりません"), _T("エラー"), MB_ICONERROR | MB_OK);
+			MessageBox(ERROR_FOLDER, ERROR_TITLE, MB_ICONERROR | MB_OK);
 			CoTaskMemFree(idlist);
 			SAFE_DELETE(POPUP);
 			return;
@@ -2885,8 +2815,8 @@ void Cwaifu2xncnnvulkanDlg::OnReadImageMulti()
 		CString fsizeCS;
 		fsizeCS.Format(_T("%u"), fsize);
 		Num.MakeUpper();
-		CString NumFinal = Num + _T(" (ディレクトリ)");
-		this->xv_Static_ReadStatus.SetWindowText(READED_TEXT);
+		CString NumFinal = Num + TEXT_DIRECTORYS;
+		this->xv_Static_ReadStatus.SetWindowText(STATIC_READED);
 		this->xv_Static_File.SetWindowText(NumFinal);
 		this->xv_Static_FilePath.SetWindowText(IMAGEPATH_M);
 		CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
@@ -2914,7 +2844,7 @@ void Cwaifu2xncnnvulkanDlg::OnReadVideo()
 	// TODO: ここにコマンド ハンドラー コードを追加します。
 	OutputDebugString(_T("Menu clicked: OnReadVideo\n"));
 	POPUPDlg* POPUP = new POPUPDlg;
-	CString filter("動画ファイル (*.avi,*.mp4,*.wmv,*.webm,*.mkv,*.mov)|*.avi;*.mp4;*.wmv;*.webm;*.mkv;*.mov;||");
+	CString filter = FILTER_MOVIE;
 	CFileDialog selDlg(TRUE, NULL, NULL, OFN_HIDEREADONLY, filter);
 	CFileFind find;
 	wchar_t Drive[5], Dir[MAX_PATH], Name[MAX_PATH], Ext[MAX_PATH];
@@ -2932,8 +2862,8 @@ void Cwaifu2xncnnvulkanDlg::OnReadVideo()
 		CString fsizeCS;
 		fsizeCS.Format(_T("%u"), fsize);
 		Num.MakeUpper();
-		CString NumFinal = Num + _T(" ( ") + fsizeCS + _T(" バイト)");
-		this->xv_Static_ReadStatus.SetWindowText(READED_TEXT);
+		CString NumFinal = Num + _T(" ( ") + fsizeCS + TEXT_BYTES;
+		this->xv_Static_ReadStatus.SetWindowText(STATIC_READED);
 		this->xv_Static_File.SetWindowText(NumFinal);
 		this->xv_Static_FilePath.SetWindowText(VIDEOPATH);
 		CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
@@ -2977,33 +2907,27 @@ void Cwaifu2xncnnvulkanDlg::OnFileAlldelete()
 	CString outDir = _T("\\Resources\\takeout\\");
 	CString currentPath = CURRENT_PATH + outDir;
 
-	MSG msg;
-	DELETEDIALOG* delDlg = new DELETEDIALOG;
-	delDlg->Create(IDD_DELETEDIALOG);
-	delDlg->ShowWindow(SW_SHOW);
-	while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-		if (!AfxGetApp()->PumpMessage())
+	if (PathFileExists(currentPath)) {
+		OutputDebugString(_T("Path: '") + currentPath + _T("' file exists.\n"));
+		DELETEPATH = currentPath;
+		DELETEMAINCOUNT = Utility->GetDirectoryFileCount(DELETEPATH.GetString());
+		pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+		if (pDeleteThread)
 		{
-			::PostQuitMessage(0);
-			break;
+			pDeleteThread->m_pMainWnd = this;
+			pDeleteThread->m_bAutoDelete = TRUE;
+			if (DeleteFileThreadFlag != FALSE) {
+				DeleteFileThreadFlag = FALSE;
+			}
+			pDeleteThread->ResumeThread();
+
+			DELETEDIALOG DIALOG;
+			DIALOG.DoModal();
 		}
 	}
-
-	SHFILEOPSTRUCT tSHDeleteFile{};
-	tSHDeleteFile.hwnd = ::GetDesktopWindow();
-	tSHDeleteFile.wFunc = FO_DELETE;
-	tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-	tSHDeleteFile.fAnyOperationsAborted = TRUE;
-	tSHDeleteFile.hNameMappings = NULL;
-	tSHDeleteFile.lpszProgressTitle = L"";
-
-	// パス名のCStringの末尾に\0をつけて設定  
-	currentPath += "?";
-	currentPath.SetAt(currentPath.GetLength() - 1, NULL);
-	tSHDeleteFile.pFrom = currentPath;
-	tSHDeleteFile.pTo = NULL;
-	SHFileOperation(&tSHDeleteFile);
-	WaitForSingleObject(&tSHDeleteFile, INFINITE);
+	else {
+		OutputDebugString(_T("Path: '") + currentPath + _T("' file doesn't exist.\n"));
+	}
 
 	if (Utility->DeleteDirectory(_T(".\\Resources\\tmp"))) {
 		OutputDebugString(_T("DeleteDirectory successed.\n"));
@@ -3012,8 +2936,7 @@ void Cwaifu2xncnnvulkanDlg::OnFileAlldelete()
 		OutputDebugString(_T("DeleteDirectory failed.\n"));
 	}
 
-	delDlg->DestroyWindow();
-	SAFE_DELETE(delDlg);
+	return;
 }
 
 
@@ -3023,12 +2946,12 @@ void Cwaifu2xncnnvulkanDlg::OnVideoresize()
 	OutputDebugString(_T("Menu clicked: OnVideoresize\n"));
 	POPUPDlg* POPUP = new POPUPDlg;
 	CFileFind find;
-	CString filter("動画ファイル (*.avi,*.mp4,*.wmv,*.webm,*.mkv,*.mov)|*.avi;*.mp4;*.wmv;*.webm;*.mkv;*.mov;||");
+	CString filter = FILTER_MOVIE;
 	CFileDialog selDlg(TRUE, NULL, NULL, OFN_HIDEREADONLY, filter);
 	INT_PTR filedialog = selDlg.DoModal();
 	if (filedialog == IDOK) {
 		CString RV = selDlg.GetPathName();
-		CString filter("動画ファイル (*.avi,*.mp4,*.wmv,*.webm,*.mkv,*.mov)|*.avi;*.mp4;*.wmv;*.webm;*.mkv;*.mov;||");
+		CString filter = FILTER_MOVIE;
 		CFileDialog selDlgs(FALSE, _T("mp4"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, filter);
 		INT_PTR file = selDlgs.DoModal();
 		if (file == IDOK) {
@@ -3044,12 +2967,15 @@ void Cwaifu2xncnnvulkanDlg::OnVideoresize()
 				_tcscpy_s(&lpPath[0], 512, OutPath);
 			}
 
+			SAFE_DELETE(POPUP);
 			VIDEORESIZE* DIALOG = new VIDEORESIZE;
-			intptr_t ret = DIALOG->DoModal();
+			INT_PTR ret = DIALOG->DoModal();
 			if (ret == IDOK) {
 				CString PRM = DIALOG->FINAL;
-				Utility->AfxReplaceStr(PRM, L"ffmpeg", L".\\Resources\\ffmpeg\\ffmpeg.exe");
+				Utility->AfxReplaceStr(PRM, L"ffmpeg", CURRENT_PATH + _T("\\Resources\\ffmpeg\\ffmpeg.exe"));
+				Utility->AfxReplaceStr(PRM, L"$InFile", L"\"$InFile\"");
 				Utility->AfxReplaceStr(PRM, L"$InFile", RV);
+				Utility->AfxReplaceStr(PRM, L"$OutFile", L"\"$OutFile\"");
 				Utility->AfxReplaceStr(PRM, L"$OutFile", lpPath);
 				TCHAR* ffmpegcmdT = (TCHAR*)malloc(sizeof(TCHAR) * 512); // Convert CString to TCHAR.
 				if (NULL == ffmpegcmdT) {
@@ -3092,18 +3018,18 @@ void Cwaifu2xncnnvulkanDlg::OnVideoresize()
 				if (find.FindFile(lpPath)) {
 					SAFE_FREE(lpPath);
 					SAFE_DELETE(DIALOG);
-					MessageBox(_T("解像度の変更が完了しました。"), _T("完了"), MB_ICONINFORMATION | MB_OK);
+					MessageBox(INFO_RESIZE, INFO_TITLE, MB_ICONINFORMATION | MB_OK);
 					return;
 				}
 				else {
 					SAFE_FREE(lpPath);
 					SAFE_DELETE(DIALOG);
-					MessageBox(_T("解像度の変更に失敗しました。"), _T("エラー"), MB_ICONERROR | MB_OK);
+					MessageBox(ERROR_RESIZE, ERROR_TITLE, MB_ICONERROR | MB_OK);
 					return;
 				}
 			}
 			else if (ret == IDCANCEL) {
-				MessageBox(_T("キャンセルされました。"), _T("キャンセル"), MB_ICONWARNING | MB_OK);
+				MessageBox(WARN_CANCEL, WARN_CANCEL_TITLE, MB_ICONWARNING | MB_OK);
 				SAFE_DELETE(DIALOG);
 				return;
 			}
@@ -3113,7 +3039,8 @@ void Cwaifu2xncnnvulkanDlg::OnVideoresize()
 			}
 		}
 		else if (file == IDCANCEL) {
-			MessageBox(_T("キャンセルされました。"), _T("キャンセル"), MB_ICONWARNING | MB_OK);
+			MessageBox(WARN_CANCEL, WARN_CANCEL_TITLE, MB_ICONWARNING | MB_OK);
+			SAFE_DELETE(POPUP);
 			return;
 		}
 	}
@@ -3140,12 +3067,12 @@ void Cwaifu2xncnnvulkanDlg::OnVideoaudioexport()
 	OutputDebugString(_T("Menu clicked: OnVideoaudioexport\n"));
 	POPUPDlg* POPUP = new POPUPDlg;
 	CFileFind find;
-	CString filter("動画ファイル (*.avi,*.mp4,*.wmv,*.webm,*.mkv,*.mov)|*.avi;*.mp4;*.wmv;*.webm;*.mkv;*.mov;||");
+	CString filter = FILTER_MOVIE;
 	CFileDialog selDlg(TRUE, NULL, NULL, OFN_HIDEREADONLY, filter);
 	intptr_t filedialog = selDlg.DoModal();
 	if (filedialog == IDOK) {
 		CString RV = selDlg.GetPathName();
-		CString filter("音声ファイル (*.wav,*.mp3,*.m4a,*.wma,*.oga,*.ogg,*.opus)|*.wav;*.mp3;*.m4a;*.wma;*.oga;*.ogg;*.opus;||");
+		CString filter = FILTER_SOUND;
 		CFileDialog selDlgs(FALSE, _T("wav"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, filter);
 		intptr_t file = selDlgs.DoModal();
 		if (file == IDOK) {
@@ -3161,7 +3088,7 @@ void Cwaifu2xncnnvulkanDlg::OnVideoaudioexport()
 				_tcscpy_s(&lpPath[0], 512, OutPath);
 			}
 			CString PRM;
-			PRM = _T(".\\Resources\\ffmpeg\\ffmpeg.exe -i ") + RV + _T(" -vn -acodec copy -y ") + lpPath;
+			PRM = CURRENT_PATH + _T("\\Resources\\ffmpeg\\ffmpeg.exe -i \"") + RV + _T("\" -vn -acodec copy -y \"") + lpPath + _T("\"");
 			TCHAR* ffmpegcmdT = (TCHAR*)malloc(sizeof(TCHAR) * 512); // Convert CString to TCHAR.
 			if (NULL == ffmpegcmdT) {
 				perror("can not malloc");
@@ -3202,13 +3129,13 @@ void Cwaifu2xncnnvulkanDlg::OnVideoaudioexport()
 			SAFE_FREE(ffmpegcmdT);
 			if (find.FindFile(lpPath)) {
 				SAFE_FREE(lpPath);
-				MessageBox(_T("音声の抜き出しが完了しました。"), _T("完了"), MB_ICONINFORMATION | MB_OK);
+				MessageBox(INFO_SOUND, INFO_TITLE, MB_ICONINFORMATION | MB_OK);
 				SAFE_DELETE(POPUP);
 				return;
 			}
 			else {
 				SAFE_FREE(lpPath);
-				MessageBox(_T("音声の抜き出しに失敗しました。"), _T("エラー"), MB_ICONERROR | MB_OK);
+				MessageBox(ERROR_SOUND, ERROR_TITLE, MB_ICONERROR | MB_OK);
 				SAFE_DELETE(POPUP);
 				return;
 			}
@@ -3359,11 +3286,22 @@ UINT Cwaifu2xncnnvulkanDlg::DeleteThread(LPVOID pParam)
 	return 0;
 }
 
+UINT Cwaifu2xncnnvulkanDlg::DeleteMainThread(LPVOID pParam)
+{
+	Cwaifu2xncnnvulkanDlg* pFileView = dynamic_cast<Cwaifu2xncnnvulkanDlg*>(reinterpret_cast<CWnd*>(pParam));
+	if (pFileView)
+	{
+		pFileView->DeleteMainThread();
+	}
+	return 0;
+}
+
 void Cwaifu2xncnnvulkanDlg::waifu2xThread()
 {
 	OutputDebugString(_T("waifu2x Thread Started.\n"));
 
-	Utility->AfxReplaceStr(waifu2x_param, L"waifu2x-ncnn-vulkan -i", CURRENT_PATH + L"\\Resources\\waifu2x-ncnn-vulkan\\waifu2x-ncnn-vulkan -i");
+	Utility->AfxReplaceStr(waifu2x_param, L"waifu2x-ncnn-vulkan -i", CURRENT_PATH + L"\\Resources\\waifu2x-ncnn-vulkan\\waifu2x-ncnn-vulkan.exe -i");
+	TCHAR* lpPath = (TCHAR*)malloc(sizeof(TCHAR) * 512); // TCHAR配列をmallocで確保する
 	if (NULL == lpPath) {
 		perror("can not malloc");
 		OutputDebugString(_T("TCHAR syntax (lpPath) malloc failed.\n"));
@@ -3413,7 +3351,7 @@ void Cwaifu2xncnnvulkanDlg::FFmpegThread()
 	CString outDir = L"\\Resources\\takeout\\";
 	CString currentPath = CURRENT_PATH + outDir;
 
-	CString ffmpegDir = L".\\Resources\\ffmpeg\\ffmpeg.exe";
+	CString ffmpegDir = CURRENT_PATH + L"\\Resources\\ffmpeg\\ffmpeg.exe";
 	CString InFile = VIDEOPATH;
 	CString audioOut;
 	CString imageOut;
@@ -3453,10 +3391,14 @@ void Cwaifu2xncnnvulkanDlg::FFmpegThread()
 	}
 
 	Utility->AfxReplaceStr(ffmpeg_audioparam, L"ffmpeg", ffmpegDir);
+	Utility->AfxReplaceStr(ffmpeg_audioparam, L"$InFile", L"\"$InFile\"");
 	Utility->AfxReplaceStr(ffmpeg_audioparam, L"$InFile", InFile);
+	Utility->AfxReplaceStr(ffmpeg_audioparam, L"$OutFile", L"\"$OutFile\"");
 	Utility->AfxReplaceStr(ffmpeg_audioparam, L"$OutFile", audioOut);
 	Utility->AfxReplaceStr(ffmpeg_videoparam, L"ffmpeg", ffmpegDir);
+	Utility->AfxReplaceStr(ffmpeg_videoparam, L"$InFile", L"\"$InFile\"");
 	Utility->AfxReplaceStr(ffmpeg_videoparam, L"$InFile", InFile);
+	Utility->AfxReplaceStr(ffmpeg_videoparam, L"$OutFile", L"\"$OutFile\"");
 	Utility->AfxReplaceStr(ffmpeg_videoparam, L"$OutFile", imageOut);
 	TCHAR* audioPathT = (TCHAR*)malloc(sizeof(TCHAR) * 512); // Convert CString to TCHAR.
 	if (NULL == audioPathT) {
@@ -3510,7 +3452,6 @@ void Cwaifu2xncnnvulkanDlg::waifu2xCountThread()
 	OutputDebugString(_T("Count Thread Started.\n"));
 
 	pWaifu2xThread = AfxBeginThread(waifu2xThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
-	ASSERT(pWaifu2xThread);
 	if (pWaifu2xThread)
 	{
 		pWaifu2xThread->m_pMainWnd = this;
@@ -3518,16 +3459,14 @@ void Cwaifu2xncnnvulkanDlg::waifu2xCountThread()
 		pWaifu2xThread->ResumeThread();
 	}
 
-	while (Waifu2xThreadFlag != TRUE) {
+	while (ProgressThreadFlag != TRUE) {
 		if (ImageUpScaleFlag == TRUE) {
 			UPSCALE_COUNT = Utility->GetDirectoryFileCount(MultipleOutPath.GetString());
 		}
 		else {
 			UPSCALE_COUNT = Utility->GetDirectoryFileCount(UPSCALE_PATH.GetString());
 		}
-		if (Waifu2xThreadFlag == TRUE) {
-			OutputDebugString(_T("Waifu2xThreadFlag TRUE.\n"));
-			Waifu2xThreadFlag = FALSE;
+		if (ProgressThreadFlag == TRUE) {
 			break;
 		}
 		if (SuspendFlag == TRUE) {
@@ -3537,13 +3476,12 @@ void Cwaifu2xncnnvulkanDlg::waifu2xCountThread()
 			continue;
 		}
 	}
-	UPSCALE_COUNT = 0;
-	ProgressThreadFlag = TRUE;
+
 	if (SuspendFlag == TRUE) {
 		this->PostMessage(WM_USER_COMPLETE_WAIFU2X_THREAD);
 	}
 	this->PostMessage(WM_USER_COMPLETE_COUNT_THREAD);
-	OutputDebugString(_T("Count Thread Roop Ended.\n"));
+	OutputDebugString(_T("Count Thread Ended.\n"));
 }
 
 void Cwaifu2xncnnvulkanDlg::waifu2xCountDlgThread()
@@ -3565,49 +3503,52 @@ void Cwaifu2xncnnvulkanDlg::DLThread()
 	ret = Utility->DownloadFile(DOWNLOAD_URL_STRING, _T(".\\Resources\\ffmpeg.zip"), 4096);
 
 	this->PostMessage(WM_USER_COMPLETE_DOWNLOAD_LOAD_XML);
-	DLFlag = TRUE;
 	OutputDebugString(_T("DLThread Ended.\n"));
 }
 
 void Cwaifu2xncnnvulkanDlg::DLCountThread()
 {
 	OutputDebugString(_T("DLCountThread Started.\n"));
-	while (DLFlag != TRUE) {
-		if (DLFlag == TRUE) {
-			OutputDebugString(_T("DLFlag TRUE.\n"));
-			DLFlag = FALSE;
+
+	pDLThread = AfxBeginThread(DLThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+	ASSERT(pDLThread);
+	if (pDLThread)
+	{
+		pDLThread->m_pMainWnd = this;
+		pDLThread->m_bAutoDelete = TRUE;
+		pDLThread->ResumeThread();
+	}
+
+	while (DLThreadFlag != TRUE) {
+		DLCount = Utility->GetFileSizeStat(_T(".\\Resources\\ffmpeg.zip"));
+		if (DLThreadFlag == TRUE) {
 			break;
 		}
 		else {
-			OutputDebugString(_T("DLFlag FALSE, Rooped.\n"));
-			while (DLThreadFlag != TRUE)
-			{
-				DLCount = Utility->GetFileSizeStat(_T(".\\Resources\\ffmpeg.zip"));
-				if (DLThreadFlag == TRUE) {
-					DLThreadFlag = FALSE;
-					DLCount = 0;
-					this->PostMessage(WM_USER_COMPLETE_DOWNLOAD_LOAD_XML);
-					OutputDebugString(_T("DLCountThread Ended.\n"));
-					break;
-				}
-				else {
-					continue;
-				}
-			}
-			break;
+			continue;
 		}
 	}
+
+	this->PostMessage(WM_USER_COMPLETE_DOWNLOAD_LOAD_XML);
+	OutputDebugString(_T("DLCountThread Ended.\n"));
 }
 
 void Cwaifu2xncnnvulkanDlg::DeleteThread()
 {
 	OutputDebugString(_T("DeleteThread Started.\n"));
+	pDeleteMainThread = AfxBeginThread(DeleteMainThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+	if (pDeleteMainThread)
+	{
+		pDeleteMainThread->m_pMainWnd = this;
+		pDeleteMainThread->m_bAutoDelete = TRUE;
+		pDeleteMainThread->ResumeThread();
+	}
+
 	while (DeleteFileThreadFlag != TRUE)
 	{
-		DELETECOUNT = Utility->GetFileSizeStat(_T(".\\Resources\\ffmpeg.zip"));
+		DELETESUBCOUNT = Utility->GetDirectoryFileCount(DELETEPATH.GetString());
+		DELETECURCOUNT = DELETEMAINCOUNT - DELETESUBCOUNT;
 		if (DeleteFileThreadFlag == TRUE) {
-			DeleteFileThreadFlag = FALSE;
-			Sleep(2000);
 			break;
 		}
 		else {
@@ -3616,22 +3557,34 @@ void Cwaifu2xncnnvulkanDlg::DeleteThread()
 	}
 
 	this->PostMessage(WM_USER_COMPLETE_DELETE_LOAD_XML);
-	OutputDebugString(_T("DLCountThread Ended.\n"));
+	OutputDebugString(_T("DeleteThread Ended.\n"));
+}
+
+void Cwaifu2xncnnvulkanDlg::DeleteMainThread()
+{
+	OutputDebugString(_T("DeleteMainThread Started.\n"));
+
+	if (DELETEPATH.Find(_T("*")) == -1) {
+		Utility->DeleteDirectory(DELETEPATH);
+	}
+	else {
+		Utility->DeleteALLFiles(DELETEPATH);
+	}
+
+	this->PostMessage(WM_USER_COMPLETE_DELETE_MAIN_LOAD_XML);
+	OutputDebugString(_T("DeleteMainThread Ended.\n"));
 }
 
 afx_msg LRESULT Cwaifu2xncnnvulkanDlg::OnCompleteWaifu2xThread(WPARAM wParam, LPARAM lParam)
 {
 	OutputDebugString(_T("Thread: OnCompleteWaifu2xThread\n"));
 	Utility->TerminateExeName(_T("waifu2x-ncnn-vulkan.exe"));
-	//pWaifu2xThread->PostThreadMessage(WM_QUIT, 0, 0);
-	
 	return 0;
 }
 
 afx_msg LRESULT Cwaifu2xncnnvulkanDlg::OnCompleteFFmpegThread(WPARAM wParam, LPARAM lParam)
 {
 	OutputDebugString(_T("Thread: OnCompleteFFmpegThread\n"));
-	//pFFmpegThread->PostThreadMessage(WM_QUIT, 0, 0);
 
 	return 0;
 }
@@ -3639,7 +3592,8 @@ afx_msg LRESULT Cwaifu2xncnnvulkanDlg::OnCompleteFFmpegThread(WPARAM wParam, LPA
 afx_msg LRESULT Cwaifu2xncnnvulkanDlg::OnCompleteWaifu2xCountThread(WPARAM wParam, LPARAM lParam)
 {
 	OutputDebugString(_T("Thread: OnCompleteWaifu2xCountThread\n"));
-	//pWaifu2xCountThread->PostThreadMessage(WM_QUIT, 0, 0);
+	UPSCALE_COUNT = 0;
+	ProgressThreadFlag = FALSE;
 
 	return 0;
 }
@@ -3647,7 +3601,6 @@ afx_msg LRESULT Cwaifu2xncnnvulkanDlg::OnCompleteWaifu2xCountThread(WPARAM wPara
 afx_msg LRESULT Cwaifu2xncnnvulkanDlg::OnCompleteWaifu2xCountDlgThread(WPARAM wParam, LPARAM lParam)
 {
 	OutputDebugString(_T("Thread: OnCompleteWaifu2xCountDlgThread\n"));
-	//pWaifu2xCountDlgThread->PostThreadMessage(WM_QUIT, 0, 0);
 
 	return 0;
 }
@@ -3655,7 +3608,6 @@ afx_msg LRESULT Cwaifu2xncnnvulkanDlg::OnCompleteWaifu2xCountDlgThread(WPARAM wP
 afx_msg LRESULT Cwaifu2xncnnvulkanDlg::OnCompleteDLThread(WPARAM wParam, LPARAM lParam)
 {
 	OutputDebugString(_T("Thread: OnCompleteDLThread\n"));
-	//pDLThread->PostThreadMessage(WM_QUIT, 0, 0);
 
 	return 0;
 }
@@ -3663,14 +3615,25 @@ afx_msg LRESULT Cwaifu2xncnnvulkanDlg::OnCompleteDLThread(WPARAM wParam, LPARAM 
 afx_msg LRESULT Cwaifu2xncnnvulkanDlg::OnCompleteDLCountThread(WPARAM wParam, LPARAM lParam)
 {
 	OutputDebugString(_T("Thread: OnCompleteDLCountThread\n"));
-	//pDLCountThread->PostThreadMessage(WM_QUIT, 0, 0);
+	DLCount = 0;
+	DLThreadFlag = FALSE;
 
 	return 0;
 }
 
 afx_msg LRESULT Cwaifu2xncnnvulkanDlg::OnCompleteDeleteThread(WPARAM wParam, LPARAM lParam)
 {
-	//pDeleteThread->PostThreadMessage(WM_QUIT, 0, 0);
+	OutputDebugString(_T("Thread: OnCompleteDeleteThread\n"));
+	DELETEMAINCOUNT = 0;
+	DELETESUBCOUNT = 0;
+	DELETECURCOUNT = 0;
+
+	return 0;
+}
+
+afx_msg LRESULT Cwaifu2xncnnvulkanDlg::OnCompleteDeleteMainThread(WPARAM wParam, LPARAM lParam)
+{
+	OutputDebugString(_T("Thread: OnCompleteDeleteMainThread\n"));
 
 	return 0;
 }
@@ -3755,20 +3718,36 @@ HBRUSH Cwaifu2xncnnvulkanDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 	int id = pWnd->GetDlgCtrlID();
 	// TODO: ここで DC の属性を変更してください。
+	UINT Lang;
+	Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+
 	switch (nCtlColor)
 	{
 	case CTLCOLOR_STATIC:
 		switch (id)
 		{
 		case IDC_STATIC_READSTATUS:
-			if (GetDlgItem(IDC_STATIC_READSTATUS)->GetWindowTextLength() == 6) {
-				pDC->SetTextColor(RGB(0, 200, 0));
-				pDC->SetBkMode(TRANSPARENT);
+			if (Lang == 0) {
+				if (GetDlgItem(IDC_STATIC_READSTATUS)->GetWindowTextLength() == 6) {
+					pDC->SetTextColor(RGB(0, 200, 0));
+					pDC->SetBkMode(TRANSPARENT);
+				}
+				else if (GetDlgItem(IDC_STATIC_READSTATUS)->GetWindowTextLength() == 12) {
+					pDC->SetTextColor(RGB(255, 0, 0));
+					pDC->SetBkMode(TRANSPARENT);
+				}
 			}
-			else if (GetDlgItem(IDC_STATIC_READSTATUS)->GetWindowTextLength() == 12) {
-				pDC->SetTextColor(RGB(255, 0, 0));
-				pDC->SetBkMode(TRANSPARENT);
+			else if (Lang == 1) {
+				if (GetDlgItem(IDC_STATIC_READSTATUS)->GetWindowTextLength() == 12) {
+					pDC->SetTextColor(RGB(0, 200, 0));
+					pDC->SetBkMode(TRANSPARENT);
+				}
+				else if (GetDlgItem(IDC_STATIC_READSTATUS)->GetWindowTextLength() == 16) {
+					pDC->SetTextColor(RGB(255, 0, 0));
+					pDC->SetBkMode(TRANSPARENT);
+				}
 			}
+			
 			break;
 
 		default:
@@ -3795,83 +3774,49 @@ void Cwaifu2xncnnvulkanDlg::OnDestroy()
 	CString outDir = L"\\Resources\\takeout\\";
 	CString currentPath = CURRENT_PATH + outDir;
 
-	MSG msg;
-	DELETEDIALOG* delDlg = new DELETEDIALOG;
-	delDlg->Create(IDD_DELETEDIALOG);
-	delDlg->ShowWindow(SW_SHOW);
-	while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-		if (!AfxGetApp()->PumpMessage())
-		{
-			::PostQuitMessage(0);
-			break;
-		}
-	}
-
 	if (_tcscmp(audiopath, _T("")) != 0) {
 		CString ap = (LPCTSTR)audiopath;
 		ap += _T("\\*.*");
 		if (_tcscmp(aname, _T("")) != 0) {
-			SHFILEOPSTRUCT tSHDeleteFile{};
-			tSHDeleteFile.hwnd = ::GetDesktopWindow();
-			tSHDeleteFile.wFunc = FO_DELETE;
-			tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-			tSHDeleteFile.fAnyOperationsAborted = TRUE;
-			tSHDeleteFile.hNameMappings = NULL;
-			tSHDeleteFile.lpszProgressTitle = L"";
-
-			// パス名のCStringの末尾に\0をつけて設定  
-			ap += "?";
-			ap.SetAt(ap.GetLength() - 1, NULL);
-			tSHDeleteFile.pFrom = ap;
-			tSHDeleteFile.pTo = NULL;
-			SHFileOperation(&tSHDeleteFile);
-			WaitForSingleObject(&tSHDeleteFile, INFINITE);
+			Utility->DeleteALLFiles(ap);
 		}
 	}
 	if (_tcscmp(videopath, _T("")) != 0) {
 		CString vp = (LPCTSTR)videopath;
 		vp += _T("\\*.*");
 		if (_tcscmp(vname, _T("")) != 0) {
-			SHFILEOPSTRUCT tSHDeleteFile{};
-			tSHDeleteFile.hwnd = ::GetDesktopWindow();
-			tSHDeleteFile.wFunc = FO_DELETE;
-			tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-			tSHDeleteFile.fAnyOperationsAborted = TRUE;
-			tSHDeleteFile.hNameMappings = NULL;
-			tSHDeleteFile.lpszProgressTitle = L"";
-
-			// パス名のCStringの末尾に\0をつけて設定  
-			vp += "?";
-			vp.SetAt(vp.GetLength() - 1, NULL);
-			tSHDeleteFile.pFrom = vp;
-			tSHDeleteFile.pTo = NULL;
-			SHFileOperation(&tSHDeleteFile);
-			WaitForSingleObject(&tSHDeleteFile, INFINITE);
+			Utility->DeleteALLFiles(vp);
 		}
 	}
 
-	SHFILEOPSTRUCT tSHDeleteFile{};
-	tSHDeleteFile.hwnd = ::GetDesktopWindow();
-	tSHDeleteFile.wFunc = FO_DELETE;
-	tSHDeleteFile.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
-	tSHDeleteFile.fAnyOperationsAborted = TRUE;
-	tSHDeleteFile.hNameMappings = NULL;
-	tSHDeleteFile.lpszProgressTitle = L"";
+	if (PathFileExists(currentPath)) {
+		OutputDebugString(_T("Path: '") + currentPath + _T("' file exists.\n"));
+		DELETEPATH = currentPath;
+		DELETEMAINCOUNT = Utility->GetDirectoryFileCount(DELETEPATH.GetString());
+		pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+		if (pDeleteThread)
+		{
+			pDeleteThread->m_pMainWnd = this;
+			pDeleteThread->m_bAutoDelete = TRUE;
+			if (DeleteFileThreadFlag != FALSE) {
+				DeleteFileThreadFlag = FALSE;
+			}
+			pDeleteThread->ResumeThread();
 
-	// パス名のCStringの末尾に\0をつけて設定  
-	currentPath += "?";
-	currentPath.SetAt(currentPath.GetLength() - 1, NULL);
-	tSHDeleteFile.pFrom = currentPath;
-	tSHDeleteFile.pTo = NULL;
-	SHFileOperation(&tSHDeleteFile);
-	WaitForSingleObject(&tSHDeleteFile, INFINITE);
-	delDlg->DestroyWindow();
-	SAFE_DELETE(delDlg);
+			DELETEDIALOG DIALOG;
+			DIALOG.DoModal();
+		}
+	}
+	else {
+		OutputDebugString(_T("Path: '") + currentPath + _T("' file doesn't exist.\n"));
+	}
+
+	FreeLibrary(Core->Lang_hinst);
+	SAFE_DELETE(CORE_FUNC);
 	SAFE_DELETE(Waifu2x->fnt1);
 	SAFE_DELETE(MAINSTR_FUNC);
 	SAFE_DELETE(VERSIONSTR_FUNC);
 	SAFE_DELETE(COREUTIL_FUNC);
-	SAFE_FREE(lpPath);
 	SAFE_FREE(Waifu2x->cpuinfo);
 	SAFE_FREE(Waifu2x->gpuinfo);
 	SAFE_FREE(Waifu2x->waifu2x_prm);
@@ -3882,7 +3827,6 @@ void Cwaifu2xncnnvulkanDlg::OnDestroy()
 	ffmpeg_mainparam.Empty();
 	ffmpeg_audioparam.Empty();
 	ffmpeg_videoparam.Empty();
-	DeleteFile(L".\\Resources\\gpu.bat");
 	DeleteFile(L".\\Resources\\ffmpeg.zip");
 	SAFE_DELETE(WAIFU2X_UTIL_FUNC);
 	OutputDebugString(_T("End Application.\n"));
@@ -3896,21 +3840,21 @@ void Cwaifu2xncnnvulkanDlg::OnUpdatecheck()
 	OutputDebugString(_T("OnUpdatecheck\n"));
 	CString LatestVersion = Utility->AppUpdateCheck();
 	if (LatestVersion == _T("")) {
-		MessageBox(_T("情報取得中にエラーが発生しました。\nインターネット接続がされているか確認してください。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_UPDATE, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	CString CurrentVersion = Utility->AppCurrentVersionCheck();
 	if (CurrentVersion == _T("")) {
-		MessageBox(_T("情報取得中にエラーが発生しました。\nインターネット接続がされているか確認してください。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_UPDATE, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
 	if (LatestVersion == CurrentVersion) {
-		MessageBox(_T("最新バージョン：") + LatestVersion + _T("\n現在使用中のバージョン：") + CurrentVersion + _T("\nアプリケーションのバージョンは最新です。"), _T("完了"), MB_ICONINFORMATION | MB_OK);
+		MessageBox(UPDATE_LATEST + LatestVersion + _T("\n") + UPDATE_CURRENT + CurrentVersion + _T("\n") + UPDATE_APP_LATEST, INFO_TITLE, MB_ICONINFORMATION | MB_OK);
 		return;
 	}
 	else if (LatestVersion > CurrentVersion) {
 		UINT ret;
-		ret = MessageBox(_T("最新バージョン：") + LatestVersion + _T("現在使用中のバージョン：") + CurrentVersion + _T("\nアプリケーションのアップデートが可能です。サイトを開きますか？"), _T("アップデート確認"), MB_ICONINFORMATION | MB_YESNOCANCEL);
+		ret = MessageBox(UPDATE_LATEST + LatestVersion + _T("\n") + UPDATE_CURRENT + CurrentVersion + _T("\n") + UPDATE_APP_CONFIRM, UPDATE_APP_TITLE, MB_ICONINFORMATION | MB_YESNOCANCEL);
 		if (ret == IDYES) {
 			ShellExecute(NULL, _T("open"), _T("https://xyle-official.com/tools/waifu2x/#latest-release"), NULL, NULL, SW_SHOWNORMAL);
 			return;
@@ -3919,14 +3863,298 @@ void Cwaifu2xncnnvulkanDlg::OnUpdatecheck()
 			return;
 		}
 		else if (ret == IDCANCEL) {
-			MessageBox(_T("キャンセルされました。"), _T("キャンセル"), MB_ICONWARNING | MB_OK);
+			MessageBox(WARN_CANCEL, WARN_CANCEL_TITLE, MB_ICONWARNING | MB_OK);
 		}
 		else {
 			return;
 		}
 	}
 	else {
-		MessageBox(_T("情報取得中にエラーが発生しました。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_UPDATE_ELSE, ERROR_TITLE, MB_ICONERROR | MB_OK);
 		return;
 	}
+}
+
+void Cwaifu2xncnnvulkanDlg::OnLanguageJapanese()
+{
+	// TODO: ここにコマンド ハンドラー コードを追加します。
+	UINT Lang;
+	Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+	if (Lang == 0) {
+		MessageBox(_T("既に言語が'日本語'に設定されています。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		return;
+	}
+
+	this->GetMenu()->CheckMenuItem(ID_LANGUAGE_JAPANESE, MF_BYCOMMAND | MF_CHECKED);
+	if (this->GetMenu()->GetMenuState(ID_LANGUAGE_ENGLISH, MF_BYCOMMAND) == MF_CHECKED) {
+		this->GetMenu()->CheckMenuItem(ID_LANGUAGE_ENGLISH, MF_BYCOMMAND | MF_UNCHECKED);
+	}
+
+	WritePrivateProfileString(L"LANGUAGE", L"0x0000", L"0", L".\\settings.ini");
+
+	UINT ret;
+	ret = MessageBox(_T("言語設定が変更されました。変更にはアプリケーションを再起動する必要があります。\n続行しますか？"), _T("再起動の確認"), MB_ICONINFORMATION | MB_YESNO);
+	if (ret == IDYES) {
+		TCHAR strPath[MAX_PATH];
+		::GetModuleFileName(AfxGetInstanceHandle(), strPath, sizeof(strPath) / sizeof(TCHAR));
+		TCHAR strCurDir[MAX_PATH];
+		::GetCurrentDirectory(sizeof(strCurDir) / sizeof(TCHAR), strCurDir);
+		DWORD dwProcessId = ::GetCurrentProcessId();
+		CString strCmdLine;
+		strCmdLine.Format(_T("/waitterminate %u"), dwProcessId);
+		::ShellExecute(NULL, NULL, strPath, strCmdLine, strCurDir, SW_SHOWNORMAL);
+		PostQuitMessage(0);
+		return;
+	}
+	else if (ret == IDNO) {
+		Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+		if (Lang == 0) {
+			this->GetMenu()->CheckMenuItem(ID_LANGUAGE_JAPANESE, MF_BYCOMMAND | MF_CHECKED);
+			this->GetMenu()->CheckMenuItem(ID_LANGUAGE_ENGLISH, MF_BYCOMMAND | MF_UNCHECKED);
+			return;
+		}
+		else if (Lang == 1) {
+			this->GetMenu()->CheckMenuItem(ID_LANGUAGE_JAPANESE, MF_BYCOMMAND | MF_UNCHECKED);
+			this->GetMenu()->CheckMenuItem(ID_LANGUAGE_ENGLISH, MF_BYCOMMAND | MF_CHECKED);
+			return;
+		}
+	}
+	else {
+		Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+		if (Lang == 0) {
+			this->GetMenu()->CheckMenuItem(ID_LANGUAGE_JAPANESE, MF_BYCOMMAND | MF_CHECKED);
+			this->GetMenu()->CheckMenuItem(ID_LANGUAGE_ENGLISH, MF_BYCOMMAND | MF_UNCHECKED);
+			return;
+		}
+		else if (Lang == 1) {
+			this->GetMenu()->CheckMenuItem(ID_LANGUAGE_JAPANESE, MF_BYCOMMAND | MF_UNCHECKED);
+			this->GetMenu()->CheckMenuItem(ID_LANGUAGE_ENGLISH, MF_BYCOMMAND | MF_CHECKED);
+			return;
+		}
+	}
+}
+
+
+void Cwaifu2xncnnvulkanDlg::OnLanguageEnglish()
+{
+	// TODO: ここにコマンド ハンドラー コードを追加します。
+	UINT Lang;
+	Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+	if (Lang == 1) {
+		MessageBox(_T("The language has already been set to 'English'."), _T("Error"), MB_ICONERROR | MB_OK);
+		return;
+	}
+
+	this->GetMenu()->CheckMenuItem(ID_LANGUAGE_ENGLISH, MF_BYCOMMAND | MF_CHECKED);
+	if (this->GetMenu()->GetMenuState(ID_LANGUAGE_JAPANESE, MF_BYCOMMAND) == MF_CHECKED) {
+		this->GetMenu()->CheckMenuItem(ID_LANGUAGE_JAPANESE, MF_BYCOMMAND | MF_UNCHECKED);
+	}
+
+	WritePrivateProfileString(L"LANGUAGE", L"0x0000", L"1", L".\\settings.ini");
+
+	UINT ret;
+	ret = MessageBox(_T("The language setting has been changed, You will need to restart the application to make changes.\nDo you want to continue?"), _T("Confirm reboot"), MB_ICONINFORMATION | MB_YESNO);
+	if (ret == IDYES) {
+		TCHAR strPath[MAX_PATH];
+		::GetModuleFileName(AfxGetInstanceHandle(), strPath, sizeof(strPath) / sizeof(TCHAR));
+		TCHAR strCurDir[MAX_PATH];
+		::GetCurrentDirectory(sizeof(strCurDir) / sizeof(TCHAR), strCurDir);
+		DWORD dwProcessId = ::GetCurrentProcessId();
+		CString strCmdLine;
+		strCmdLine.Format(_T("/waitterminate %u"), dwProcessId);
+		::ShellExecute(NULL, NULL, strPath, strCmdLine, strCurDir, SW_SHOWNORMAL);
+		PostQuitMessage(0);
+		return;
+	}
+	else if (ret == IDNO) {
+		Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+		if (Lang == 0) {
+			this->GetMenu()->CheckMenuItem(ID_LANGUAGE_JAPANESE, MF_BYCOMMAND | MF_CHECKED);
+			this->GetMenu()->CheckMenuItem(ID_LANGUAGE_ENGLISH, MF_BYCOMMAND | MF_UNCHECKED);
+			return;
+		}
+		else if (Lang == 1) {
+			this->GetMenu()->CheckMenuItem(ID_LANGUAGE_JAPANESE, MF_BYCOMMAND | MF_UNCHECKED);
+			this->GetMenu()->CheckMenuItem(ID_LANGUAGE_ENGLISH, MF_BYCOMMAND | MF_CHECKED);
+			return;
+		}
+	}
+	else {
+		Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+		if (Lang == 0) {
+			this->GetMenu()->CheckMenuItem(ID_LANGUAGE_JAPANESE, MF_BYCOMMAND | MF_CHECKED);
+			this->GetMenu()->CheckMenuItem(ID_LANGUAGE_ENGLISH, MF_BYCOMMAND | MF_UNCHECKED);
+			return;
+		}
+		else if (Lang == 1) {
+			this->GetMenu()->CheckMenuItem(ID_LANGUAGE_JAPANESE, MF_BYCOMMAND | MF_UNCHECKED);
+			this->GetMenu()->CheckMenuItem(ID_LANGUAGE_ENGLISH, MF_BYCOMMAND | MF_CHECKED);
+			return;
+		}
+	}
+}
+
+
+void Cwaifu2xncnnvulkanDlg::LoadDlgStr()
+{
+	UINT Lang;
+	Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+	if (Lang == 0) {
+		Core->LoadJPNLangLibrary();
+		this->GetMenu()->CheckMenuItem(ID_LANGUAGE_ENGLISH, MF_BYCOMMAND | MF_UNCHECKED);
+		this->GetMenu()->CheckMenuItem(ID_LANGUAGE_JAPANESE, MF_BYCOMMAND | MF_CHECKED);
+	}
+	else if (Lang == 1) {
+		Core->LoadENGLangLibrary();
+		this->GetMenu()->CheckMenuItem(ID_LANGUAGE_ENGLISH, MF_BYCOMMAND | MF_CHECKED);
+		this->GetMenu()->CheckMenuItem(ID_LANGUAGE_JAPANESE, MF_BYCOMMAND | MF_UNCHECKED);
+	}
+	else {
+		Core->LoadJPNLangLibrary();
+		this->GetMenu()->CheckMenuItem(ID_LANGUAGE_ENGLISH, MF_BYCOMMAND | MF_UNCHECKED);
+		this->GetMenu()->CheckMenuItem(ID_LANGUAGE_JAPANESE, MF_BYCOMMAND | MF_CHECKED);
+		WritePrivateProfileString(L"LANGUAGE", L"0x0000", L"0", L".\\settings.ini");
+	}
+
+	ASSERT(Core->Lang_hinst);
+
+	LoadString(Core->Lang_hinst, IDS_ERROR_TITLE, (LPTSTR)ERROR_TITLE, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_INSTANCE, (LPTSTR)ERROR_INSTANCE, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_EXCEPTION, (LPTSTR)ERROR_EXCEPTION, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_SERVER, (LPTSTR)ERROR_SERVER, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_DOWNLOAD, (LPTSTR)ERROR_DOWNLOAD, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_FFMPEG, (LPTSTR)ERROR_FFMPEG, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_WAIFU2X, (LPTSTR)ERROR_WAIFU2X, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_IMAGE2PNG, (LPTSTR)ERROR_IMAGE2PNG, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_IMAGENOT, (LPTSTR)ERROR_IMAGENOT, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_IMAGENOT2, (LPTSTR)ERROR_IMAGENOT2, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_ABORT, (LPTSTR)ERROR_ABORT, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_APPNOTFOUND, (LPTSTR)ERROR_APPNOTFOUND, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_NOTSELECTED, (LPTSTR)ERROR_NOTSELECTED, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_SETTINGS, (LPTSTR)ERROR_SETTINGS, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_UPSCALE, (LPTSTR)ERROR_UPSCALE, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_UPSCALE_TITLE, (LPTSTR)ERROR_UPSCALE_TITLE, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_REUPSCALE, (LPTSTR)ERROR_REUPSCALE, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_REUPSCALE_TITLE, (LPTSTR)ERROR_REUPSCALE_TITLE, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_FAILED, (LPTSTR)ERROR_FAILED, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_FOLDER, (LPTSTR)ERROR_FOLDER, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_RESIZE, (LPTSTR)ERROR_RESIZE, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_SOUND, (LPTSTR)ERROR_SOUND, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_UPDATE, (LPTSTR)ERROR_UPDATE, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_UPDATE_ELSE, (LPTSTR)ERROR_UPDATE_ELSE, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_BLOCKSIZE_LARGE, (LPTSTR)ERROR_BLOCKSIZE_LARGE, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_BLOCKSIZE_SHORT, (LPTSTR)ERROR_BLOCKSIZE_SHORT, 256);
+	LoadString(Core->Lang_hinst, IDS_WARN_ABORT, (LPTSTR)WARN_ABORT, 256);
+	LoadString(Core->Lang_hinst, IDS_WARN_ABORT2, (LPTSTR)WARN_ABORT2, 256);
+	LoadString(Core->Lang_hinst, IDS_WARN_CANCEL, (LPTSTR)WARN_CANCEL, 256);
+	LoadString(Core->Lang_hinst, IDS_WARN_CANCEL_TITLE, (LPTSTR)WARN_CANCEL_TITLE, 256);
+	LoadString(Core->Lang_hinst, IDS_WARN_SAVECANCEL, (LPTSTR)WARN_SAVECANCEL, 256);
+	LoadString(Core->Lang_hinst, IDS_WARN_CONFIRM, (LPTSTR)WARN_CONFIRM, 256);
+	LoadString(Core->Lang_hinst, IDS_WARN_EXIST, (LPTSTR)WARN_EXIST, 256);
+	LoadString(Core->Lang_hinst, IDS_WARN_ADVANCED, (LPTSTR)WARN_ADVANCED, 256);
+	LoadString(Core->Lang_hinst, IDS_WARN_CAUTION_TITLE, (LPTSTR)WARN_CAUTION_TITLE, 256);
+	LoadString(Core->Lang_hinst, IDS_INFO_TITLE, (LPTSTR)INFO_TITLE, 256);
+	LoadString(Core->Lang_hinst, IDS_INFO_DOWNLOAD, (LPTSTR)INFO_DOWNLOAD, 256);
+	LoadString(Core->Lang_hinst, IDS_INFO_UPSCALE, (LPTSTR)INFO_UPSCALE, 256);
+	LoadString(Core->Lang_hinst, IDS_INFO_UPSCALE_TITLE, (LPTSTR)INFO_UPSCALE_TITLE, 256);
+	LoadString(Core->Lang_hinst, IDS_INFO_REUPSCALE, (LPTSTR)INFO_REUPSCALE, 256);
+	LoadString(Core->Lang_hinst, IDS_INFO_REUPSCALE_TITLE, (LPTSTR)INFO_REUPSCALE_TITLE, 256);
+	LoadString(Core->Lang_hinst, IDS_INFO_SUCCESS, (LPTSTR)INFO_SUCCESS, 256);
+	LoadString(Core->Lang_hinst, IDS_INFO_RESIZE, (LPTSTR)INFO_RESIZE, 256);
+	LoadString(Core->Lang_hinst, IDS_INFO_SOUND, (LPTSTR)INFO_SOUND, 256);
+	LoadString(Core->Lang_hinst, IDS_UPDATE_LATEST, (LPTSTR)UPDATE_LATEST, 256);
+	LoadString(Core->Lang_hinst, IDS_UPDATE_CURRENT, (LPTSTR)UPDATE_CURRENT, 256);
+	LoadString(Core->Lang_hinst, IDS_UPDATE_FFMPEG, (LPTSTR)UPDATE_FFMPEG, 256);
+	LoadString(Core->Lang_hinst, IDS_UPDATE_FFMPEG_TITLE, (LPTSTR)UPDATE_FFMPEG_TITLE, 256);
+	LoadString(Core->Lang_hinst, IDS_UPDATE_APP_LATEST, (LPTSTR)UPDATE_APP_LATEST, 256);
+	LoadString(Core->Lang_hinst, IDS_UPDATE_APP_CONFIRM, (LPTSTR)UPDATE_APP_CONFIRM, 256);
+	LoadString(Core->Lang_hinst, IDS_UPDATE_APP_TITLE, (LPTSTR)UPDATE_APP_TITLE, 256);
+	LoadString(Core->Lang_hinst, IDS_TEXT_SELFOLDER, (LPTSTR)TEXT_SELFOLDER, 256);
+	LoadString(Core->Lang_hinst, IDS_TEXT_UNKNOWN, (LPTSTR)TEXT_UNKNOWN, 256);
+	LoadString(Core->Lang_hinst, IDS_TEXT_DIRECTORYS, (LPTSTR)TEXT_DIRECTORYS, 256);
+	LoadString(Core->Lang_hinst, IDS_TEXT_BYTES, (LPTSTR)TEXT_BYTES, 256);
+	LoadString(Core->Lang_hinst, IDS_TEXT_SELOUTPUTFOLDER, (LPTSTR)TEXT_SELOUTPUTFOLDER, 256);
+	LoadString(Core->Lang_hinst, IDS_FILTER_IMAGE, (LPTSTR)FILTER_IMAGE, 530);
+	LoadString(Core->Lang_hinst, IDS_FILTER_MOVIE, (LPTSTR)FILTER_MOVIE, 256);
+	LoadString(Core->Lang_hinst, IDS_FILTER_SOUND, (LPTSTR)FILTER_SOUND, 256);
+	LoadString(Core->Lang_hinst, IDS_FILTER_JPEG, (LPTSTR)FILTER_JPEG, 256);
+	LoadString(Core->Lang_hinst, IDS_FILTER_PNG, (LPTSTR)FILTER_PNG, 256);
+	LoadString(Core->Lang_hinst, IDS_FILTER_WEBP, (LPTSTR)FILTER_WEBP, 256);
+
+	LoadString(Core->Lang_hinst, IDS_MENU_FILE, (LPTSTR)MENU_FILE, 256);
+	this->GetMenu()->ModifyMenu(0, MF_BYPOSITION | MF_STRING, 0, MENU_FILE);
+	LoadString(Core->Lang_hinst, IDS_MENU_CONFIG, (LPTSTR)MENU_CONFIG, 256);
+	this->GetMenu()->ModifyMenu(1, MF_BYPOSITION | MF_STRING, 1, MENU_CONFIG);
+	LoadString(Core->Lang_hinst, IDS_MENU_TOOL, (LPTSTR)MENU_TOOL, 256);
+	this->GetMenu()->ModifyMenu(2, MF_BYPOSITION | MF_STRING, 2, MENU_TOOL);
+	LoadString(Core->Lang_hinst, IDS_MENU_HELP, (LPTSTR)MENU_HELP, 256);
+	this->GetMenu()->ModifyMenu(3, MF_BYPOSITION | MF_STRING, 3, MENU_HELP);
+
+	LoadString(Core->Lang_hinst, IDS_MENULIST_READFILE, (LPTSTR)MENULIST_READFILE, 256);
+	this->GetMenu()->GetSubMenu(0)->ModifyMenu(0, MF_BYPOSITION | MF_STRING, 0, MENULIST_READFILE);
+	LoadString(Core->Lang_hinst, IDS_MENULIST_IMG, (LPTSTR)MENULIST_IMG, 256);
+	this->GetMenu()->GetSubMenu(0)->GetSubMenu(0)->ModifyMenu(0, MF_BYPOSITION | MF_STRING, ID_READ_IMAGE, MENULIST_IMG);
+	LoadString(Core->Lang_hinst, IDS_MENULIST_IMGM, (LPTSTR)MENULIST_IMGM, 256);
+	this->GetMenu()->GetSubMenu(0)->GetSubMenu(0)->ModifyMenu(1, MF_BYPOSITION | MF_STRING, ID_READ_IMAGE_MULTI, MENULIST_IMGM);
+	LoadString(Core->Lang_hinst, IDS_MENULIST_MOV, (LPTSTR)MENULIST_MOV, 256);
+	this->GetMenu()->GetSubMenu(0)->GetSubMenu(0)->ModifyMenu(2, MF_BYPOSITION | MF_STRING, ID_READ_VIDEO, MENULIST_MOV);
+	LoadString(Core->Lang_hinst, IDS_MENULIST_TEMPFILE, (LPTSTR)MENULIST_TEMPFILE, 256);
+	this->GetMenu()->GetSubMenu(0)->ModifyMenu(1, MF_BYPOSITION | MF_STRING, ID_FILE_ALLDELETE, MENULIST_TEMPFILE);
+	LoadString(Core->Lang_hinst, IDS_MENULIST_ENDAPP, (LPTSTR)MENULIST_ENDAPP, 256);
+	this->GetMenu()->GetSubMenu(0)->ModifyMenu(3, MF_BYPOSITION | MF_STRING, ID_END_APP, MENULIST_ENDAPP);
+	LoadString(Core->Lang_hinst, IDS_MENULIST_WAIFU2X, (LPTSTR)MENULIST_WAIFU2X, 256);
+	this->GetMenu()->GetSubMenu(1)->ModifyMenu(2, MF_BYPOSITION | MF_STRING, ID_SETTINGS, MENULIST_WAIFU2X);
+	LoadString(Core->Lang_hinst, IDS_MENULIST_FFMPEG, (LPTSTR)MENULIST_FFMPEG, 256);
+	this->GetMenu()->GetSubMenu(1)->ModifyMenu(3, MF_BYPOSITION | MF_STRING, 3, MENULIST_FFMPEG);
+	LoadString(Core->Lang_hinst, IDS_MENULIST_FF_OUT, (LPTSTR)MENULIST_FF_OUT, 256);
+	this->GetMenu()->GetSubMenu(1)->GetSubMenu(3)->ModifyMenu(0, MF_BYPOSITION | MF_STRING, ID_FFMPEG_SETTING, MENULIST_FF_OUT);
+	LoadString(Core->Lang_hinst, IDS_MENULIST_FF_VID, (LPTSTR)MENULIST_FF_VID, 256);
+	this->GetMenu()->GetSubMenu(1)->GetSubMenu(3)->ModifyMenu(1, MF_BYPOSITION | MF_STRING, ID_FFMPEG_VIDEOSETTINGS, MENULIST_FF_VID);
+	LoadString(Core->Lang_hinst, IDS_MENULIST_FF_AUD, (LPTSTR)MENULIST_FF_AUD, 256);
+	this->GetMenu()->GetSubMenu(1)->GetSubMenu(3)->ModifyMenu(2, MF_BYPOSITION | MF_STRING, ID_FFMPEG_AUDIOSETTINGS, MENULIST_FF_AUD);
+	LoadString(Core->Lang_hinst, IDS_MENULIST_RESIZE, (LPTSTR)MENULIST_RESIZE, 256);
+	this->GetMenu()->GetSubMenu(2)->GetSubMenu(0)->ModifyMenu(0, MF_BYPOSITION | MF_STRING, ID_VIDEORESIZE, MENULIST_RESIZE);
+	LoadString(Core->Lang_hinst, IDS_MENULIST_SOUND, (LPTSTR)MENULIST_SOUND, 256);
+	this->GetMenu()->GetSubMenu(2)->GetSubMenu(0)->ModifyMenu(1, MF_BYPOSITION | MF_STRING, ID_VIDEOAUDIOEXPORT, MENULIST_SOUND);
+	LoadString(Core->Lang_hinst, IDS_MENULIST_UPDATE, (LPTSTR)MENULIST_UPDATE, 256);
+	this->GetMenu()->GetSubMenu(3)->ModifyMenu(2, MF_BYPOSITION | MF_STRING, ID_UPDATECHECK, MENULIST_UPDATE);
+
+	LoadString(Core->Lang_hinst, IDS_STATIC_GRP_FILE, (LPTSTR)STATIC_GRP_FILE, 256);
+	GetDlgItem(IDC_STATIC_GRP1)->SetWindowText(STATIC_GRP_FILE);
+	LoadString(Core->Lang_hinst, IDS_STATIC_GRP_IMG, (LPTSTR)STATIC_GRP_IMG, 256);
+	GetDlgItem(IDC_STATIC_GRP2)->SetWindowText(STATIC_GRP_IMG);
+	LoadString(Core->Lang_hinst, IDS_STATIC_GRP_IMGM, (LPTSTR)STATIC_GRP_IMGM, 256);
+	GetDlgItem(IDC_STATIC_GRP3)->SetWindowText(STATIC_GRP_IMGM);
+	LoadString(Core->Lang_hinst, IDS_STATIC_GRP_VID, (LPTSTR)STATIC_GRP_VID, 256);
+	GetDlgItem(IDC_STATIC_GRP4)->SetWindowText(STATIC_GRP_VID);
+	LoadString(Core->Lang_hinst, IDS_STATIC_GRP_INFO, (LPTSTR)STATIC_GRP_INFO, 256);
+	GetDlgItem(IDC_STATIC_GRP5)->SetWindowText(STATIC_GRP_INFO);
+
+	LoadString(Core->Lang_hinst, IDS_STATIC_HEADER, (LPTSTR)STATIC_HEADER, 256);
+	GetDlgItem(IDC_STATIC_HEAD)->SetWindowText(STATIC_HEADER);
+	LoadString(Core->Lang_hinst, IDS_STATIC_FILEREAD, (LPTSTR)STATIC_FILEREAD, 256);
+	GetDlgItem(IDC_STATIC_READ)->SetWindowText(STATIC_FILEREAD);
+	LoadString(Core->Lang_hinst, IDS_STATIC_FILENAME, (LPTSTR)STATIC_FILENAME, 256);
+	GetDlgItem(IDC_STATIC_FL)->SetWindowText(STATIC_FILENAME);
+	LoadString(Core->Lang_hinst, IDS_STATIC_FILEPATH, (LPTSTR)STATIC_FILEPATH, 256);
+	GetDlgItem(IDC_STATIC_FP)->SetWindowText(STATIC_FILEPATH);
+	LoadString(Core->Lang_hinst, IDS_STATIC_NOTREAD, (LPTSTR)STATIC_NOTREAD, 256);
+	GetDlgItem(IDC_STATIC_READSTATUS)->SetWindowText(STATIC_NOTREAD);
+	GetDlgItem(IDC_STATIC_FILE)->SetWindowText(STATIC_NOTREAD);
+	GetDlgItem(IDC_STATIC_FILEPATH)->SetWindowText(STATIC_NOTREAD);
+	LoadString(Core->Lang_hinst, IDS_STATIC_READED, (LPTSTR)STATIC_READED, 256);
+	LoadString(Core->Lang_hinst, IDS_STATIC_CPU, (LPTSTR)STATIC_CPU, 256);
+	GetDlgItem(IDC_STATIC_CP)->SetWindowText(STATIC_CPU);
+	LoadString(Core->Lang_hinst, IDS_STATIC_GPU, (LPTSTR)STATIC_GPU, 256);
+	GetDlgItem(IDC_STATIC_GP)->SetWindowText(STATIC_GPU);
+
+	LoadString(Core->Lang_hinst, IDS_BTN_UPSCALE, (LPTSTR)BTN_UPSCALE, 256);
+	GetDlgItem(IDC_BUTTON6)->SetWindowText(BTN_UPSCALE);
+	GetDlgItem(IDC_BUTTON1)->SetWindowText(BTN_UPSCALE);
+	LoadString(Core->Lang_hinst, IDS_BTN_REUPSCALE, (LPTSTR)BTN_REUPSCALE, 256);
+	GetDlgItem(IDC_BUTTON3)->SetWindowText(BTN_REUPSCALE);
+	LoadString(Core->Lang_hinst, IDS_BTN_MULTIUPSCALE, (LPTSTR)BTN_MULTIUPSCALE, 256);
+	GetDlgItem(IDC_BUTTON2)->SetWindowText(BTN_MULTIUPSCALE);
+	LoadString(Core->Lang_hinst, IDS_BTN_FINALENC, (LPTSTR)BTN_FINALENC, 256);
+	GetDlgItem(IDC_BUTTON4)->SetWindowText(BTN_FINALENC);
 }

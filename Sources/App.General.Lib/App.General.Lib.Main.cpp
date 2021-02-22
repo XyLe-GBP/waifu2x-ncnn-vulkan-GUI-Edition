@@ -12,16 +12,30 @@ void libCore::LoadImageLibrary() {
 	static AFX_EXTENSION_MODULE resdll = { NULL, NULL };
 	VERIFY(AfxInitExtensionModule(resdll, libCore::hinst));
 	new CDynLinkLibrary(resdll);
-
-	if (libCore::hinst == NULL) {
-		MessageBox(NULL, _T("App.General.resLib.dll が見つからないため、コードの実行を続行できません。プログラムを再インストールすると、この問題が解決する可能性があります。"), _T("App.General.resLib.dll - システム エラー"), MB_ICONERROR | MB_OK);
-		exit(EXIT_FAILURE);
-	}
 }
 
-void libCore::FreeImageLibrary() {
+void libCore::LoadJPNLangLibrary()
+{
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	//GlobalFree(libCore::hinst);
+	NEW_MAINSTR;
+	libCore::Lang_hinst = LoadLibrary(JPN_RES_LIBRARY);
+	SAFE_DELETE(MAINSTR_FUNC);
+	ASSERT(libCore::Lang_hinst);
+	static AFX_EXTENSION_MODULE resdll = { NULL, NULL };
+	VERIFY(AfxInitExtensionModule(resdll, libCore::Lang_hinst));
+	new CDynLinkLibrary(resdll);
+}
+
+void libCore::LoadENGLangLibrary()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	NEW_MAINSTR;
+	libCore::Lang_hinst = LoadLibrary(ENG_RES_LIBRARY);
+	SAFE_DELETE(MAINSTR_FUNC);
+	ASSERT(libCore::Lang_hinst);
+	static AFX_EXTENSION_MODULE resdll = { NULL, NULL };
+	VERIFY(AfxInitExtensionModule(resdll, libCore::Lang_hinst));
+	new CDynLinkLibrary(resdll);
 }
 
 // Utility
@@ -591,7 +605,7 @@ CString libCoreUtility::AppCurrentVersionCheck() {
 
 bool libCoreUtility::DownloadFile(LPCTSTR pszURL, LPCTSTR pszLocalFile, DWORD dwBuffSize) {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	TCHAR		pszHeader[] = _T("Accept: */*\r\n\r\n");
+	//TCHAR		pszHeader[] = _T("Accept: */*\r\n\r\n");
 	BOOL		ret;
 	DWORD		dwReadSize = 0;
 	DWORD		dwWrittenSize;
@@ -604,7 +618,7 @@ bool libCoreUtility::DownloadFile(LPCTSTR pszURL, LPCTSTR pszLocalFile, DWORD dw
 	if (hInternet == NULL)
 		return	false;
 
-	hConnect = ::InternetOpenUrl(hInternet, pszURL, pszHeader, -1, INTERNET_FLAG_DONT_CACHE, 0);
+	hConnect = ::InternetOpenUrl(hInternet, pszURL, NULL, -1, INTERNET_FLAG_DONT_CACHE, 0);
 	pcbBuff = new BYTE[dwBuffSize];
 	if (hConnect == NULL || pcbBuff == NULL)
 	{
@@ -941,6 +955,56 @@ BOOL libCoreUtility::DeleteDirectory(LPCTSTR lpPathName) {
 	return FALSE;
 }
 
+// WinAPIで全ファイルの削除
+BOOL libCoreUtility::DeleteALLFiles(LPCTSTR DeletePathName)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	CString strPath = DeletePathName;
+	SHFILEOPSTRUCT SHFILE{};
+	SHFILE.hwnd = ::GetDesktopWindow();
+	SHFILE.wFunc = FO_DELETE;
+	SHFILE.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
+	SHFILE.fAnyOperationsAborted = TRUE;
+	SHFILE.hNameMappings = NULL;
+	SHFILE.lpszProgressTitle = L"";
+
+	strPath += "?";
+	strPath.SetAt(strPath.GetLength() - 1, NULL);
+	SHFILE.pFrom = strPath;
+	SHFILE.pTo = NULL;
+	SHFileOperation(&SHFILE);
+	WaitForSingleObject(&SHFILE, INFINITE);
+	ZeroMemory(&SHFILE, sizeof(SHFILEOPSTRUCT));
+
+	return FALSE;
+}
+
+// WinAPIで'from'から'to'へ全ファイルをコピー
+BOOL libCoreUtility::CopyALLFiles(LPCTSTR from, LPCTSTR to)
+{
+	CString strFrom = from;
+	CString strTo = to;
+	SHFILEOPSTRUCT SHFILE{};
+	SHFILE.hwnd = ::GetDesktopWindow();
+	SHFILE.wFunc = FO_COPY;
+	SHFILE.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
+	SHFILE.fAnyOperationsAborted = TRUE;
+	SHFILE.hNameMappings = NULL;
+	SHFILE.lpszProgressTitle = L"";
+
+	strFrom += "0";
+	strFrom.SetAt(strFrom.GetLength() - 1, NULL);
+	strTo += "0";
+	strTo.SetAt(strTo.GetLength() - 1, NULL);
+	SHFILE.pFrom = strFrom;
+	SHFILE.pTo = strTo;
+	SHFileOperation(&SHFILE);
+	WaitForSingleObject(&SHFILE, INFINITE);
+	ZeroMemory(&SHFILE, sizeof(SHFILEOPSTRUCT));
+
+	return FALSE;
+}
+
 // 特定文字列を置き換える [CString]
 CString libCoreUtility::AfxReplaceStr(CString& replacedStr, CString from, CString to) {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -969,9 +1033,43 @@ CStringA libCoreUtility::AfxReplaceStrA(CStringA& replacedStr, CStringA from, CS
 	return replacedStr;
 }
 
+CString libCoreUtility::AfxReplaceStrPtr(LPCTSTR& replacedStr, LPCTSTR from, LPCTSTR to) {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	CString strReplaced = replacedStr;
+	CString strFrom = from;
+	CString strTo = to;
+
+	const unsigned int pos = strReplaced.Find(strFrom);
+	const int len = strFrom.GetLength();
+
+	if (pos == std::string::npos || strFrom.IsEmpty()) {
+		return strReplaced;
+	}
+
+	strReplaced.Replace(strFrom, strTo);
+	return strReplaced;
+}
+
+void libCoreUtility::RunProcess(LPWSTR lpCommandLine, WORD WindowFlags)
+{
+	STARTUPINFO si;
+	memset(&si, 0, sizeof(STARTUPINFO));
+	PROCESS_INFORMATION pi;
+	memset(&pi, 0, sizeof(PROCESS_INFORMATION));
+	si.dwFlags = STARTF_USESHOWWINDOW;
+	si.wShowWindow = WindowFlags;
+	::CreateProcess(NULL, lpCommandLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+	CloseHandle(pi.hThread);
+	WaitForSingleObject(pi.hProcess, INFINITE);
+	CloseHandle(pi.hProcess);
+
+	return;
+}
+
 // exe名を検索し、プロセスを強制終了させる
 void libCoreUtility::TerminateExeName(const TCHAR* TrFileName)
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	PROCESSENTRY32 pe{};
 	pe.dwSize = sizeof(pe);
 	UINT len = 0;
@@ -1010,22 +1108,96 @@ void libCoreUtility::TerminateExeName(const TCHAR* TrFileName)
 	return;
 }
 
+CString libCoreUtility::GetCPUInfo()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	int CPUInfo[5] = { -1 };
+	__cpuid(CPUInfo, 0x80000000);
+	if (CPUInfo[0] >= 0x80000004)
+	{
+		CHAR szCPUBrandString[0x41] = { 0 };
+		__cpuid(CPUInfo, 0x80000002);
+		memcpy(szCPUBrandString, CPUInfo, sizeof(CPUInfo));
+		__cpuid(CPUInfo, 0x80000003);
+		memcpy(szCPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
+		__cpuid(CPUInfo, 0x80000004);
+		memcpy(szCPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
+
+		const int tchrSize = sizeof(szCPUBrandString) + 1;
+		TCHAR tchrText2[tchrSize]{};
+		int res = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, szCPUBrandString, sizeof(szCPUBrandString), tchrText2, tchrSize);
+
+		CString CPUText = CString(tchrText2);
+		CString CPUID = L"" + CPUText + L"\n";
+
+		if (CPUText.Compare(_T("")) == 0) {
+			return NULL;
+		}
+		else {
+			return CPUID;
+		}
+	}
+	return NULL;
+}
+
+CString libCoreUtility::GetGPUInfo()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	CString ret;
+	HRESULT hres;
+	hres = CoInitializeEx(0, COINIT_MULTITHREADED);
+	if (FAILED(hres)) return NULL;
+	hres = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
+	if (FAILED(hres)) { CoUninitialize(); return NULL; }
+	IWbemLocator* pLoc = NULL;
+	hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLoc);
+	if (FAILED(hres)) { CoUninitialize(); return NULL; }
+	IWbemServices* pSvc = NULL;
+	hres = pLoc->ConnectServer(_bstr_t(L"root\\CIMV2"), NULL, NULL, 0, NULL, 0, 0, &pSvc);
+	if (FAILED(hres)) { pLoc->Release(); CoUninitialize(); return NULL; }
+	hres = CoSetProxyBlanket(pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL, RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
+	if (FAILED(hres)) { pSvc->Release(); pLoc->Release(); CoUninitialize(); return NULL; }
+	IEnumWbemClassObject* pEnumerator = NULL;
+	hres = pSvc->ExecQuery(bstr_t("WQL"),
+		bstr_t("SELECT * FROM Win32_VideoController"),
+		WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
+	if (FAILED(hres)) { pSvc->Release(); pLoc->Release(); CoUninitialize(); return NULL; }
+	IWbemClassObject* pclsObj{};
+	ULONG uReturn = 0;
+	while (pEnumerator)
+	{
+		HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
+		if (0 == uReturn)break;
+		VARIANT vtProp;
+		VariantInit(&vtProp);
+		hr = pclsObj->Get(L"Caption", 0, &vtProp, 0, 0);
+		wcout << " OS Name : " << vtProp.bstrVal << endl;
+		ret = vtProp.bstrVal;
+		VariantClear(&vtProp);
+	}
+	pSvc->Release();
+	pLoc->Release();
+	pEnumerator->Release();
+	pclsObj->Release();
+	CoUninitialize();
+
+	return ret;
+}
+
 // libMainString
 
 // wstringをstringに変換する
 std::string libMainString::TWStringToString(const std::wstring& arg_wstr)
 {
-	// 文字数
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	std::string result;
 	size_t length = arg_wstr.size();
-	// 変換後文字数
 	size_t convLength;
-	// 仮の受け皿を用意（文字数×2ありゃ十分でしょう）
 	char* c = (char*)malloc(sizeof(char) * length * 2);
-	// 変換
 	wcstombs_s(&convLength, c, sizeof(char) * length * 2, arg_wstr.c_str(), length * 2);
-	// 返り値へ保存
-	std::string result = c;
-	// 仮の受け皿を破棄
+	if (c) {
+		result = c;
+	}
 	SAFE_FREE(c);
 
 	return result;
@@ -1034,20 +1206,18 @@ std::string libMainString::TWStringToString(const std::wstring& arg_wstr)
 // stringをwstringに変換する
 std::wstring libMainString::StringToWString(const std::string& arg_str)
 {
-	// 文字数
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	std::wstring result;
 	size_t length = arg_str.size();
-	// 変換後文字数
 	size_t convLength;
-	// 仮の受け皿を用意
 	wchar_t* wc = (wchar_t*)malloc(sizeof(wchar_t) * (length + 2));
-	// 変換
 	mbstowcs_s(&convLength, wc, length + 1, arg_str.c_str(), _TRUNCATE);
-	// 返り値へ保存
-	std::wstring str = wc;
-	// 仮の受け皿を破棄
+	if (wc) {
+		result = wc;
+	}
 	SAFE_FREE(wc);
 
-	return str;
+	return result;
 };
 
 // カレントディレクトリを取得する関数
@@ -1070,6 +1240,20 @@ CString libMainString::CURRENT_DIR() {
 CString libMainString::RESOURCELIB_PATH() {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CString FUNCTION = libMainString::CURRENT_DIR() + RESOURCEDLL_PATH;
+	return FUNCTION;
+}
+
+// 日本語リソース用DLLのパスを取得する
+CString libMainString::JPN_RESOURCELIB_PATH() {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	CString FUNCTION = libMainString::CURRENT_DIR() + JPNRESOURCEDLL_PATH;
+	return FUNCTION;
+}
+
+// 英語リソース用DLLのパスを取得する
+CString libMainString::ENG_RESOURCELIB_PATH() {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	CString FUNCTION = libMainString::CURRENT_DIR() + ENGRESOURCEDLL_PATH;
 	return FUNCTION;
 }
 
@@ -1108,7 +1292,7 @@ CString libVersionString::APP_VERSION_TEXT() {
 // waifu2x-ncnn-vulkanのバージョンテキスト
 CString libVersionString::CMD_VERSION_TEXT() {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	CString FUNCTION = _T("20210102");
+	CString FUNCTION = _T("20210210");
 	return FUNCTION;
 }
 

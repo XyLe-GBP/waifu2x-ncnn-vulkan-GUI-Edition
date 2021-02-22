@@ -1,5 +1,5 @@
 ﻿#pragma once
-
+#include "../App.General.Lib/App.General.Lib.Main.h"
 
 // VIDEORESIZE ダイアログ
 
@@ -19,7 +19,9 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
 	virtual BOOL OnInitDialog();
+	afx_msg void OnDestroy();
 
+	NEW_CORE;
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedRadio2();
@@ -31,4 +33,6 @@ public:
 	CComboBox m_Resize;
 	CString FINAL;
 	CString SIZE;
+private:
+	void SetDlgLang();
 };

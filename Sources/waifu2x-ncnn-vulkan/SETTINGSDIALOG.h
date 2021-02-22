@@ -9,6 +9,7 @@ class SETTINGSDIALOG : public CDialogEx
 
 public:
 	SETTINGSDIALOG(CWnd* pParent = nullptr);   // 標準コンストラクター
+	CToolTipCtrl m_hToolTip;
 	virtual ~SETTINGSDIALOG();
 
 // ダイアログ データ
@@ -19,11 +20,13 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
 	virtual BOOL OnInitDialog();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 	DECLARE_MESSAGE_MAP()
 protected:
 	NEW_CORE;
 	CBitmap m_hImage;
+	void SetDlgLang();
 
 public:
 	CComboBox m_NoiseLevel;

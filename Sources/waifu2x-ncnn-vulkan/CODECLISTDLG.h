@@ -21,6 +21,7 @@ protected:
 	virtual BOOL OnInitDialog();
 	virtual void OnDestroy();
 
+	NEW_CORE;
 	NEW_COREUTIL;
 	NEW_MAINSTR;
 	DECLARE_MESSAGE_MAP()
@@ -28,4 +29,5 @@ public:
 	afx_msg void OnBnClickedOk();
 private:
 	CEdit m_hEditList;
+	void SetDlgLang();
 };

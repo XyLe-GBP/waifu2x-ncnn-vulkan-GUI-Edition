@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "waifu2x-ncnn-vulkan.h"
+#include "waifu2x-ncnn-vulkanDlg.h"
 #include "FFMPEGSETTINGSDIALOG.h"
 #include "afxdialogex.h"
 #include "CODECLISTDLG.h"
@@ -83,8 +84,23 @@ BOOL FFMPEGSETTINGSDIALOG::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	m_PRESET.AddString(_T("デフォルト"));
-	m_PRESET.AddString(_T("カスタム"));
+	UINT Lang;
+	Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+
+	if (Lang == 0) {
+		m_PRESET.AddString(_T("デフォルト"));
+		m_PRESET.AddString(_T("カスタム"));
+	}
+	else if (Lang == 1) {
+		m_PRESET.AddString(_T("Default"));
+		m_PRESET.AddString(_T("Custom"));
+	}
+	else {
+		m_PRESET.AddString(_T("デフォルト"));
+		m_PRESET.AddString(_T("カスタム"));
+	}
+
+	SetDlgLang();
 
 	CEdit* edit1 = (CEdit*)GetDlgItem(IDC_EDIT1);
 	edit1->SetWindowText(CURRENT_PATH + L"\\Resources\\ffmpeg\\ffmpeg.exe");
@@ -1199,7 +1215,61 @@ void FFMPEGSETTINGSDIALOG::OnDestroy()
 	CDialogEx::OnDestroy();
 
 	FreeLibrary(Core->hinst);
+	FreeLibrary(Core->Lang_hinst);
 	SAFE_DELETE(CORE_FUNC);
 	SAFE_DELETE(MAINSTR_FUNC);
-	Core->FreeImageLibrary();
+}
+
+void FFMPEGSETTINGSDIALOG::SetDlgLang()
+{
+	UINT Lang;
+	Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+	if (Lang == 0) {
+		Core->LoadJPNLangLibrary();
+	}
+	else if (Lang == 1) {
+		Core->LoadENGLangLibrary();
+	}
+	else {
+		Core->LoadJPNLangLibrary();
+	}
+
+	LoadString(Core->Lang_hinst, IDS_FF_SETTING_TITLE, (LPTSTR)FF_SETTING_TITLE, 256);
+	SetWindowText(FF_SETTING_TITLE);
+	LoadString(Core->Lang_hinst, IDS_BTN_FINDCODEC, (LPTSTR)BTN_FINDCODEC, 256);
+	GetDlgItem(IDC_BUTTON_CODEC)->SetWindowText(BTN_FINDCODEC);
+	LoadString(Core->Lang_hinst, IDS_CHECK_ADVANCED, (LPTSTR)CHECK_ADVANCED, 256);
+	GetDlgItem(IDC_CHECK_ADVANCED)->SetWindowText(CHECK_ADVANCED);
+	LoadString(Core->Lang_hinst, IDS_CHECK_HIDEBANNER, (LPTSTR)CHECK_HIDEBANNER, 256);
+	GetDlgItem(IDC_CHECK_HIDE_BANNER)->SetWindowText(CHECK_HIDEBANNER);
+	LoadString(Core->Lang_hinst, IDS_CHECK_OVERWRITE, (LPTSTR)CHECK_OVERWRITE, 256);
+	GetDlgItem(IDC_CHECK_OVERWRITE)->SetWindowText(CHECK_OVERWRITE);
+	LoadString(Core->Lang_hinst, IDS_CHECK_ENABLEAAC, (LPTSTR)CHECK_ENABLEAAC, 256);
+	GetDlgItem(IDC_CHECK_AAC)->SetWindowText(CHECK_ENABLEAAC);
+	LoadString(Core->Lang_hinst, IDS_CHECK_NVENC_CRF, (LPTSTR)CHECK_NVENC_CRF, 256);
+	GetDlgItem(IDC_CHECK_QP)->SetWindowText(CHECK_NVENC_CRF);
+	LoadString(Core->Lang_hinst, IDS_GRP_GENERAL, (LPTSTR)STATIC_GRP_GENERAL, 256);
+	GetDlgItem(IDC_STATIC_GRP_GEN_FF)->SetWindowText(STATIC_GRP_GENERAL);
+	LoadString(Core->Lang_hinst, IDS_GRP_ADVANCED, (LPTSTR)STATIC_GRP_ADVANCED, 256);
+	GetDlgItem(IDC_STATIC_GRP_ADV_FF)->SetWindowText(STATIC_GRP_ADVANCED);
+	LoadString(Core->Lang_hinst, IDS_STATIC_PRESET, (LPTSTR)STATIC_PRESET, 256);
+	GetDlgItem(IDC_STATIC_PRE_FF)->SetWindowText(STATIC_PRESET);
+	LoadString(Core->Lang_hinst, IDS_STATIC_VIDFPS, (LPTSTR)STATIC_VIDFPS, 256);
+	GetDlgItem(IDC_STATIC_VIDFP)->SetWindowText(STATIC_VIDFPS);
+	LoadString(Core->Lang_hinst, IDS_STATIC_VIDFPS2, (LPTSTR)STATIC_VIDFPS2, 256);
+	GetDlgItem(IDC_STATIC_VIDFP2)->SetWindowText(STATIC_VIDFPS2);
+	LoadString(Core->Lang_hinst, IDS_STATIC_VIDCODEC, (LPTSTR)STATIC_VIDCODEC, 256);
+	GetDlgItem(IDC_STATIC_VIDCDC)->SetWindowText(STATIC_VIDCODEC);
+	LoadString(Core->Lang_hinst, IDS_STATIC_SNDCODEC, (LPTSTR)STATIC_SNDCODEC, 256);
+	GetDlgItem(IDC_STATIC_SNDCDC)->SetWindowText(STATIC_SNDCODEC);
+	LoadString(Core->Lang_hinst, IDS_STATIC_SNDBIT, (LPTSTR)STATIC_SNDBIT, 256);
+	GetDlgItem(IDC_STATIC_SNDBT)->SetWindowText(STATIC_SNDBIT);
+	LoadString(Core->Lang_hinst, IDS_STATIC_CRFLEVEL, (LPTSTR)STATIC_CRFLEVEL, 256);
+	GetDlgItem(IDC_STATIC_CRFLV)->SetWindowText(STATIC_CRFLEVEL);
+	LoadString(Core->Lang_hinst, IDS_STATIC_CRFLEVEL2, (LPTSTR)STATIC_CRFLEVEL2, 256);
+	GetDlgItem(IDC_STATIC_CRFLV2)->SetWindowText(STATIC_CRFLEVEL2);
+	LoadString(Core->Lang_hinst, IDS_STATIC_FFPATH, (LPTSTR)STATIC_FFPATH, 256);
+	GetDlgItem(IDC_STATIC_FFPT)->SetWindowText(STATIC_FFPATH);
+	LoadString(Core->Lang_hinst, IDS_STATIC_PARAM, (LPTSTR)STATIC_PARAM, 256);
+	GetDlgItem(IDC_STATIC_CMDP_FF)->SetWindowText(STATIC_PARAM);
 }

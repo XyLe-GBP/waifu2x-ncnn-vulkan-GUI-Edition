@@ -23,10 +23,13 @@ public:
 // オーバーライド
 public:
 	virtual BOOL InitInstance();
+	virtual BOOL ExitInstance();
 
 // 実装
 
 	DECLARE_MESSAGE_MAP()
+private:
+	HANDLE g_hMutex;
 };
 
 extern Cwaifu2xncnnvulkanApp theApp;

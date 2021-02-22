@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "waifu2x-ncnn-vulkan.h"
+#include "waifu2x-ncnn-vulkanDlg.h"
 #include "VIDEORESIZE.h"
 #include "afxdialogex.h"
 
@@ -33,6 +34,7 @@ void VIDEORESIZE::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(VIDEORESIZE, CDialogEx)
+	ON_WM_DESTROY()
 	ON_BN_CLICKED(IDC_RADIO2, &VIDEORESIZE::OnBnClickedRadio2)
 	ON_BN_CLICKED(IDC_RADIO1, &VIDEORESIZE::OnBnClickedRadio1)
 	ON_CBN_SELCHANGE(IDC_COMBO1, &VIDEORESIZE::OnCbnSelchangeCombo1)
@@ -45,6 +47,8 @@ END_MESSAGE_MAP()
 BOOL VIDEORESIZE::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
+
+	SetDlgLang();
 
 	m_nRadio = 0;
 
@@ -114,83 +118,89 @@ void VIDEORESIZE::OnBnClickedRadio2()
 void VIDEORESIZE::OnCbnSelchangeCombo1()
 {
 	// TODO: ここにコントロール通知ハンドラー コードを追加します。
-	if (m_nRadio == 0) {
-		if (m_Resize.GetCurSel() == 0) {
+	switch (m_nRadio)
+	{
+	case 0:
+		switch (m_Resize.GetCurSel())
+		{
+		case 0:
 			SIZE = L"7680x4320";
-		}
-		else if (m_Resize.GetCurSel() == 1) {
+			break;
+		case 1:
 			SIZE = L"3840x2160";
-		}
-		else if (m_Resize.GetCurSel() == 2) {
+			break;
+		case 2:
 			SIZE = L"2560x1440";
-		}
-		else if (m_Resize.GetCurSel() == 3) {
+			break;
+		case 3:
 			SIZE = L"1920x1080";
-		}
-		else if (m_Resize.GetCurSel() == 4) {
+			break;
+		case 4:
 			SIZE = L"1600x900";
-		}
-		else if (m_Resize.GetCurSel() == 5) {
+			break;
+		case 5:
 			SIZE = L"1280x720";
-		}
-		else if (m_Resize.GetCurSel() == 6) {
+			break;
+		case 6:
 			SIZE = L"1024x576";
-		}
-		else if (m_Resize.GetCurSel() == 7) {
+			break;
+		case 7:
 			SIZE = L"768x432";
-		}
-		else if (m_Resize.GetCurSel() == 8) {
+			break;
+		case 8:
 			SIZE = L"640x360";
-		}
-		else if (m_Resize.GetCurSel() == 9) {
+			break;
+		case 9:
 			SIZE = L"480x270";
-		}
-		else if (m_Resize.GetCurSel() == 10) {
+			break;
+		case 10:
 			SIZE = L"320x180";
-		}
-		else if (m_Resize.GetCurSel() == 11) {
+			break;
+		case 11:
 			SIZE = L"160x90";
-		}
-		else {
+			break;
+		default:
 			SIZE = L"";
+			break;
 		}
-		return;
-	}
-	else if (m_nRadio == 1) {
-		if (m_Resize.GetCurSel() == 0) {
+		break;
+	case 1:
+		switch (m_Resize.GetCurSel())
+		{
+		case 0:
 			SIZE = L"3200x2400";
-		}
-		else if (m_Resize.GetCurSel() == 1) {
+			break;
+		case 1:
 			SIZE = L"2048x1536";
-		}
-		else if (m_Resize.GetCurSel() == 2) {
+			break;
+		case 2:
 			SIZE = L"1600x1200";
-		}
-		else if (m_Resize.GetCurSel() == 3) {
+			break;
+		case 3:
 			SIZE = L"1280x960";
-		}
-		else if (m_Resize.GetCurSel() == 4) {
+			break;
+		case 4:
 			SIZE = L"1024x768";
-		}
-		else if (m_Resize.GetCurSel() == 5) {
+			break;
+		case 5:
 			SIZE = L"800x600";
-		}
-		else if (m_Resize.GetCurSel() == 6) {
+			break;
+		case 6:
 			SIZE = L"640x480";
-		}
-		else if (m_Resize.GetCurSel() == 7) {
+			break;
+		case 7:
 			SIZE = L"320x240";
-		}
-		else if (m_Resize.GetCurSel() == 8) {
+			break;
+		case 8:
 			SIZE = L"160x120";
-		}
-		else {
+			break;
+		default:
 			SIZE = L"";
+			break;
 		}
-		return;
-	}
-	else {
-		return;
+		break;
+	default:
+		break;
 	}
 }
 
@@ -199,9 +209,9 @@ void VIDEORESIZE::OnBnClickedOk()
 {
 	// TODO: ここにコントロール通知ハンドラー コードを追加します。
 	if (SIZE == L"") {
-		MessageBox(_T("解像度が適切に設定されていません。"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(ERROR_SIZE, ERROR_TITLE, MB_ICONERROR | MB_OK);
 	}
-	FINAL = _T("ffmpeg -i %InString% -s ") + SIZE + _T(" -y %OutString%");
+	FINAL = _T("ffmpeg -i $InFile -s ") + SIZE + _T(" -y $OutFile");
 
 	CDialogEx::OnOK();
 }
@@ -211,4 +221,38 @@ void VIDEORESIZE::OnBnClickedCancel()
 {
 	// TODO: ここにコントロール通知ハンドラー コードを追加します。
 	CDialogEx::OnCancel();
+}
+
+
+void VIDEORESIZE::OnDestroy()
+{
+	CDialogEx::OnDestroy();
+
+	FreeLibrary(Core->Lang_hinst);
+	SAFE_DELETE(CORE_FUNC);
+}
+
+
+void VIDEORESIZE::SetDlgLang()
+{
+	UINT Lang;
+	Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+	if (Lang == 0) {
+		Core->LoadJPNLangLibrary();
+	}
+	else if (Lang == 1) {
+		Core->LoadENGLangLibrary();
+	}
+	else {
+		Core->LoadJPNLangLibrary();
+	}
+
+	LoadString(Core->Lang_hinst, IDS_RESIZE_TITLE, (LPTSTR)RESIZE_TITLE, 256);
+	SetWindowText(RESIZE_TITLE);
+	LoadString(Core->Lang_hinst, IDS_ERROR_TITLE, (LPTSTR)ERROR_TITLE, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_SIZE, (LPTSTR)ERROR_SIZE, 256);
+	LoadString(Core->Lang_hinst, IDS_GRP_ASPCT, (LPTSTR)STATIC_GRP_ASPECT, 256);
+	GetDlgItem(IDC_STATIC_GRP_ASP)->SetWindowText(STATIC_GRP_ASPECT);
+	LoadString(Core->Lang_hinst, IDS_GRP_SIZE, (LPTSTR)STATIC_GRP_SIZE, 256);
+	GetDlgItem(IDC_STATIC_GRP_RS)->SetWindowText(STATIC_GRP_SIZE);
 }

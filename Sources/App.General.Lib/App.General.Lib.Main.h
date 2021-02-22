@@ -1,6 +1,4 @@
 #pragma once
-
-#include "pch.h"
 #include <io.h>
 #include <direct.h>
 #include <iostream>
@@ -8,12 +6,17 @@
 #include <string>
 #include <Tlhelp32.h>
 #include "wininet.h" 
+#include <mmsystem.h>
+#include <comdef.h>
+#include <Wbemidl.h>
 #pragma comment(lib,"wininet.lib")
 #pragma comment(lib,"Winmm.lib")
 #pragma comment(lib, "version.lib")
-#include <mmsystem.h>
+#pragma comment(lib, "wbemuuid.lib")
 
 #include "App.General.Lib.Define.h"
+#include "../waifu2xnvgui.Japanese/resource.h"
+#include "../waifu2xnvgui.English/resource.h"
 
 /*#ifdef GUIRESOURCEPACKMAIN_EXPORTS
 #define GUIRESOURCEPACKMAIN_API __declspec(dllexport)
@@ -26,8 +29,10 @@ using namespace std;
 class libCore {
 public:
 	HINSTANCE hinst;
+	HINSTANCE Lang_hinst;
 	void libCore::LoadImageLibrary();
-	void libCore::FreeImageLibrary();
+	void libCore::LoadJPNLangLibrary();
+	void libCore::LoadENGLangLibrary();
 };
 
 
@@ -48,9 +53,15 @@ public:
 	DWORD libCoreUtility::GetFileSizeAPI(const wchar_t* fp);
 	DWORD libCoreUtility::GetFileSizeStat(const wchar_t* fp);
 	BOOL libCoreUtility::DeleteDirectory(LPCTSTR lpPathName);
+	BOOL libCoreUtility::DeleteALLFiles(LPCTSTR DeletePathName);
+	BOOL libCoreUtility::CopyALLFiles(LPCTSTR from, LPCTSTR to);
 	CString libCoreUtility::AfxReplaceStr(CString& replacedStr, CString from, CString to);
 	CStringA libCoreUtility::AfxReplaceStrA(CStringA& replacedStr, CStringA from, CStringA to);
+	CString libCoreUtility::AfxReplaceStrPtr(LPCTSTR& replacedStr, LPCTSTR from, LPCTSTR to);
+	void libCoreUtility::RunProcess(LPWSTR lpCommandLine, WORD WindowFlags);
 	void libCoreUtility::TerminateExeName(const TCHAR* TrFileName);
+	CString libCoreUtility::GetCPUInfo();
+	CString libCoreUtility::GetGPUInfo();
 };
 
 
@@ -60,6 +71,8 @@ public:
 	wstring libMainString::StringToWString(const string& arg_str);
 	CString libMainString::CURRENT_DIR();
 	CString libMainString::RESOURCELIB_PATH();
+	CString libMainString::JPN_RESOURCELIB_PATH();
+	CString libMainString::ENG_RESOURCELIB_PATH();
 	CString libMainString::DEFAULTTEXT();
 	CString libMainString::READEDTEXT();
 	CString libMainString::NULLTEXT();

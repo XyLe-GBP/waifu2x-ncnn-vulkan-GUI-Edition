@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "waifu2x-ncnn-vulkan.h"
+#include "waifu2x-ncnn-vulkanDlg.h"
 #include "FFMPEGVIDEOSETTINGS.h"
 #include "afxdialogex.h"
 //#include "replacestr.h"
@@ -61,8 +62,22 @@ BOOL FFMPEGVIDEOSETTINGS::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	m_PRESET.AddString(_T("デフォルト"));
-	m_PRESET.AddString(_T("カスタム"));
+	UINT Lang;
+	Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+
+	if (Lang == 0) {
+		m_PRESET.AddString(_T("デフォルト"));
+		m_PRESET.AddString(_T("カスタム"));
+	}
+	else if (Lang == 1) {
+		m_PRESET.AddString(_T("Default"));
+		m_PRESET.AddString(_T("Custom"));
+	}
+	else {
+		m_PRESET.AddString(_T("デフォルト"));
+		m_PRESET.AddString(_T("カスタム"));
+	}
+	SetDlgLang();
 
 	UINT preset, ow, multi, hb;
 
@@ -428,7 +443,7 @@ void FFMPEGVIDEOSETTINGS::OnEnChangeEditOutputName()
 			if (GetDlgItem(IDC_EDIT_OUTPUT_NAME_V)->GetWindowTextLength() != 0) {
 				UpdateData(FALSE);
 				OUTNAME = _T("");
-				MessageBox(_T("出力ディレクトリが指定されていません。\n先にディレクトリを指定してください。"), _T("エラー"), MB_ICONERROR | MB_OK);
+				MessageBox(ERROR_DIRECT, ERROR_TITLE, MB_ICONERROR | MB_OK);
 				CComboBox* preset = (CComboBox*)GetDlgItem(IDC_COMBO_PRESET_V);
 				if (preset != 0) {
 					CEdit* prm = (CEdit*)GetDlgItem(IDC_EDIT_COMMAND_PRM_V);
@@ -502,7 +517,7 @@ void FFMPEGVIDEOSETTINGS::OnBnClickedButtonOutput()
 	binfo.hwndOwner = NULL;
 	binfo.pidlRoot = NULL;
 	binfo.pszDisplayName = (LPWSTR)name;
-	binfo.lpszTitle = L"フォルダの選択";
+	binfo.lpszTitle = TEXT_SELFOLDER;
 	binfo.ulFlags = BIF_RETURNONLYFSDIRS;
 	binfo.lpfn = NULL;
 	binfo.lParam = 0;
@@ -510,7 +525,7 @@ void FFMPEGVIDEOSETTINGS::OnBnClickedButtonOutput()
 
 	if ((idlist = SHBrowseForFolder(&binfo)) == NULL)
 	{
-		MessageBox(_T("キャンセルされました。"), _T("キャンセル"), MB_ICONWARNING | MB_OK);
+		MessageBox(WARN_CANCEL, WARN_CANCEL_TITLE, MB_ICONWARNING | MB_OK);
 		CoTaskMemFree(idlist);
 		CComboBox* preset = (CComboBox*)GetDlgItem(IDC_COMBO_PRESET_V);
 		if (preset != 0) {
@@ -599,11 +614,11 @@ void FFMPEGVIDEOSETTINGS::OnBnClickedOk()
 
 	if (preset->GetCurSel() == 1) {
 		if (GetDlgItem(IDC_EDIT_OUTPUT_V)->GetWindowTextLength() == 0) {
-			MessageBox(_T("出力ディレクトリが指定されていません"), _T("エラー"), MB_ICONERROR | MB_OK);
+			MessageBox(ERROR_DIRECT2, ERROR_TITLE, MB_ICONERROR | MB_OK);
 			return;
 		}
 		else if (GetDlgItem(IDC_EDIT_OUTPUT_NAME_V)->GetWindowTextLength() == 0) {
-			MessageBox(_T("出力ファイル名が指定されていません"), _T("エラー"), MB_ICONERROR | MB_OK);
+			MessageBox(ERROR_FILE, ERROR_TITLE, MB_ICONERROR | MB_OK);
 			return;
 		}
 		else {
@@ -612,7 +627,7 @@ void FFMPEGVIDEOSETTINGS::OnBnClickedOk()
 	}
 	else if (preset->GetCurSel() == 1) {
 		if (FINALPARAM_V == L"") {
-			MessageBox(_T("設定エラー"), _T("エラー"), MB_ICONERROR | MB_OK);
+			MessageBox(_T("Setting error."), ERROR_TITLE, MB_ICONERROR | MB_OK);
 			return;
 		}
 	}
@@ -688,6 +703,51 @@ void FFMPEGVIDEOSETTINGS::OnDestroy()
 	CDialogEx::OnDestroy();
 
 	FreeLibrary(Core->hinst);
+	FreeLibrary(Core->Lang_hinst);
 	SAFE_DELETE(CORE_FUNC);
-	Core->FreeImageLibrary();
+}
+
+
+void FFMPEGVIDEOSETTINGS::SetDlgLang()
+{
+	UINT Lang;
+	Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+	if (Lang == 0) {
+		Core->LoadJPNLangLibrary();
+	}
+	else if (Lang == 1) {
+		Core->LoadENGLangLibrary();
+	}
+	else {
+		Core->LoadJPNLangLibrary();
+	}
+
+	LoadString(Core->Lang_hinst, IDS_FF_VIDDLG_TITLE, (LPTSTR)FF_VIDDLG_TITLE, 256);
+	SetWindowText(FF_VIDDLG_TITLE);
+	LoadString(Core->Lang_hinst, IDS_ERROR_TITLE, (LPTSTR)ERROR_TITLE, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_DIRECT, (LPTSTR)ERROR_DIRECT, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_DIRECT2, (LPTSTR)ERROR_DIRECT2, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_FILE, (LPTSTR)ERROR_FILE, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_PARAM, (LPTSTR)ERROR_PARAM, 256);
+	LoadString(Core->Lang_hinst, IDS_WARN_CANCEL, (LPTSTR)WARN_CANCEL, 256);
+	LoadString(Core->Lang_hinst, IDS_WARN_CANCEL_TITLE, (LPTSTR)WARN_CANCEL_TITLE, 256);
+	LoadString(Core->Lang_hinst, IDS_TEXT_SELFOLDER, (LPTSTR)TEXT_SELFOLDER, 256);
+	LoadString(Core->Lang_hinst, IDS_GRP_GENERAL, (LPTSTR)STATIC_GRP_GENERAL, 256);
+	GetDlgItem(IDC_STATIC_GRP_GEN_V)->SetWindowText(STATIC_GRP_GENERAL);
+	LoadString(Core->Lang_hinst, IDS_BTN_CHK, (LPTSTR)BTN_CHK, 256);
+	GetDlgItem(IDC_BUTTON_OUTPUT_V)->SetWindowText(BTN_CHK);
+	LoadString(Core->Lang_hinst, IDS_STATIC_PRESET, (LPTSTR)STATIC_PRESET, 256);
+	GetDlgItem(IDC_STATIC_PRE_V)->SetWindowText(STATIC_PRESET);
+	LoadString(Core->Lang_hinst, IDS_STATIC_FILENAMENOEXT, (LPTSTR)STATIC_FILENAMENOEXT, 256);
+	GetDlgItem(IDC_STATIC_FNNEXT_V)->SetWindowText(STATIC_FILENAMENOEXT);
+	LoadString(Core->Lang_hinst, IDS_STATIC_OUTDIRECTRY, (LPTSTR)STATIC_OUTDIRECTRY, 256);
+	GetDlgItem(IDC_STATIC_OUTD_V)->SetWindowText(STATIC_OUTDIRECTRY);
+	LoadString(Core->Lang_hinst, IDS_STATIC_PARAM, (LPTSTR)STATIC_PARAM, 256);
+	GetDlgItem(IDC_STATIC_PRM_V)->SetWindowText(STATIC_PARAM);
+	LoadString(Core->Lang_hinst, IDS_CHECK_HIDEBANNER, (LPTSTR)CHECK_HIDEBANNER, 256);
+	GetDlgItem(IDC_CHECK_HIDE_BANNER_V)->SetWindowText(CHECK_HIDEBANNER);
+	LoadString(Core->Lang_hinst, IDS_CHECK_OVERWRITE, (LPTSTR)CHECK_OVERWRITE, 256);
+	GetDlgItem(IDC_CHECK_OVERWRITE_V)->SetWindowText(CHECK_OVERWRITE);
+	LoadString(Core->Lang_hinst, IDS_CHK_VIDMULTI, (LPTSTR)CHECK_VIDMULTI, 256);
+	GetDlgItem(IDC_CHECK_MULTI_V)->SetWindowText(CHECK_VIDMULTI);
 }

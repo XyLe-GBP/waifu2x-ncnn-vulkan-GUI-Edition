@@ -1,0 +1,338 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// “ú–{Œê (“ú–{) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
+LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
+#pragma code_page(932)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,1,222
+ PRODUCTVERSION 1,0,1,222
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "CompanyName", "XyLe"
+            VALUE "FileDescription", "waifu2xnvgui.English.dll"
+            VALUE "FileVersion", "1.0.1.222"
+            VALUE "InternalName", "waifu2xnvgui.English"
+            VALUE "LegalCopyright", "Copyright (C) 2021 - XyLe. All Rights Reserved."
+            VALUE "OriginalFilename", "waifu2xnvgui.English"
+            VALUE "ProductName", "waifu2xnvgui: en-US Language Library"
+            VALUE "ProductVersion", "1.0.1.222"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0, 1200
+    END
+END
+
+#endif    // “ú–{Œê (“ú–{) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// ‰pŒê resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_NEUTRAL
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_ERROR_TITLE         "Error"
+    IDS_ERROR_INSTANCE      "Failed to get instance."
+    IDS_ERROR_EXCEPTION     "An unexpected error has occurred."
+    IDS_ERROR_SERVER        "Communication with the server failed."
+    IDS_ERROR_DOWNLOAD      "Download failed. Please make sure that you have an Internet connection.\nIf you have installed anti-virus software, please allow the connection."
+    IDS_ERROR_FFMPEG        "I can't find ffmpeg.exe. Do you want to download it?\n(Internet connection is required for download)"
+    IDS_ERROR_WAIFU2X       "waifu2x-ncnn-vulkan.exe was not found."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_ERROR_IMAGE2PNG     "image2png.exe is not found."
+    IDS_ERROR_ABORT         "This operation cannot be ignored."
+    IDS_ERROR_APPNOTFOUND   "The application cannot continue because the file does not exist.\nQuit the application."
+    IDS_ERROR_NOTSELECTED   "The file is not selected."
+    IDS_ERROR_SETTINGS      "The conversion settings are not properly configured."
+    IDS_ERROR_UPSCALE       "Upscaling failed."
+    IDS_ERROR_REUPSCALE     "Re upscaling failed."
+    IDS_ERROR_FAILED        "Conversion failed."
+    IDS_ERROR_FOLDER        "No files found in the folder"
+    IDS_ERROR_RESIZE        "Failed to change the resolution."
+    IDS_ERROR_SOUND         "Failed to extract audio."
+    IDS_ERROR_UPDATE        "An error occurred while retrieving information.\nMake sure you have an Internet connection."
+    IDS_ERROR_UPDATE_ELSE   "An error occurred while retrieving information."
+    IDS_ERROR_BLOCKSIZE_LARGE 
+                            "The block size value is too large.\nThe block size value should be set to 5000 or less."
+    IDS_ERROR_BLOCKSIZE_SHORT 
+                            "The block size value is too small.\nThe block size value should be set to 32 or more."
+    IDS_UPDATE_LATEST       "Latest version:"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_UPDATE_CURRENT      "Current version:"
+    IDS_UPDATE_FFMPEG       "FFmpeg can be updated. Do you want to update it?"
+    IDS_UPDATE_FFMPEG_TITLE "FFmpeg update confirmed"
+    IDS_INFO_TITLE          "Done"
+    IDS_INFO_DOWNLOAD       "The download is complete."
+    IDS_INFO_UPSCALE        "Upscaling is now complete. \nClick the 'Merge with FFmpeg' button to generate the upscaled video. \n If you want to upscale further, click the 'Start Re-upscaling' button."
+    IDS_INFO_UPSCALE_TITLE  "Upscaling done"
+    IDS_ERROR_UPSCALE_TITLE "Upscaling error"
+    IDS_INFO_REUPSCALE      "Re-upscaling is now complete. \nClick the 'Merge with FFmpeg' button to generate the upscaled video. \n If you want to upscale the video further, click the 'Start Re-Upscaling' button."
+    IDS_INFO_REUPSCALE_TITLE "Re-upscaling done"
+    IDS_ERROR_REUPSCALE_TITLE "Re-upscaling error"
+    IDS_WARN_ABORT          "Process aborted."
+    IDS_INFO_SUCCESS        "Conversion completed."
+    IDS_WARN_CANCEL         "Cancelled."
+    IDS_WARN_SAVECANCEL     "The save has been canceled."
+    IDS_WARN_CONFIRM        "Confirm"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_WARN_EXIST          "There are already other files in the specified directory. \nIf you continue to convert the image file, all files in the specified directory will be lost. Do you wish to continue?"
+    IDS_WARN_ABORT2         "The operation has been aborted. \nThe files in the directory specified as the destination have been deleted."
+    IDS_INFO_RESIZE         "The resolution change is complete."
+    IDS_INFO_SOUND          "Audio extraction completed."
+    IDS_UPDATE_APP_LATEST   "The application version is the latest."
+    IDS_UPDATE_APP_CONFIRM  "You can update your application. Do you want to open the site?"
+    IDS_UPDATE_APP_TITLE    "Check for updates"
+    IDS_WARN_ADVANCED       "This option is for advanced users. \nIf you change it, you may experience problems with the conversion.\nDo you want to enable it?"
+    IDS_WARN_CAUTION_TITLE  "Warning"
+    IDS_TEXT_UNKNOWN        "Unknown"
+    IDS_WARN_CANCEL_TITLE   "Cancelled"
+    IDS_TEXT_SELFOLDER      "Selecting a folder"
+    IDS_TEXT_DIRECTORYS     " (Directory)"
+    IDS_TEXT_BYTES          " Bytes)"
+    IDS_TEXT_SELOUTPUTFOLDER "Select an output folder"
+    IDS_ERROR_IMAGENOT      "Image folder is not selected."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_ERROR_IMAGENOT2     "Image file is not selected."
+    IDS_FILTER_MOVIE        "Movie file (*.avi,*.mp4,*.wmv,*.webm,*.mkv,*.mov)|*.avi;*.mp4;*.wmv;*.webm;*.mkv;*.mov;||"
+    IDS_FILTER_IMAGE        "Bitmap Image (*.bmp,*.dib)|*.bmp;*.dib;|Encapsulated PostScript File/Format (*.eps)|*.eps;|Google webp (*.webp)|*.webp;|Graphics Interchange Format (*.gif)|*.gif;|Icon (*.ico,*.icns)|*.ico;*.icns;|Joint Photographic Experts Group (*.jfif,*.jpg,*.jpe,*.jpeg,*.pjpeg,*.pjp)|*.jfif;*.jpg;*.jpe;*.jpeg;*.pjpeg;*.pjp;|Portable Network Graphics (*.png)|*.png;|QuickDraw Picture (*.pict)|*.pict;|Scalable Vector Graphics (*.svg,*.svgz)|*.svg;*.svgz;|Tagged Image File Format (*.tif,*.tiff)|*.tif;*.tiff;|All files (*.*)|*.*;||"
+    IDS_FILTER_JPEG         "JPEG Image (*.jpg)|*.jpg;||"
+    IDS_FILTER_PNG          "PNG Image (*.png)|*.png;||"
+    IDS_FILTER_WEBP         "WEBP Image (*.webp)|*.webp;||"
+    IDS_FILTER_SOUND        "Sound file (*.wav,*.mp3,*.m4a,*.wma,*.oga,*.ogg,*.opus)|*.wav;*.mp3;*.m4a;*.wma;*.oga;*.ogg;*.opus;||"
+    IDS_MENU_FILE           "File (&F)"
+    IDS_MENU_CONFIG         "Settings (&C)"
+    IDS_MENU_TOOL           "Tool (&T)"
+    IDS_MENULIST_READFILE   "Reading files and folders"
+    IDS_MENULIST_IMG        "Image (&I)"
+    IDS_MENULIST_IMGM       "Image batch conversion (&M)"
+    IDS_MENULIST_MOV        "Video (&V)"
+    IDS_MENULIST_TEMPFILE   "Deleting temporary files (&D)"
+    IDS_MENULIST_ENDAPP     "Exit (&X)"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_MENULIST_WAIFU2X    "waifu2x conversion settings (&W)"
+    IDS_MENULIST_FFMPEG     "FFmpeg conversion settings"
+    IDS_MENULIST_FF_OUT     "Output settings (&M)"
+    IDS_MENULIST_FF_VID     "Video Conversion Settings (&V)"
+    IDS_MENULIST_FF_AUD     "Audio Conversion Settings (&A)"
+    IDS_MENULIST_RESIZE     "Change video resolution (&S)"
+    IDS_MENULIST_SOUND      "Extraction of video audio (&D)"
+    IDS_MENULIST_UPDATE     "Check for updates (&U)"
+    IDS_STATIC_HEADER       "waifu2x - Convolutional Neural Network Image Super Resolution API\nwaifu2x-ncnn-vulkan GUI"
+    IDS_STATIC_GRP_FILE     "File informations"
+    IDS_STATIC_FILEREAD     "Loading status:"
+    IDS_STATIC_FILENAME     "File:"
+    IDS_STATIC_FILEPATH     "File path:"
+    IDS_STATIC_NOTREAD      "File not readed."
+    IDS_STATIC_READED       "File readed."
+    IDS_STATIC_GRP_IMG      "File Operations (Image)"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_STATIC_GRP_IMGM     "File Batch Operations"
+    IDS_STATIC_GRP_VID      "File Operations (Video)"
+    IDS_STATIC_GRP_INFO     "Other Informations"
+    IDS_STATIC_CPU          "CPU Info:"
+    IDS_STATIC_GPU          "GPU Info:"
+    IDS_BTN_UPSCALE         "Start upscaling"
+    IDS_BTN_REUPSCALE       "Start Re-upscaling"
+    IDS_BTN_MULTIUPSCALE    "Start multi upscaling"
+    IDS_BTN_FINALENC        "Merge with FFmpeg"
+    IDS_2X_TITLE            "waifu2x conversion settings"
+    IDS_GRP_GENERAL         "General settings"
+    IDS_GRP_ADVANCED        "Advanced settings"
+    IDS_STATIC_DENOISE      "Reduction level:"
+    IDS_STATIC_UPSCALELV    "Upscaling level:"
+    IDS_STATIC_USEGPU       "Use GPU:"
+    IDS_STATIC_BLOCKSIZE    "GPU Block size:"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_STATIC_BLOCK        "Block"
+    IDS_CHECK_ADVANCED      "Enable Advanced Settings"
+    IDS_STATIC_THREAD       "Thread usage:"
+    IDS_STATIC_FORMAT       "Image format:"
+    IDS_STATIC_MODEL        "The waifu2x model to use when upscaling:"
+    IDS_CHECK_VERBOSE       "Enable verbose output"
+    IDS_CHECK_TTA           "Enable TTA"
+    IDS_STATIC_PARAM        "Command line arguments:"
+    IDS_FF_SETTING_TITLE    "FFmpeg Output Settings"
+    IDS_FF_VIDDLG_TITLE     "FFmpeg Video Conversion Settings"
+    IDS_FF_SNDDLG_TITLE     "FFmpeg Audio Conversion Settings"
+    IDS_STATIC_PRESET       "Preset:"
+    IDS_STATIC_VIDFPS       "Video FPS:"
+    IDS_STATIC_VIDFPS2      "FPS (This value should be set to the same as the video file before conversion.)"
+    IDS_STATIC_VIDCODEC     "Video codec:"
+    IDS_STATIC_SNDCODEC     "Audio codec:"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_STATIC_SNDBIT       "Audio bitrate:"
+    IDS_BTN_FINDCODEC       "Checking the codec"
+    IDS_CHECK_HIDEBANNER    "Hide information"
+    IDS_CHECK_OVERWRITE     "Overwrite the output file"
+    IDS_CHECK_ENABLEAAC     "Enable internal AAC"
+    IDS_CHECK_NVENC_CRF     "Use NVENC CRF"
+    IDS_STATIC_CRFLEVEL     "CRF Encoding Level:"
+    IDS_STATIC_CRFLEVEL2    "[0: lossless (specified) 51: compression priority]"
+    IDS_STATIC_FFPATH       "Path to FFmpeg.exe (cannot be changed):"
+    IDS_FF_CODEC_TITLE      "FFmpeg Codec Lists"
+    IDS_STATIC_SNDFMT       "Audio format:"
+    IDS_CHECK_SNDONLY       "Output audio only"
+    IDS_CHECK_DSTREAM       "Disable subtitle stream"
+    IDS_CHECK_DSTREAM2      "Disable data stream"
+    IDS_CHECK_CHAPTERCPY    "Copying chapters"
+    IDS_CHECK_MTDATA        "Metadata information setting"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_STATIC_FILENAMENOEXT "Output file name (without extension):"
+    IDS_STATIC_OUTDIRECTRY  "Output directory:"
+    IDS_BTN_CHK             "..."
+    IDS_CHK_VIDMULTI        "Enable sequential number output"
+    IDS_RESIZE_TITLE        "Specify video resolution"
+    IDS_GRP_ASPCT           "Aspect ratio"
+    IDS_GRP_SIZE            "Resolution"
+    IDS_STATIC_WAITDLG      "Please wait for the conversion to finish. (It will take longer to convert the video.)\n(Please note that closing the other window will cause the conversion to fail.)"
+    IDS_STATIC_THREADDLG    "Upscaling in progress...\nThe processing will take some time. Please wait for a while."
+    IDS_BTN_ABORT           "Abort"
+    IDS_STATIC_POPUPDLG     "Processing... Please wait a moment."
+    IDS_STATIC_DLDLG        "Downloading files... Please wait a moment. \n(If you have installed antivirus software, please allow communication.)"
+    IDS_STATIC_DELETEDLG    "File deleting. please wait..."
+    IDS_STATIC_ABT_HEADER   "waifu2x-ncnn-vulkan GUI Edition - Image super-resolution utility -"
+    IDS_STATIC_ABT_VER1     "waifu2x-ncnn-vulkan GUI Edition - version:"
+    IDS_STATIC_ABT_VER2     "waifu2x-ncnn-vulkan command line - version:"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_STATIC_ABT_VER3     "FFmpeg - version:"
+    IDS_STATIC_ABT_HYPER1   "waifu2x-ncnn-vulkan (command-line)"
+    IDS_STATIC_ABT_HYPER2   "waifu2x (original)"
+    IDS_DESCRIPTION1        "Specifies the noise reduction level.\r\nIf you select 'Do not remove', no noise reduction process will be performed."
+    IDS_DESCRIPTION2        "Specifies the upscaling level.\r\nIf you select '2x', the output will be enlarged to twice the pixels of the original image.\r\nIf you select '1x', the output will be the same size as the original image."
+    IDS_DESCRIPTION3        "Specify which graphics board to use for the conversion.\r\nSelecting 'Auto' will automatically determine the GPU to be used.\r\nIf you select 'iGPU', the conversion will be performed using the CPU's built-in graphics. \r\nIn a multi-GPU environment, you can also specify one of the dGPUs."
+    IDS_DESCRIPTION4        "Specify the number of threads to be used in the order load:proc:save.\r\nThis item can only be changed in a multi-GPU environment.\r\nnormally, specify '1:2:2'."
+    IDS_DESCRIPTION5        "Specifies the model to be used for upscaling. \r\nCUnet: This is the standard model. This is the default model. \r\nRGB: This model is suitable for upscaling two-dimensional illustrations. \r\nPhoto: This model is suitable for upscaling photos and animated images."
+    IDS_DESCRIPTION6        "Specifies the image output format. By default, 'PNG' is specified.\r\nIf you want to output the image in a format other than PNG image, please change this item."
+    IDS_DESCRIPTION7        "Enable the advanced item."
+    IDS_DESCRIPTION8        "Enable Verbose Output.\r\nIf you are not sure, do not check this box."
+    IDS_DESCRIPTION9        "Enable TTA mode. \r\nEnabling this item will improve the image index, but the conversion will take more time."
+    IDS_DESCRIPTION10       "Specifies the GPU block size, which should be a value greater than 32.\r\nThe larger the value, the faster the conversion will be, but the more GPU memory will be used.\r\nIf '0' is entered, the block size will be allocated automatically.\r\nThis item is highly dependent on GPU performance, so setting too large a value will cause the conversion to fail. \r\nBasically, setting it to '0' is fine."
+    IDS_DESCRIPTION11       "Specifies command line arguments."
+    IDS_WARN_ABORT_CONFIRM  "The upscaling process is in progress.\nIf you abort, all content currently being processed will be lost. \nDo you want to continue?"
+    IDS_MENU_HELP           "Help (&H)"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_ERROR_DIRECT        "The output directory has not been specified.\nPlease specify the directory to destination."
+    IDS_ERROR_DIRECT2       "The output directory is not specified."
+    IDS_ERROR_FILE          "Output file name is not specified."
+    IDS_ERROR_PARAM         "No parameter specified."
+    IDS_ERROR_SIZE          "The resolution is not set properly."
+END
+
+#endif    // ‰pŒê resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

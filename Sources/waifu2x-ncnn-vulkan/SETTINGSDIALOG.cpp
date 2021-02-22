@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "waifu2x-ncnn-vulkan.h"
+#include "waifu2x-ncnn-vulkanDlg.h"
 #include "SETTINGSDIALOG.h"
 #include "afxdialogex.h"
 
@@ -71,30 +72,108 @@ END_MESSAGE_MAP()
 
 
 // SETTINGSDIALOG メッセージ ハンドラー
+BOOL SETTINGSDIALOG::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_MOUSEMOVE)
+	{
+		if (pMsg->hwnd == GetDlgItem(IDC_COMBO_NOISE)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_COMBO_SCALE)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_COMBO_GPU)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_COMBO_THREAD)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_COMBO_MODEL)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_COMBO_FORMAT)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_CHECK_ADVANCED)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_CHECK_VERBOSE)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_CHECK_TTA)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_EDIT_BLOCKSIZE)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_EDIT_CMD)->m_hWnd)
+		{
+			m_hToolTip.RelayEvent(pMsg);
+		}
+		else
+		{
+			m_hToolTip.Pop();
+		}
+		return TRUE;
+	}
+	return CDialog::PreTranslateMessage(pMsg);
+}
+
+
 BOOL SETTINGSDIALOG::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	m_NoiseLevel.AddString(_T("-1"));
-	m_NoiseLevel.AddString(_T("0"));
-	m_NoiseLevel.AddString(_T("1"));
-	m_NoiseLevel.AddString(_T("2"));
-	m_NoiseLevel.AddString(_T("3"));
-	m_UpscaleLevel.AddString(_T("1"));
-	m_UpscaleLevel.AddString(_T("2"));
-	m_SelectGPU.AddString(_T("GPU 0"));
-	m_SelectGPU.AddString(_T("GPU 1"));
-	m_SelectGPU.AddString(_T("GPU 2"));
-	m_SelectGPU.AddString(_T("GPU 3"));
-	m_SelectGPU.AddString(_T("GPU 4"));
-	m_SelectGPU.AddString(_T("GPU 5"));
+	UINT Lang;
+	Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+
+	SetDlgLang();
+
+	m_hToolTip.Create(this, TTS_ALWAYSTIP);
+	m_hToolTip.SendMessage(TTM_SETMAXTIPWIDTH, 0, 512);
+	m_hToolTip.AddTool(GetDlgItem(IDC_COMBO_NOISE), DESCRIPTION1);
+	m_hToolTip.AddTool(GetDlgItem(IDC_COMBO_SCALE), DESCRIPTION2);
+	m_hToolTip.AddTool(GetDlgItem(IDC_COMBO_GPU), DESCRIPTION3);
+	m_hToolTip.AddTool(GetDlgItem(IDC_COMBO_THREAD), DESCRIPTION4);
+	m_hToolTip.AddTool(GetDlgItem(IDC_COMBO_MODEL), DESCRIPTION5);
+	m_hToolTip.AddTool(GetDlgItem(IDC_COMBO_FORMAT), DESCRIPTION6);
+	m_hToolTip.AddTool(GetDlgItem(IDC_CHECK_ADVANCED), DESCRIPTION7);
+	m_hToolTip.AddTool(GetDlgItem(IDC_CHECK_VERBOSE), DESCRIPTION8);
+	m_hToolTip.AddTool(GetDlgItem(IDC_CHECK_TTA), DESCRIPTION9);
+	m_hToolTip.AddTool(GetDlgItem(IDC_EDIT_BLOCKSIZE), DESCRIPTION10);
+	m_hToolTip.AddTool(GetDlgItem(IDC_EDIT_CMD), DESCRIPTION11);
+
+	if (Lang == 0) {
+		m_NoiseLevel.AddString(_T("除去しない"));
+		m_NoiseLevel.AddString(_T("レベル0"));
+		m_NoiseLevel.AddString(_T("レベル1"));
+		m_NoiseLevel.AddString(_T("レベル2"));
+		m_NoiseLevel.AddString(_T("レベル3"));
+		m_UpscaleLevel.AddString(_T("1倍"));
+		m_UpscaleLevel.AddString(_T("2倍"));
+		m_SelectGPU.AddString(_T("自動"));
+		m_SelectGPU.AddString(_T("iGPU"));
+		m_SelectGPU.AddString(_T("dGPU 0"));
+		m_SelectGPU.AddString(_T("dGPU 1"));
+		m_SelectGPU.AddString(_T("dGPU 2"));
+	}
+	else if (Lang == 1) {
+		m_NoiseLevel.AddString(_T("Not remove"));
+		m_NoiseLevel.AddString(_T("Level 0"));
+		m_NoiseLevel.AddString(_T("Level 1"));
+		m_NoiseLevel.AddString(_T("Level 2"));
+		m_NoiseLevel.AddString(_T("Level 3"));
+		m_UpscaleLevel.AddString(_T("x1"));
+		m_UpscaleLevel.AddString(_T("x2"));
+		m_SelectGPU.AddString(_T("Auto"));
+		m_SelectGPU.AddString(_T("iGPU"));
+		m_SelectGPU.AddString(_T("dGPU 0"));
+		m_SelectGPU.AddString(_T("dGPU 1"));
+		m_SelectGPU.AddString(_T("dGPU 2"));
+	}
+	else {
+		m_NoiseLevel.AddString(_T("除去しない"));
+		m_NoiseLevel.AddString(_T("レベル0"));
+		m_NoiseLevel.AddString(_T("レベル1"));
+		m_NoiseLevel.AddString(_T("レベル2"));
+		m_NoiseLevel.AddString(_T("レベル3"));
+		m_UpscaleLevel.AddString(_T("1倍"));
+		m_UpscaleLevel.AddString(_T("2倍"));
+		m_SelectGPU.AddString(_T("自動"));
+		m_SelectGPU.AddString(_T("iGPU"));
+		m_SelectGPU.AddString(_T("dGPU 0"));
+		m_SelectGPU.AddString(_T("dGPU 1"));
+		m_SelectGPU.AddString(_T("dGPU 2"));
+	}
+	
 	m_threads.AddString(_T("1:2:2"));
 	m_threads.AddString(_T("1:2"));
 	m_threads.AddString(_T("2"));
 	m_threads.AddString(_T("2:2"));
-	m_model.AddString(_T("models-cunet"));
-	m_model.AddString(_T("models-upconv_7_anime_style_art_rgb"));
-	m_model.AddString(_T("models-upconv_7_photo"));
+	m_threads.AddString(_T("2:2:2"));
+	m_model.AddString(_T("CUnet (models-cunet)"));
+	m_model.AddString(_T("RGB (models-upconv_7_anime_style_art_rgb)"));
+	m_model.AddString(_T("Photo (models-upconv_7_photo)"));
 	m_format.AddString(_T("JPG"));
 	m_format.AddString(_T("PNG"));
 	m_format.AddString(_T("WEBP"));
@@ -171,31 +250,27 @@ BOOL SETTINGSDIALOG::OnInitDialog()
 	switch (selgpu)
 	{
 	case 0:
-		SelectGPU = L" -g 0";
+		SelectGPU = L" -g default";
 		m_SelectGPU.SetCurSel(0);
 		break;
 	case 1:
-		SelectGPU = L" -g 1";
+		SelectGPU = L" -g -1";
 		m_SelectGPU.SetCurSel(1);
 		break;
 	case 2:
-		SelectGPU = L" -g 2";
+		SelectGPU = L" -g 0";
 		m_SelectGPU.SetCurSel(2);
 		break;
 	case 3:
-		SelectGPU = L" -g 3";
+		SelectGPU = L" -g 1";
 		m_SelectGPU.SetCurSel(3);
 		break;
 	case 4:
-		SelectGPU = L" -g 4";
+		SelectGPU = L" -g 2";
 		m_SelectGPU.SetCurSel(4);
 		break;
-	case 5:
-		SelectGPU = L" -g 5";
-		m_SelectGPU.SetCurSel(5);
-		break;
 	default:
-		SelectGPU = L" -g 0";
+		SelectGPU = L" -g default";
 		m_SelectGPU.SetCurSel(0);
 		break;
 	}
@@ -229,6 +304,10 @@ BOOL SETTINGSDIALOG::OnInitDialog()
 		break;
 	case 3:
 		useThread = L" -j 2:2";
+		m_threads.SetCurSel(3);
+		break;
+	case 4:
+		useThread = L" -j 2:2:2";
 		m_threads.SetCurSel(3);
 		break;
 	default:
@@ -372,7 +451,7 @@ void SETTINGSDIALOG::OnBnClickedCheck1()
 	}
 	else if (check1->GetCheck() == BST_CHECKED) {
 		int on_button;
-		on_button = MessageBox(_T("このオプションは上級者向けです。\n変更すると変換に不具合が生じる恐れがあります。有効にしますか？"), _T("警告"), MB_ICONWARNING | MB_YESNO);
+		on_button = MessageBox(WARN_ADVANCED, WARN_CAUTION_TITLE, MB_ICONWARNING | MB_YESNO);
 		if (on_button == IDYES) {
 			if (check1->GetCheck() == BST_CHECKED) {
 				CEdit* edit1 = (CEdit*)GetDlgItem(IDC_EDIT_CMD);
@@ -792,7 +871,7 @@ void SETTINGSDIALOG::OnCbnSelchangeCombo3()
 	}
 
 	if (index1 == 0) {
-		SelectGPU = L" -g 0";
+		SelectGPU = L" -g default";
 		CButton* check1 = (CButton*)GetDlgItem(IDC_CHECK_ADVANCED);
 		if (check1->GetCheck() == BST_CHECKED) {
 			CEdit* edit1 = (CEdit*)GetDlgItem(IDC_EDIT_CMD);
@@ -805,7 +884,7 @@ void SETTINGSDIALOG::OnCbnSelchangeCombo3()
 		}
 	}
 	else if (index1 == 1) {
-		SelectGPU = L" -g 1";
+		SelectGPU = L" -g -1";
 		CButton* check1 = (CButton*)GetDlgItem(IDC_CHECK_ADVANCED);
 		if (check1->GetCheck() == BST_CHECKED) {
 			CEdit* edit1 = (CEdit*)GetDlgItem(IDC_EDIT_CMD);
@@ -818,7 +897,7 @@ void SETTINGSDIALOG::OnCbnSelchangeCombo3()
 		}
 	}
 	else if (index1 == 2) {
-		SelectGPU = L" -g 2";
+		SelectGPU = L" -g 0";
 		CButton* check1 = (CButton*)GetDlgItem(IDC_CHECK_ADVANCED);
 		if (check1->GetCheck() == BST_CHECKED) {
 			CEdit* edit1 = (CEdit*)GetDlgItem(IDC_EDIT_CMD);
@@ -831,7 +910,7 @@ void SETTINGSDIALOG::OnCbnSelchangeCombo3()
 		}
 	}
 	else if (index1 == 3) {
-		SelectGPU = L" -g 3";
+		SelectGPU = L" -g 1";
 		CButton* check1 = (CButton*)GetDlgItem(IDC_CHECK_ADVANCED);
 		if (check1->GetCheck() == BST_CHECKED) {
 			CEdit* edit1 = (CEdit*)GetDlgItem(IDC_EDIT_CMD);
@@ -844,20 +923,7 @@ void SETTINGSDIALOG::OnCbnSelchangeCombo3()
 		}
 	}
 	else if (index1 == 4) {
-		SelectGPU = L" -g 4";
-		CButton* check1 = (CButton*)GetDlgItem(IDC_CHECK_ADVANCED);
-		if (check1->GetCheck() == BST_CHECKED) {
-			CEdit* edit1 = (CEdit*)GetDlgItem(IDC_EDIT_CMD);
-			FinalSettings = L"waifu2x-ncnn-vulkan -i $InFile -o $OutFile" + NoiseLevel + UpscaleLevel + BlockSize_suffix + BlockSize + SelectGPU + useThread + OutFormat + waifu2xModel + verbose_out + tta_mode;
-			edit1->SetWindowText(FinalSettings);
-			return;
-		}
-		else {
-			return;
-		}
-	}
-	else if (index1 == 5) {
-		SelectGPU = L" -g 5";
+		SelectGPU = L" -g 2";
 		CButton* check1 = (CButton*)GetDlgItem(IDC_CHECK_ADVANCED);
 		if (check1->GetCheck() == BST_CHECKED) {
 			CEdit* edit1 = (CEdit*)GetDlgItem(IDC_EDIT_CMD);
@@ -934,6 +1000,19 @@ void SETTINGSDIALOG::OnCbnSelchangeCombo4()
 	}
 	else if (index1 == 3) {
 		useThread = L" -j 2:2";
+		CButton* check1 = (CButton*)GetDlgItem(IDC_CHECK_ADVANCED);
+		if (check1->GetCheck() == BST_CHECKED) {
+			CEdit* edit1 = (CEdit*)GetDlgItem(IDC_EDIT_CMD);
+			FinalSettings = L"waifu2x-ncnn-vulkan -i $InFile -o $OutFile" + NoiseLevel + UpscaleLevel + BlockSize_suffix + BlockSize + SelectGPU + useThread + OutFormat + waifu2xModel + verbose_out + tta_mode;
+			edit1->SetWindowText(FinalSettings);
+			return;
+		}
+		else {
+			return;
+		}
+	}
+	else if (index1 == 4) {
+		useThread = L" -j 2:2:2";
 		CButton* check1 = (CButton*)GetDlgItem(IDC_CHECK_ADVANCED);
 		if (check1->GetCheck() == BST_CHECKED) {
 			CEdit* edit1 = (CEdit*)GetDlgItem(IDC_EDIT_CMD);
@@ -1126,20 +1205,20 @@ void SETTINGSDIALOG::OnBnClickedOk()
 			OutputDebugString(_T("Set Blocksize: Auto.\n"));
 		}
 		else if (_ttoi(xv_BlockSize) <= 32) {
-			MessageBox(_T("ブロックサイズ値が小さすぎます。\nブロックサイズ値は32以上を設定してください。"), _T("エラー"), MB_ICONERROR | MB_OK);
+			MessageBox(ERROR_BLOCKSIZE_SHORT, ERROR_TITLE, MB_ICONERROR | MB_OK);
 			return;
 		}
 	}
 
 	if (GetDlgItem(IDC_EDIT_BLOCKSIZE)->GetWindowTextLength() >= 4) {
 		if (_ttoi(xv_BlockSize) > 5000) {
-			MessageBox(_T("ブロックサイズ値が大きすぎます。\nブロックサイズ値は5000以内に設定してください。"), _T("エラー"), MB_ICONERROR | MB_OK);
+			MessageBox(ERROR_BLOCKSIZE_LARGE, ERROR_TITLE, MB_ICONERROR | MB_OK);
 			return;
 		}
 	}
 
 	if (FinalSettings == L"") {
-		MessageBox(_T("設定エラー"), _T("エラー"), MB_ICONERROR | MB_OK);
+		MessageBox(_T("Setting error."), _T("Error"), MB_ICONERROR | MB_OK);
 		return;
 	}
 
@@ -1258,6 +1337,69 @@ void SETTINGSDIALOG::OnBnClickedOk()
 }
 
 
+void SETTINGSDIALOG::SetDlgLang()
+{
+	UINT Lang;
+	Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
+	if (Lang == 0) {
+		Core->LoadJPNLangLibrary();
+	}
+	else if (Lang == 1) {
+		Core->LoadENGLangLibrary();
+	}
+	else {
+		Core->LoadJPNLangLibrary();
+	}
+
+	LoadString(Core->Lang_hinst, IDS_2X_TITLE, (LPTSTR)W2X_TITLE, 256);
+	SetWindowText(W2X_TITLE);
+	LoadString(Core->Lang_hinst, IDS_ERROR_TITLE, (LPTSTR)ERROR_TITLE, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_BLOCKSIZE_LARGE, (LPTSTR)ERROR_BLOCKSIZE_LARGE, 256);
+	LoadString(Core->Lang_hinst, IDS_ERROR_BLOCKSIZE_SHORT, (LPTSTR)ERROR_BLOCKSIZE_SHORT, 256);
+	LoadString(Core->Lang_hinst, IDS_WARN_CAUTION_TITLE, (LPTSTR)WARN_CAUTION_TITLE, 256);
+	LoadString(Core->Lang_hinst, IDS_WARN_ADVANCED, (LPTSTR)WARN_ADVANCED, 256);
+	LoadString(Core->Lang_hinst, IDS_GRP_GENERAL, (LPTSTR)STATIC_GRP_GENERAL, 256);
+	GetDlgItem(IDC_STATIC_GRP_GEN)->SetWindowText(STATIC_GRP_GENERAL);
+	LoadString(Core->Lang_hinst, IDS_GRP_ADVANCED, (LPTSTR)STATIC_GRP_ADVANCED, 256);
+	GetDlgItem(IDC_STATIC_GRP_ADV)->SetWindowText(STATIC_GRP_ADVANCED);
+	LoadString(Core->Lang_hinst, IDS_CHECK_ADVANCED, (LPTSTR)CHECK_ADVANCED, 256);
+	GetDlgItem(IDC_CHECK_ADVANCED)->SetWindowText(CHECK_ADVANCED);
+	LoadString(Core->Lang_hinst, IDS_CHECK_VERBOSE, (LPTSTR)CHECK_VERBOSE, 256);
+	GetDlgItem(IDC_CHECK_VERBOSE)->SetWindowText(CHECK_VERBOSE);
+	LoadString(Core->Lang_hinst, IDS_CHECK_TTA, (LPTSTR)CHECK_TTA, 256);
+	GetDlgItem(IDC_CHECK_TTA)->SetWindowText(CHECK_TTA);
+	LoadString(Core->Lang_hinst, IDS_STATIC_DENOISE, (LPTSTR)STATIC_DENOISE, 256);
+	GetDlgItem(IDC_STATIC_NS)->SetWindowText(STATIC_DENOISE);
+	LoadString(Core->Lang_hinst, IDS_STATIC_UPSCALELV, (LPTSTR)STATIC_UPSCALELV, 256);
+	GetDlgItem(IDC_STATIC_SC)->SetWindowText(STATIC_UPSCALELV);
+	LoadString(Core->Lang_hinst, IDS_STATIC_USEGPU, (LPTSTR)STATIC_USEGPU, 256);
+	GetDlgItem(IDC_STATIC_CNVGPU)->SetWindowText(STATIC_USEGPU);
+	LoadString(Core->Lang_hinst, IDS_STATIC_BLOCKSIZE, (LPTSTR)STATIC_BLOCKSIZE, 256);
+	GetDlgItem(IDC_STATIC_BLS)->SetWindowText(STATIC_BLOCKSIZE);
+	LoadString(Core->Lang_hinst, IDS_STATIC_BLOCK, (LPTSTR)STATIC_BLOCK, 256);
+	GetDlgItem(IDC_STATIC_BL)->SetWindowText(STATIC_BLOCK);
+	LoadString(Core->Lang_hinst, IDS_STATIC_THREAD, (LPTSTR)STATIC_THREAD, 256);
+	GetDlgItem(IDC_STATIC_THR)->SetWindowText(STATIC_THREAD);
+	LoadString(Core->Lang_hinst, IDS_STATIC_FORMAT, (LPTSTR)STATIC_FORMAT, 256);
+	GetDlgItem(IDC_STATIC_FMT)->SetWindowText(STATIC_FORMAT);
+	LoadString(Core->Lang_hinst, IDS_STATIC_MODEL, (LPTSTR)STATIC_MODEL, 256);
+	GetDlgItem(IDC_STATIC_MDL)->SetWindowText(STATIC_MODEL);
+	LoadString(Core->Lang_hinst, IDS_STATIC_PARAM, (LPTSTR)STATIC_PARAM, 256);
+	GetDlgItem(IDC_STATIC_PRM)->SetWindowText(STATIC_PARAM);
+	LoadString(Core->Lang_hinst, IDS_DESCRIPTION1, (LPTSTR)DESCRIPTION1, 512);
+	LoadString(Core->Lang_hinst, IDS_DESCRIPTION2, (LPTSTR)DESCRIPTION2, 512);
+	LoadString(Core->Lang_hinst, IDS_DESCRIPTION3, (LPTSTR)DESCRIPTION3, 512);
+	LoadString(Core->Lang_hinst, IDS_DESCRIPTION4, (LPTSTR)DESCRIPTION4, 512);
+	LoadString(Core->Lang_hinst, IDS_DESCRIPTION5, (LPTSTR)DESCRIPTION5, 512);
+	LoadString(Core->Lang_hinst, IDS_DESCRIPTION6, (LPTSTR)DESCRIPTION6, 512);
+	LoadString(Core->Lang_hinst, IDS_DESCRIPTION7, (LPTSTR)DESCRIPTION7, 512);
+	LoadString(Core->Lang_hinst, IDS_DESCRIPTION8, (LPTSTR)DESCRIPTION8, 512);
+	LoadString(Core->Lang_hinst, IDS_DESCRIPTION9, (LPTSTR)DESCRIPTION9, 512);
+	LoadString(Core->Lang_hinst, IDS_DESCRIPTION10, (LPTSTR)DESCRIPTION10, 512);
+	LoadString(Core->Lang_hinst, IDS_DESCRIPTION11, (LPTSTR)DESCRIPTION11, 512);
+}
+
+
 void SETTINGSDIALOG::OnBnClickedCancel()
 {
 	// TODO: ここにコントロール通知ハンドラー コードを追加します。
@@ -1269,6 +1411,6 @@ void SETTINGSDIALOG::OnDestroy()
 	CDialogEx::OnDestroy();
 
 	FreeLibrary(Core->hinst);
+	FreeLibrary(Core->Lang_hinst);
 	SAFE_DELETE(CORE_FUNC);
-	Core->FreeImageLibrary();
 }

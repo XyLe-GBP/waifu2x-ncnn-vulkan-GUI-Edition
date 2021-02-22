@@ -1,11 +1,19 @@
 #pragma once
 
 #ifdef _DEBUG
-#define RESOURCEDLL_PATH _T("\\App.General.resLib.dll")
+#define RESOURCEDLL_PATH _T("\\Resources\\DLLs\\App.General.resLib.dll")
 #define RESOURCEDLL_TEXT _T("App.General.resLib.dll")
+#define JPNRESOURCEDLL_PATH _T("\\Resources\\DLLs\\waifu2xnvgui.Japanese.dll")
+#define JPNRESOURCEDLL_TEXT _T("waifu2xnvgui.Japanese.dll")
+#define ENGRESOURCEDLL_PATH _T("\\Resources\\DLLs\\waifu2xnvgui.English.dll")
+#define ENGRESOURCEDLL_TEXT _T("waifu2xnvgui.English.dll")
 #else
-#define RESOURCEDLL_PATH _T("\\App.General.resLib.dll")
+#define RESOURCEDLL_PATH _T("\\Resources\\DLLs\\App.General.resLib.dll")
 #define RESOURCEDLL_TEXT _T("App.General.resLib.dll")
+#define JPNRESOURCEDLL_PATH _T("\\Resources\\DLLs\\waifu2xnvgui.Japanese.dll")
+#define JPNRESOURCEDLL_TEXT _T("App.LanguagePack.Japanese.dll")
+#define ENGRESOURCEDLL_PATH _T("\\Resources\\DLLs\\waifu2xnvgui.English.dll")
+#define ENGRESOURCEDLL_TEXT _T("App.LanguagePack.English.dll")
 #endif
 
 #define SAFE_FREE(ptr) { free(ptr); ptr = NULL; }
@@ -26,10 +34,12 @@
 #define DEFAULT_TEXT libMainStr->DEFAULTTEXT()
 #define READED_TEXT libMainStr->READEDTEXT()
 #define NULL_TEXT libMainStr->NULLTEXT()
-#define NOTFOUND_TEXT _T(" が見つからないため、コードの実行を続行できません。プログラムを再インストールすると、この問題が解決する可能性があります。")
+#define NOTFOUND_TEXT _T(" cannot be found, so the code execution cannot continue. Reinstalling the program may resolve this issue.")
 #define DOWNLOAD_URL_STRING _T("https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip")
 
 #define RES_LIBRARY libMainStr->RESOURCELIB_PATH()
+#define JPN_RES_LIBRARY libMainStr->JPN_RESOURCELIB_PATH()
+#define ENG_RES_LIBRARY libMainStr->ENG_RESOURCELIB_PATH()
 #define APP_VERSION libVersionStr->APP_VERSION_TEXT()
 #define CMD_VERSION libVersionStr->CMD_VERSION_TEXT()
 #define FF_VERSION libVersionStr->FF_VERSION_TEXT()

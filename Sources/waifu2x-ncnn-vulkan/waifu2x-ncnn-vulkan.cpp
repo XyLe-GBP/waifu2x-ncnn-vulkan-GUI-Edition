@@ -31,13 +31,13 @@ Cwaifu2xncnnvulkanApp::Cwaifu2xncnnvulkanApp()
 	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_DELAY_FREE_MEM_DF | _CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_LEAK_CHECK_DF);
 	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	//_CrtSetBreakAlloc(275);
+	g_hMutex = NULL;
 }
 
 
 // 唯一の Cwaifu2xncnnvulkanApp オブジェクト
 
 Cwaifu2xncnnvulkanApp theApp;
-
 
 // Cwaifu2xncnnvulkanApp の初期化
 
@@ -46,7 +46,7 @@ BOOL Cwaifu2xncnnvulkanApp::InitInstance()
 	// アプリケーション マニフェストが visual スタイルを有効にするために、
 	// ComCtl32.dll Version 6 以降の使用を指定する場合は、
 	// Windows XP に InitCommonControlsEx() が必要です。さもなければ、ウィンドウ作成はすべて失敗します。
-	INITCOMMONCONTROLSEX InitCtrls;
+	INITCOMMONCONTROLSEX InitCtrls{};
 	InitCtrls.dwSize = sizeof(InitCtrls);
 	// アプリケーションで使用するすべてのコモン コントロール クラスを含めるには、
 	// これを設定します。
@@ -55,6 +55,66 @@ BOOL Cwaifu2xncnnvulkanApp::InitInstance()
 
 	CWinApp::InitInstance();
 
+	bool bWaitTerminate = false;
+	DWORD dwWaitProcessId;
+	for (int i = 1; i < __argc; ++i) {
+
+		if (!(__wargv[i][0] == _T('/') || __wargv[i][0] == _T('-'))) {
+			continue;
+		}
+		if (_tcsicmp(&__wargv[i][1], _T("waitterminate")) == 0) {
+
+			if (++i >= __argc) {
+				continue;
+			}
+			dwWaitProcessId = static_cast<DWORD>(_ttoi(__wargv[i]));
+			if (dwWaitProcessId != 0) {
+				bWaitTerminate = true;
+			}
+		}
+	}
+	if (bWaitTerminate) {
+		HANDLE hWaitProcess = ::OpenProcess(SYNCHRONIZE, FALSE, dwWaitProcessId);
+		if (hWaitProcess != NULL) {
+			// 10秒待っても前のプロセスが終了しない場合は、アプリケーションを終了します。
+			if (::WaitForSingleObject(hWaitProcess, 10 * 1000) == WAIT_TIMEOUT) {
+				return FALSE;
+			}
+		}
+	}
+
+	SECURITY_DESCRIPTOR sd{};
+	if (0 == ::InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION)) {
+		// エラー
+		return FALSE;
+	}
+
+	if (0 == ::SetSecurityDescriptorDacl(&sd, TRUE, 0, FALSE)) {
+		// エラー
+		return FALSE;
+	}
+
+	InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
+	SetSecurityDescriptorDacl(&sd, TRUE, 0, FALSE);
+	SECURITY_ATTRIBUTES secAttribute{};
+	secAttribute.nLength = sizeof(secAttribute);
+	secAttribute.lpSecurityDescriptor = &sd;
+	secAttribute.bInheritHandle = TRUE;
+
+	g_hMutex = CreateMutex(&secAttribute, FALSE, _T("waifu2xnvgui.mutex.exe"));
+	if (g_hMutex == NULL) {
+		return FALSE;
+	}
+
+	if (::GetLastError() == ERROR_ALREADY_EXISTS)
+	{
+		SetLastError(NO_ERROR);
+		if (g_hMutex) {
+			CloseHandle(g_hMutex);
+		}
+		MessageBox(NULL,_T("Double launching of applications is not allowed."), _T("Error"), MB_ICONERROR | MB_OK);
+		return FALSE;
+	}
 
 	AfxEnableControlContainer();
 
@@ -112,3 +172,14 @@ BOOL Cwaifu2xncnnvulkanApp::InitInstance()
 	return FALSE;
 }
 
+BOOL Cwaifu2xncnnvulkanApp::ExitInstance()
+{
+	if (g_hMutex)
+	{
+		ReleaseMutex(g_hMutex);
+		CloseHandle(g_hMutex);
+		g_hMutex = NULL;
+	}
+
+	return CWinApp::ExitInstance();
+}

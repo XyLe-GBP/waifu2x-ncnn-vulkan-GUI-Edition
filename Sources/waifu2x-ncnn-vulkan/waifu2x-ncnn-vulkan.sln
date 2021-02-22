@@ -3,11 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29905.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "waifu2x-ncnn-vulkan", "waifu2x-ncnn-vulkan.vcxproj", "{9231F51F-159A-49C6-B4BA-8B321617929C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "waifu2x-ncnn-vulkan-GUI", "waifu2x-ncnn-vulkan.vcxproj", "{9231F51F-159A-49C6-B4BA-8B321617929C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "App.General.Lib", "..\App.General.Lib\App.General.Lib.vcxproj", "{73E0D8A4-E7E5-4C09-9192-6290B494CD2E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "App.General.resLib", "..\App.General.resLib\App.General.resLib.vcxproj", "{C1ACBCC1-DA8D-4571-91F9-8B88D854C3EC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "waifu2xnvgui.Japanese", "..\waifu2xnvgui.Japanese\waifu2xnvgui.Japanese.vcxproj", "{D3FFF627-DFD4-416F-BD0F-B0946FAEC2E1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "waifu2xnvgui.English", "..\waifu2xnvgui.English\waifu2xnvgui.English.vcxproj", "{FA2F1638-C880-4656-BD8F-9E7FAC0C638F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +45,22 @@ Global
 		{C1ACBCC1-DA8D-4571-91F9-8B88D854C3EC}.Release|x64.Build.0 = Release|x64
 		{C1ACBCC1-DA8D-4571-91F9-8B88D854C3EC}.Release|x86.ActiveCfg = Release|Win32
 		{C1ACBCC1-DA8D-4571-91F9-8B88D854C3EC}.Release|x86.Build.0 = Release|Win32
+		{D3FFF627-DFD4-416F-BD0F-B0946FAEC2E1}.Debug|x64.ActiveCfg = Debug|x64
+		{D3FFF627-DFD4-416F-BD0F-B0946FAEC2E1}.Debug|x64.Build.0 = Debug|x64
+		{D3FFF627-DFD4-416F-BD0F-B0946FAEC2E1}.Debug|x86.ActiveCfg = Debug|Win32
+		{D3FFF627-DFD4-416F-BD0F-B0946FAEC2E1}.Debug|x86.Build.0 = Debug|Win32
+		{D3FFF627-DFD4-416F-BD0F-B0946FAEC2E1}.Release|x64.ActiveCfg = Release|x64
+		{D3FFF627-DFD4-416F-BD0F-B0946FAEC2E1}.Release|x64.Build.0 = Release|x64
+		{D3FFF627-DFD4-416F-BD0F-B0946FAEC2E1}.Release|x86.ActiveCfg = Release|Win32
+		{D3FFF627-DFD4-416F-BD0F-B0946FAEC2E1}.Release|x86.Build.0 = Release|Win32
+		{FA2F1638-C880-4656-BD8F-9E7FAC0C638F}.Debug|x64.ActiveCfg = Debug|x64
+		{FA2F1638-C880-4656-BD8F-9E7FAC0C638F}.Debug|x64.Build.0 = Debug|x64
+		{FA2F1638-C880-4656-BD8F-9E7FAC0C638F}.Debug|x86.ActiveCfg = Debug|Win32
+		{FA2F1638-C880-4656-BD8F-9E7FAC0C638F}.Debug|x86.Build.0 = Debug|Win32
+		{FA2F1638-C880-4656-BD8F-9E7FAC0C638F}.Release|x64.ActiveCfg = Release|x64
+		{FA2F1638-C880-4656-BD8F-9E7FAC0C638F}.Release|x64.Build.0 = Release|x64
+		{FA2F1638-C880-4656-BD8F-9E7FAC0C638F}.Release|x86.ActiveCfg = Release|Win32
+		{FA2F1638-C880-4656-BD8F-9E7FAC0C638F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

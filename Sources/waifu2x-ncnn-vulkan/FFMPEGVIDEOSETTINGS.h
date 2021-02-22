@@ -47,4 +47,5 @@ private:
 	CString HIDEBANNER;
 	CString OUTNAME;
 	CString OUTDIR;
+	void SetDlgLang();
 };

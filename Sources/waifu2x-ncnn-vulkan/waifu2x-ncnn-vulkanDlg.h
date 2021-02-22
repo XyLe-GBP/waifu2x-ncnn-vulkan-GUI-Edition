@@ -3,8 +3,8 @@
 //
 
 #pragma once
-#include <memory>
 #include "../App.General.Lib/App.General.Lib.Main.h"
+#include "Language.h"
 
 // Cwaifu2xncnnvulkanDlg ダイアログ
 class Cwaifu2xncnnvulkanDlg : public CDialogEx
@@ -12,7 +12,7 @@ class Cwaifu2xncnnvulkanDlg : public CDialogEx
 // コンストラクション
 	friend class THREADWAITDIALOG;
 	friend class DLDIALOG;
-	friend class FILEDELETEDLG;
+	friend class DELETEDIALOG;
 public:
 	Cwaifu2xncnnvulkanDlg(CWnd* pParent = nullptr);	// 標準コンストラクター
 	static UINT DLThread(LPVOID pParam);
@@ -22,9 +22,11 @@ public:
 	static UINT waifu2xCountDlgThread(LPVOID pParam);
 	static UINT FFmpegThread(LPVOID pParam);
 	static UINT DeleteThread(LPVOID pParam);
+	static UINT DeleteMainThread(LPVOID pParam);
 	void DLThread();
 	void DLCountThread();
 	void DeleteThread();
+	void DeleteMainThread();
 	void waifu2xThread();
 	void waifu2xCountThread();
 	void waifu2xCountDlgThread();
@@ -42,6 +44,7 @@ public:
 // 実装
 protected:
 	HICON m_hIcon;
+	NEW_CORE;
 	NEW_MAINSTR;
 	NEW_VERSIONSTR;
 	NEW_COREUTIL;
@@ -61,14 +64,18 @@ public: //system
 private: // user private
 	static UINT DLCount;
 	static UINT DLCurCount;
-	static UINT DLFlag;
 	static UINT DLThreadFlag;
+	static UINT DLErrorFlag;
 	static UINT FILECOUNT;
 	static UINT UPSCALE_COUNT;
-	static UINT DELETECOUNT;
+	static UINT DELETECURCOUNT;
+	static UINT DELETEMAINCOUNT;
+	static UINT DELETESUBCOUNT;
 	static UINT ProgressThreadFlag;
+	static UINT UpscaleExceptionFlag;
 	static UINT Waifu2xThreadFlag;
 	static UINT Waifu2xReUpscalingFlag;
+	static UINT DeleteExceptionFlag;
 	static UINT DeleteFileThreadFlag;
 	static UINT SuspendFlag;
 	CWinThread* pDLThread;
@@ -78,11 +85,12 @@ private: // user private
 	CWinThread* pWaifu2xCountDlgThread;
 	CWinThread* pDLCountThread;
 	CWinThread* pDeleteThread;
+	CWinThread* pDeleteMainThread;
 public: // user public
-	TCHAR* lpPath = (TCHAR*)malloc(sizeof(TCHAR) * 512); // TCHAR配列をmallocで確保する
 
 	UINT FFmpegThreadFlag;
 	UINT ImageUpScaleFlag;
+	UINT DeleteMainThreadFlag;
 
 	CStatic xv_Static_ReadStatus;
 	CStatic xv_Static_File;
@@ -97,10 +105,12 @@ public: // user public
 	CString IMAGEPATH_M;
 	CString VIDEOPATH;
 	CString MultipleOutPath;
+	CString DELETEPATH;
 	
 	CEdit xv_CPUINFO;
 	CEdit xv_GPUINFO;
 
+	void LoadDlgStr();
 	afx_msg LRESULT OnCompleteWaifu2xThread(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnCompleteFFmpegThread(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnCompleteDLThread(WPARAM wParam, LPARAM lParam);
@@ -108,6 +118,7 @@ public: // user public
 	afx_msg LRESULT OnCompleteWaifu2xCountThread(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnCompleteWaifu2xCountDlgThread(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnCompleteDeleteThread(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnCompleteDeleteMainThread(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedButton2();
 	afx_msg void OnBnClickedButton3();
@@ -126,4 +137,6 @@ public: // user public
 	afx_msg void OnVideoresize();
 	afx_msg void OnVideoaudioexport();
 	afx_msg void OnUpdatecheck();
+	afx_msg void OnLanguageJapanese();
+	afx_msg void OnLanguageEnglish();
 };

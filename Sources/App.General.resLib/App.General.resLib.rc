@@ -79,8 +79,8 @@ IDC_CURSOR1             CURSOR                  "res\\aero_link.cur"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,1,29
- PRODUCTVERSION 1,0,1,29
+ FILEVERSION 1,0,2,222
+ PRODUCTVERSION 1,0,2,222
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -97,12 +97,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "XyLe"
             VALUE "FileDescription", "App.General.resLib.dll"
-            VALUE "FileVersion", "1.0.1.29"
+            VALUE "FileVersion", "1.0.2.222"
             VALUE "InternalName", "App.General.resLib"
-            VALUE "LegalCopyright", "Copyright c 2021 - XyLe. All rights reserved."
+            VALUE "LegalCopyright", "Copyright (C) 2021 - XyLe. All Rights Reserved."
             VALUE "OriginalFilename", "App.General.resLib.dll"
-            VALUE "ProductName", "Application General Resources Library"
-            VALUE "ProductVersion", "1.0.1.29"
+            VALUE "ProductName", "waifu2xnvgui: General Resources Library"
+            VALUE "ProductVersion", "1.0.2.222"
         END
     END
     BLOCK "VarFileInfo"

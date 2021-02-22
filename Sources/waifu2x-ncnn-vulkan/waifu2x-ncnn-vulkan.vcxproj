@@ -221,8 +221,8 @@
     <ClInclude Include="FFMPEGAUDIOSETTINGS.h" />
     <ClInclude Include="FFMPEGSETTINGSDIALOG.h" />
     <ClInclude Include="FFMPEGVIDEOSETTINGS.h" />
-    <ClInclude Include="FILEDELETEDLG.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="Language.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="POPUPDlg.h" />
     <ClInclude Include="Resource.h" />
@@ -243,7 +243,6 @@
     <ClCompile Include="FFMPEGAUDIOSETTINGS.cpp" />
     <ClCompile Include="FFMPEGSETTINGSDIALOG.cpp" />
     <ClCompile Include="FFMPEGVIDEOSETTINGS.cpp" />
-    <ClCompile Include="FILEDELETEDLG.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -273,6 +272,12 @@
     </ProjectReference>
     <ProjectReference Include="..\App.General.resLib\App.General.resLib.vcxproj">
       <Project>{c1acbcc1-da8d-4571-91f9-8b88d854c3ec}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\waifu2xnvgui.English\waifu2xnvgui.English.vcxproj">
+      <Project>{fa2f1638-c880-4656-bd8f-9e7fac0c638f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\waifu2xnvgui.Japanese\waifu2xnvgui.Japanese.vcxproj">
+      <Project>{d3fff627-dfd4-416f-bd0f-b0946faec2e1}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

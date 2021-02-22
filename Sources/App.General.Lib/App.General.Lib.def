@@ -6,7 +6,8 @@ EXPORTS
     ; Core
 
     LoadImageLibrary
-    FreeImageLibrary
+    LoadJPNLangLibrary
+    LoadENGLangLibrary
 
     ; Utility
 
@@ -25,9 +26,15 @@ EXPORTS
     GetFileSizeAPI
     GetFileSizeStat
     DeleteDirectory
+    DeleteALLFiles
+    CopyALLFiles
     AfxReplaceStr
     AfxReplaceStrA
+    AfxReplaceStrPtr
+    RunProcess
     TerminateExeName
+    GetCPUInfo
+    GetGPUInfo
 
      ; MainString
 
@@ -35,6 +42,8 @@ EXPORTS
     StringToWString
     CURRENT_DIR
     RESOURCELIB_PATH
+    JPN_RESOURCELIB_PATH
+    ENG_RESOURCELIB_PATH
     DEFAULTTEXT
     READEDTEXT
     NULLTEXT

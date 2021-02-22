@@ -13,6 +13,7 @@ public:
 	virtual ~THREADWAITDIALOG();
 	static UINT MainThread(LPVOID pParam);
 	void MainThread();
+	void UpdateProgressText();
 
 // ダイアログ データ
 #ifdef AFX_DESIGN_TIME
@@ -22,8 +23,9 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
 	virtual BOOL OnInitDialog();
-	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+	afx_msg void OnDestroy();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	NEW_CORE;
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -38,8 +40,11 @@ private:
 	CString POS;
 	CString PROGRESSTEXT;
 	UINT_PTR m_TimerID;
+	UINT_PTR m_hTimerID;
 	UINT MAX_POS;
 	UINT CUR_POS;
+	UINT ExceptionCounter;
+	UINT ValueFlag;
 public:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg LRESULT OnCompleteMainThread(WPARAM wParam, LPARAM lParam);

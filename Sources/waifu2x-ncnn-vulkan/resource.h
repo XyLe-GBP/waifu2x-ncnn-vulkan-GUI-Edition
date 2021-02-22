@@ -23,7 +23,6 @@
 #define IDD_VIDEOAUDIOEXPORTDIALOG      154
 #define IDD_POPUP                       156
 #define IDD_DOWNLOAD                    158
-#define IDD_FILEDELETE_DIALOG           160
 #define IDD_FFMPEG_CODECDIALOG          162
 #define IDC_EDIT1                       1000
 #define IDC_COMBO1                      1003
@@ -113,6 +112,62 @@
 #define IDC_BUTTON_CANCEL               1082
 #define IDC_BUTTON_CODEC                1083
 #define IDC_EDIT_LIST                   1084
+#define IDC_STATIC_GRP1                 1085
+#define IDC_STATIC_GRP2                 1086
+#define IDC_STATIC_GRP3                 1087
+#define IDC_STATIC_GRP4                 1088
+#define IDC_STATIC_GRP5                 1089
+#define IDC_STATIC_HEAD                 1090
+#define IDC_STATIC_READ                 1091
+#define IDC_STATIC_FL                   1092
+#define IDC_STATIC_FP                   1093
+#define IDC_STATIC_CP                   1094
+#define IDC_STATIC_GP                   1095
+#define IDC_STATIC_HED                  1096
+#define IDC_STATIC_V1                   1097
+#define IDC_STATIC_V2                   1098
+#define IDC_STATIC_V3                   1099
+#define IDC_STATIC_GRP_GEN              1100
+#define IDC_STATIC_GRP_ADV              1101
+#define IDC_STATIC_NS                   1102
+#define IDC_STATIC_SC                   1103
+#define IDC_STATIC_CNVGPU               1104
+#define IDC_STATIC_BLS                  1105
+#define IDC_STATIC_BL                   1106
+#define IDC_STATIC_THR                  1107
+#define IDC_STATIC_FMT                  1108
+#define IDC_STATIC_MDL                  1109
+#define IDC_STATIC_PRM                  1110
+#define IDC_STATIC_GRP_GEN_FF           1111
+#define IDC_STATIC_GRP_ADV_FF           1112
+#define IDC_STATIC_PRE_FF               1113
+#define IDC_STATIC_VIDFP                1114
+#define IDC_STATIC_VIDFP2               1115
+#define IDC_STATIC_VIDCDC               1116
+#define IDC_STATIC_SNDCDC               1117
+#define IDC_STATIC_SNDBT                1118
+#define IDC_STATIC_CRFLV                1119
+#define IDC_STATIC_CRFLV2               1120
+#define IDC_STATIC_FFPT                 1121
+#define IDC_STATIC_CMDP_FF              1122
+#define IDC_STATIC_SNDFMT               1123
+#define IDC_STATIC_FNOEXT_A             1124
+#define IDC_STATIC_OUTD_A               1125
+#define IDC_STATIC_PRE_A                1126
+#define IDC_STATIC_GRP_GEN_A            1127
+#define IDC_STATIC_PRM_A                1128
+#define IDC_STATIC_GRP_GEN_V            1129
+#define IDC_STATIC_PRE_V                1130
+#define IDC_STATIC_FNNEXT_V             1131
+#define IDC_STATIC_OUTD_V               1132
+#define IDC_STATIC_PRM_V                1133
+#define IDC_STATIC_GRP_ASP              1134
+#define IDC_STATIC_GRP_RS               1135
+#define IDC_STATIC_PPUP                 1136
+#define IDC_STATIC_DELTEXT              1137
+#define IDC_STATIC_UPTXT                1138
+#define IDC_STATIC_WAITTXT              1139
+#define IDC_STATIC_DLTXT                1140
 #define ID_FILE_32771                   32771
 #define ID_32772                        32772
 #define ID_32773                        32773
@@ -147,14 +202,18 @@
 #define ID_32802                        32802
 #define ID_32803                        32803
 #define ID_FFMPEGUPDATECHECK            32804
+#define ID_32805                        32805
+#define ID_LANGUAGE_32806               32806
+#define ID_LANGUAGE_ENGLISH             32807
+#define ID_LANGUAGE_JAPANESE            32808
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        164
-#define _APS_NEXT_COMMAND_VALUE         32805
-#define _APS_NEXT_CONTROL_VALUE         1085
+#define _APS_NEXT_COMMAND_VALUE         32809
+#define _APS_NEXT_CONTROL_VALUE         1141
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

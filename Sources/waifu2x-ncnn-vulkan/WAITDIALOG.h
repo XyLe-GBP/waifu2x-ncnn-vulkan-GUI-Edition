@@ -18,6 +18,9 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
+	virtual BOOL OnInitDialog();
+	afx_msg void OnDestroy();
+	NEW_CORE;
 
 	DECLARE_MESSAGE_MAP()
 };
