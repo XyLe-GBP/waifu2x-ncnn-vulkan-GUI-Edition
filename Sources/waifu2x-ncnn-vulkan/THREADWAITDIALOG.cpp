@@ -8,7 +8,6 @@
 #include "waifu2x-ncnn-vulkanDlg.h"
 #include "CThreadWaitDlgThread.h"
 
-#define WM_USER_COMPLETE_MAIN (WM_USER + 0x20)
 
 // THREADWAITDIALOG ダイアログ
 
@@ -43,7 +42,6 @@ BEGIN_MESSAGE_MAP(THREADWAITDIALOG, CDialogEx)
 	ON_WM_TIMER()
 	ON_WM_DESTROY()
 	ON_BN_CLICKED(IDC_BUTTON_CANCEL, &THREADWAITDIALOG::OnBnClickedButtonCancel)
-	ON_MESSAGE(WM_USER_COMPLETE_MAIN, THREADWAITDIALOG::OnCompleteMainThread)
 END_MESSAGE_MAP()
 
 
@@ -85,54 +83,9 @@ BOOL THREADWAITDIALOG::OnInitDialog()
 	hDCStatic = ::GetDC(this->m_Static);
 	this->m_Static.GetClientRect(&rc);
 
-	CWinThread* pMainThread = NULL;
-	pMainThread = AfxBeginThread(MainThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
-	if (pMainThread)
-	{
-		pMainThread->m_pMainWnd = this;
-		pMainThread->m_bAutoDelete = TRUE;
-		pMainThread->ResumeThread();
-	}
-
 	return TRUE;
 }
-UINT THREADWAITDIALOG::MainThread(LPVOID pParam)
-{
-	THREADWAITDIALOG* pFileView = dynamic_cast<THREADWAITDIALOG*>(reinterpret_cast<CWnd*>(pParam));
-	if (pFileView)
-	{
-		pFileView->MainThread();
-	}
-	return 0;
-}
 
-void THREADWAITDIALOG::MainThread()
-{
-	INT cur, max;
-
-	xv_Progress.GetRange(cur, max);
-	while (max >= static_cast<INT>(Cwaifu2xncnnvulkanDlg::UPSCALE_COUNT)) {
-		if (Cwaifu2xncnnvulkanDlg::SuspendFlag == 1) {
-			break;
-		}
-		if (max <= static_cast<INT>(Cwaifu2xncnnvulkanDlg::UPSCALE_COUNT)) {
-			Sleep(1000);
-			break;
-		}
-		if (ExceptionCounter > 50) {
-			Cwaifu2xncnnvulkanDlg::UpscaleExceptionFlag = 1;
-			MessageBox(_T("An unexpected error has occurred.\nA static variable stopped with an unexpected value.\nCheck the waifu2x conversion settings."), _T("Error"), MB_ICONERROR | MB_OK);
-			break;
-		}
-	}
-	PostMessage(WM_USER_COMPLETE_MAIN);
-}
-
-LRESULT THREADWAITDIALOG::OnCompleteMainThread(WPARAM wParam, LPARAM lParam)
-{
-	PostMessage(WM_CLOSE);
-	return 0;
-}
 
 void THREADWAITDIALOG::UpdateProgressText()
 {
@@ -263,6 +216,9 @@ void THREADWAITDIALOG::OnTimer(UINT_PTR nIDEvent)
 {
 	// TODO: ここにメッセージ ハンドラー コードを追加するか、既定の処理を呼び出します。
 	if (nIDEvent == m_TimerID) {
+		INT cur{}, max{};
+
+		xv_Progress.GetRange(cur, max);
 		xv_Progress.SetPos(Cwaifu2xncnnvulkanDlg::UPSCALE_COUNT);
 		UpdateProgressText();
 		if (ValueFlag != Cwaifu2xncnnvulkanDlg::UPSCALE_COUNT) {
@@ -270,6 +226,16 @@ void THREADWAITDIALOG::OnTimer(UINT_PTR nIDEvent)
 		}
 		else {
 			ExceptionCounter++;
+		}
+		if (Cwaifu2xncnnvulkanDlg::SuspendFlag == 1) {
+			PostMessage(WM_CLOSE);
+		}
+		if (static_cast<UINT>(max) <= Cwaifu2xncnnvulkanDlg::UPSCALE_COUNT) {
+			PostMessage(WM_CLOSE);
+		}
+		if (ExceptionCounter > 50) {
+			Cwaifu2xncnnvulkanDlg::UpscaleExceptionFlag = 1;
+			PostMessage(WM_CLOSE);
 		}
 	}
 	if (nIDEvent == m_hTimerID) {

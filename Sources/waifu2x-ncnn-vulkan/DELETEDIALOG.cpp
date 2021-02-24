@@ -7,7 +7,6 @@
 #include "afxdialogex.h"
 #include "waifu2x-ncnn-vulkanDlg.h"
 
-#define WM_USER_COMPLETE_MAIN (WM_USER + 0x10)
 
 // DELETEDIALOG ダイアログ
 
@@ -41,7 +40,6 @@ void DELETEDIALOG::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(DELETEDIALOG, CDialogEx)
 	ON_WM_TIMER()
 	ON_WM_DESTROY()
-	ON_MESSAGE(WM_USER_COMPLETE_MAIN, DELETEDIALOG::OnCompleteMainThread)
 END_MESSAGE_MAP()
 
 
@@ -78,50 +76,7 @@ BOOL DELETEDIALOG::OnInitDialog()
 	hDCStatic = ::GetDC(this->m_Static);
 	this->m_Static.GetClientRect(&rc);
 
-	CWinThread* pMainThread = NULL;
-	pMainThread = AfxBeginThread(MainThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
-	if (pMainThread)
-	{
-		pMainThread->m_pMainWnd = this;
-		pMainThread->m_bAutoDelete = TRUE;
-		pMainThread->ResumeThread();
-	}
-
 	return TRUE;
-}
-UINT DELETEDIALOG::MainThread(LPVOID pParam)
-{
-	DELETEDIALOG* pFileView = dynamic_cast<DELETEDIALOG*>(reinterpret_cast<CWnd*>(pParam));
-	if (pFileView)
-	{
-		pFileView->MainThread();
-	}
-	return 0;
-}
-
-void DELETEDIALOG::MainThread()
-{
-	INT cur, max;
-
-	xv_Progress.GetRange(cur, max);
-	while (max >= static_cast<INT>(Cwaifu2xncnnvulkanDlg::DELETECURCOUNT)) {
-		if (max <= static_cast<INT>(Cwaifu2xncnnvulkanDlg::DELETECURCOUNT)) {
-			Sleep(1000);
-			break;
-		}
-		if (ExceptionCounter > 20) {
-			Cwaifu2xncnnvulkanDlg::DeleteExceptionFlag = 1;
-			MessageBox(_T("An unexpected error has occurred.\nA static variable stopped with an unexpected value.\nSome files failed to be deleted."), _T("Error"), MB_ICONWARNING | MB_OK);
-			break;
-		}
-	}
-	PostMessage(WM_USER_COMPLETE_MAIN);
-}
-
-LRESULT DELETEDIALOG::OnCompleteMainThread(WPARAM wParam, LPARAM lParam)
-{
-	PostMessage(WM_CLOSE);
-	return 0;
 }
 
 void DELETEDIALOG::UpdateProgressText()
@@ -204,6 +159,9 @@ void DELETEDIALOG::OnTimer(UINT_PTR nIDEvent)
 	// TODO: ここにメッセージ ハンドラー コードを追加するか、既定の処理を呼び出します。
 
 	if (nIDEvent == m_TimerID) {
+		INT cur{}, max{};
+
+		xv_Progress.GetRange(cur, max);
 		xv_Progress.SetPos(Cwaifu2xncnnvulkanDlg::DELETECURCOUNT);
 		UpdateProgressText();
 		if (ValueFlag != Cwaifu2xncnnvulkanDlg::DELETECURCOUNT) {
@@ -211,6 +169,13 @@ void DELETEDIALOG::OnTimer(UINT_PTR nIDEvent)
 		}
 		else {
 			ExceptionCounter++;
+		}
+		if (static_cast<UINT>(max) <= Cwaifu2xncnnvulkanDlg::DELETECURCOUNT) {
+			PostMessage(WM_CLOSE);
+		}
+		if (ExceptionCounter > 20) {
+			Cwaifu2xncnnvulkanDlg::DeleteExceptionFlag = 1;
+			PostMessage(WM_CLOSE);
 		}
 	}
 	if (nIDEvent == m_hTimerID) {

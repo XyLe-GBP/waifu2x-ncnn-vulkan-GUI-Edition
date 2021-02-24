@@ -110,6 +110,10 @@ public: // user public
 	CEdit xv_CPUINFO;
 	CEdit xv_GPUINFO;
 
+	UINT SuspendCheck(LPCTSTR Path1, UINT Flag);
+	UINT SuspendCheckMulti(LPCTSTR Path1, LPCTSTR Path2);
+	UINT DeleteExceptionCheck();
+	UINT UpscaleExceptionCheck();
 	void LoadDlgStr();
 	afx_msg LRESULT OnCompleteWaifu2xThread(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnCompleteFFmpegThread(WPARAM wParam, LPARAM lParam);

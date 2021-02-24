@@ -11,9 +11,6 @@ class THREADWAITDIALOG : public CDialogEx
 public:
 	THREADWAITDIALOG(CWnd* pParent = nullptr);   // 標準コンストラクター
 	virtual ~THREADWAITDIALOG();
-	static UINT MainThread(LPVOID pParam);
-	void MainThread();
-	void UpdateProgressText();
 
 // ダイアログ データ
 #ifdef AFX_DESIGN_TIME
@@ -24,18 +21,19 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
 	virtual BOOL OnInitDialog();
 	afx_msg void OnDestroy();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	NEW_CORE;
 
 	DECLARE_MESSAGE_MAP()
-public:
-	CProgressCtrl xv_Progress;
-	CStatic m_Static;
 private:
+	CWinThread* pMainThread{};
 	HDC hDCBackBuffer;
 	HDC hDCStatic;
 	HBRUSH m_Hbrush;
+	CProgressCtrl xv_Progress;
 	CRect rc;
+	CStatic m_Static;
 	CString MAX;
 	CString POS;
 	CString PROGRESSTEXT;
@@ -45,8 +43,6 @@ private:
 	UINT CUR_POS;
 	UINT ExceptionCounter;
 	UINT ValueFlag;
-public:
-	afx_msg void OnTimer(UINT_PTR nIDEvent);
-	afx_msg LRESULT OnCompleteMainThread(WPARAM wParam, LPARAM lParam);
+	void UpdateProgressText();
 	afx_msg void OnBnClickedButtonCancel();
 };

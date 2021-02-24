@@ -419,9 +419,8 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 
 	SetWindowText(_T("waifu2x-ncnn-vulkan GUI Edition [") + APP_VERSION + _T(", Feb. 22, 2021]"));
 	Utility->GetGPUInfo();
-
-	MSG msg;
 	
+	MSG msg{};
 	CString resdir = _T("\\Resources");
 	CString init1 = _T("\\Resources\\ffmpeg\\ffmpeg.exe");
 	CString init2 = _T("\\Resources\\waifu2x-ncnn-vulkan\\waifu2x-ncnn-vulkan.exe");
@@ -511,6 +510,7 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 			if (ret == IDYES) {
 				Utility->DeleteDirectory(_T(".\\Resources\\ffmpeg"));
 				bool ret;
+
 				POPUPDlg* DIALOG = new POPUPDlg;
 				DIALOG->Create(IDD_POPUP);
 				DIALOG->ShowWindow(SW_SHOW);
@@ -521,6 +521,7 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 						break;
 					}
 				}
+
 				CString STATUSCODE;
 				STATUSCODE.Format(_T("%d\n"), Utility->FFmpegServerCheck());
 				OutputDebugString(_T("Server connecting...\nHTTP Status code:") + STATUSCODE);
@@ -549,16 +550,9 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 				}
 
 				if (DLErrorFlag == 1) {
+					MessageBox(_T("An error occurred while downloading.\nPlease make sure that you have an Internet connection."), _T("Error"), MB_ICONWARNING | MB_OK);
 					DeleteFile(_T(".\\Resources\\ffmpeg.zip"));
 					DLErrorFlag = 0;
-				}
-
-				while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-					if (!AfxGetApp()->PumpMessage())
-					{
-						::PostQuitMessage(0);
-						break;
-					}
 				}
 
 				if (ret) {
@@ -656,6 +650,7 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 				if (ret == IDYES) {
 					Utility->DeleteDirectory(_T(".\\Resources\\ffmpeg"));
 					bool ret;
+
 					POPUPDlg* DIALOG = new POPUPDlg;
 					DIALOG->Create(IDD_POPUP);
 					DIALOG->ShowWindow(SW_SHOW);
@@ -666,6 +661,7 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 							break;
 						}
 					}
+
 					CString STATUSCODE;
 					STATUSCODE.Format(_T("%d\n"), Utility->FFmpegServerCheck());
 					OutputDebugString(_T("Server connecting...\nHTTP Status code:") + STATUSCODE);
@@ -694,16 +690,9 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 					}
 
 					if (DLErrorFlag == 1) {
+						MessageBox(_T("An error occurred while downloading.\nPlease make sure that you have an Internet connection."), _T("Error"), MB_ICONWARNING | MB_OK);
 						DeleteFile(_T(".\\Resources\\ffmpeg.zip"));
 						DLErrorFlag = 0;
-					}
-
-					while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-						if (!AfxGetApp()->PumpMessage())
-						{
-							::PostQuitMessage(0);
-							break;
-						}
 					}
 
 					if (ret) {
@@ -808,6 +797,7 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 		if (sel == IDYES)
 		{
 			bool ret;
+
 			POPUPDlg* DIALOG = new POPUPDlg;
 			DIALOG->Create(IDD_POPUP);
 			DIALOG->ShowWindow(SW_SHOW);
@@ -818,6 +808,7 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 					break;
 				}
 			}
+
 			CString STATUSCODE;
 			STATUSCODE.Format(_T("%d\n"), Utility->FFmpegServerCheck());
 			OutputDebugString(_T("Server connecting...\nHTTP Status code:") + STATUSCODE);
@@ -828,6 +819,7 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 				PostMessage(WM_COMMAND, IDCANCEL);
 				return FALSE;
 			}
+
 			OutputDebugString(_T("Server connected.\n"));
 			ret = Utility->DownloadFile(DOWNLOAD_URL_STRING, _T(".\\Resources\\ffmpeg.zip"), 4096);
 			DLCurCount = Utility->GetFileSizeStat(_T(".\\Resources\\ffmpeg.zip"));
@@ -846,16 +838,9 @@ BOOL Cwaifu2xncnnvulkanDlg::OnInitDialog()
 			}
 
 			if (DLErrorFlag == 1) {
+				MessageBox(_T("An error occurred while downloading.\nPlease make sure that you have an Internet connection."), _T("Error"), MB_ICONWARNING | MB_OK);
 				DeleteFile(_T(".\\Resources\\ffmpeg.zip"));
 				DLErrorFlag = 0;
-			}
-
-			while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-				if (!AfxGetApp()->PumpMessage())
-				{
-					::PostQuitMessage(0);
-					break;
-				}
 			}
 
 			if (ret) {
@@ -1212,6 +1197,11 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton1()
 				DELETEDIALOG DIALOG;
 				DIALOG.DoModal();
 			}
+			UINT dexp = DeleteExceptionCheck();
+			if (dexp == 1) {
+				MessageBox(_T("An unexpected error has occurred.\nA static variable stopped with an unexpected value.\nSome files failed to be deleted."), _T("Error"), MB_ICONWARNING | MB_OK);
+				DeleteExceptionFlag = 0;
+			}
 		}
 		else {
 			OutputDebugString(_T("Path: '") + currentPath + _T("' file doesn't exist.\n"));
@@ -1259,83 +1249,21 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton1()
 			pWaifu2xCountThread->m_pMainWnd = this;
 			pWaifu2xCountThread->m_bAutoDelete = TRUE;
 			pWaifu2xCountThread->ResumeThread();
-		}
-		CThreadWaitDlgThread* pThread = DYNAMIC_DOWNCAST(CThreadWaitDlgThread, AfxBeginThread(RUNTIME_CLASS(CThreadWaitDlgThread), 0, 0, CREATE_SUSPENDED));
-		pThread->m_bAutoDelete = TRUE;
-		pThread->ResumeThread();
-		while (pThread->m_Dlg.m_hWnd == 0) {
-			Sleep(0);
+			THREADWAITDIALOG DLG;
+			DLG.DoModal();
 		}
 
-		while (ProgressThreadFlag != TRUE) {
-			if (SuspendFlag == TRUE) {
-				while (pThread->m_Dlg.m_hWnd) {
-					if (pThread->m_Dlg.m_hWnd == 0) {
-						break;
-					}
-				}
-
-				if (PathFileExists(currentPath)) {
-					OutputDebugString(_T("Path: '") + currentPath + _T("' file exists.\n"));
-					DELETEPATH = currentPath;
-					DELETEMAINCOUNT = Utility->GetDirectoryFileCount(DELETEPATH.GetString());
-					pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
-					if (pDeleteThread)
-					{
-						pDeleteThread->m_pMainWnd = this;
-						pDeleteThread->m_bAutoDelete = TRUE;
-						if (DeleteFileThreadFlag != FALSE) {
-							DeleteFileThreadFlag = FALSE;
-						}
-						pDeleteThread->ResumeThread();
-
-						DELETEDIALOG DIALOG;
-						DIALOG.DoModal();
-					}
-				}
-				else {
-					OutputDebugString(_T("Path: '") + currentPath + _T("' file doesn't exist.\n"));
-				}
-
-				MessageBox(WARN_ABORT, INFO_TITLE, MB_ICONWARNING | MB_OK);
-				CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
-				CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
-				CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
-				CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON2);
-				CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON6);
-				button1->EnableWindow(FALSE);
-				button2->EnableWindow(FALSE);
-				button3->EnableWindow(FALSE);
-				button4->EnableWindow(FALSE);
-				button5->EnableWindow(FALSE);
-				this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
-				this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
-				this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
-				CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
-				static1->InvalidateRect(NULL, 1);
-				if (Waifu2xThreadFlag != FALSE) {
-					Waifu2xThreadFlag = FALSE;
-				}
-				if (ProgressThreadFlag != FALSE) {
-					ProgressThreadFlag = FALSE;
-				}
-				if (SuspendFlag != FALSE) {
-					SuspendFlag = FALSE;
-				}
-				return;
+		UINT Suspcheck = SuspendCheck(currentPath, 0);
+		if (Suspcheck == 1) {
+			return;
+		}
+		else {
+			if (ProgressThreadFlag != FALSE) {
+				ProgressThreadFlag = FALSE;
 			}
-		}
-		while (pThread->m_Dlg.m_hWnd) {
-			if (pThread->m_Dlg.m_hWnd == 0) {
-				break;
+			if (SuspendFlag != FALSE) {
+				SuspendFlag = FALSE;
 			}
-		}
-
-		if (ProgressThreadFlag != FALSE) {
-			ProgressThreadFlag = FALSE;
-		}
-		if (SuspendFlag != FALSE) {
-			SuspendFlag = FALSE;
 		}
 
 		if (EXT == L"JPG") {
@@ -1359,37 +1287,26 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton1()
 			ShellExecute(NULL, L"open", L"cmd.exe", renameCom, CURRENT_PATH + L"\\Resources\\takeout\\_temp-project\\image-frames2x\\", SW_SHOWNORMAL);
 		}
 
-		CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
-		CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
-		CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
-		CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON6);
-		CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON2);
-		button1->EnableWindow(FALSE);
-		button2->EnableWindow(TRUE);
-		button3->EnableWindow(TRUE);
-		button4->EnableWindow(FALSE);
-		button5->EnableWindow(FALSE);
-
 		if (Waifu2xThreadFlag != FALSE) {
 			Waifu2xThreadFlag = FALSE;
 		}
 
-		if (UpscaleExceptionFlag == 1) {
-			UpscaleExceptionFlag = 0;
+		UINT err = UpscaleExceptionCheck();
+		if (err == 1) {
+			return;
+		}
+		else {
 			CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
 			CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
 			CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
 			CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON6);
 			CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON2);
 			button1->EnableWindow(FALSE);
-			button2->EnableWindow(FALSE);
-			button3->EnableWindow(FALSE);
+			button2->EnableWindow(TRUE);
+			button3->EnableWindow(TRUE);
 			button4->EnableWindow(FALSE);
 			button5->EnableWindow(FALSE);
-			MessageBox(ERROR_UPSCALE, ERROR_UPSCALE_TITLE, MB_ICONINFORMATION | MB_OK);
-			return;
-		}
-		else {
+
 			if (PathFileExists(w2xout)) {
 				CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
 				CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
@@ -1496,6 +1413,11 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton3()
 			DELETEDIALOG DIALOG;
 			DIALOG.DoModal();
 		}
+		UINT dexp = DeleteExceptionCheck();
+		if (dexp == 1) {
+			MessageBox(_T("An unexpected error has occurred.\nA static variable stopped with an unexpected value.\nSome files failed to be deleted."), _T("Error"), MB_ICONWARNING | MB_OK);
+			DeleteExceptionFlag = 0;
+		}
 	}
 	else {
 		OutputDebugString(_T("Path: '") + currentPath + _T("' file doesn't exist.\n"));
@@ -1554,87 +1476,36 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton3()
 		pWaifu2xCountThread->m_pMainWnd = this;
 		pWaifu2xCountThread->m_bAutoDelete = TRUE;
 		pWaifu2xCountThread->ResumeThread();
+
+		THREADWAITDIALOG DLG;
+		DLG.DoModal();
 	}
-	CThreadWaitDlgThread* pThread = DYNAMIC_DOWNCAST(CThreadWaitDlgThread, AfxBeginThread(RUNTIME_CLASS(CThreadWaitDlgThread), 0, 0, CREATE_SUSPENDED));
+
+	UINT Suspcheck = SuspendCheck(current, 0);
+	if (Suspcheck == 1) {
+		return;
+	}
+	else {
+		if (ProgressThreadFlag != FALSE) {
+			ProgressThreadFlag = FALSE;
+		}
+		if (SuspendFlag != FALSE) {
+			SuspendFlag = FALSE;
+		}
+		if (Waifu2xReUpscalingFlag != FALSE) {
+			Waifu2xReUpscalingFlag = FALSE;
+		}
+		if (Waifu2xThreadFlag != FALSE) {
+			Waifu2xThreadFlag = FALSE;
+		}
+	}
+
+	/*CThreadWaitDlgThread* pThread = DYNAMIC_DOWNCAST(CThreadWaitDlgThread, AfxBeginThread(RUNTIME_CLASS(CThreadWaitDlgThread), 0, 0, CREATE_SUSPENDED));
 	pThread->m_bAutoDelete = TRUE;
 	pThread->ResumeThread();
 	while (pThread->m_Dlg.m_hWnd == 0) {
 		Sleep(0);
-	}
-
-	while (ProgressThreadFlag != TRUE) {
-		if (SuspendFlag == TRUE) {
-			while (pThread->m_Dlg.m_hWnd) {
-				if (pThread->m_Dlg.m_hWnd == 0) {
-					break;
-				}
-			}
-
-			if (PathFileExists(current)) {
-				OutputDebugString(_T("Path: '") + current + _T("' file exists.\n"));
-				DELETEPATH = current;
-				DELETEMAINCOUNT = Utility->GetDirectoryFileCount(DELETEPATH.GetString());
-				pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
-				if (pDeleteThread)
-				{
-					pDeleteThread->m_pMainWnd = this;
-					pDeleteThread->m_bAutoDelete = TRUE;
-					if (DeleteFileThreadFlag != FALSE) {
-						DeleteFileThreadFlag = FALSE;
-					}
-					pDeleteThread->ResumeThread();
-
-					DELETEDIALOG DIALOG;
-					DIALOG.DoModal();
-				}
-			}
-			else {
-				OutputDebugString(_T("Path: '") + current + _T("' file doesn't exist.\n"));
-			}
-
-			MessageBox(WARN_ABORT, INFO_TITLE, MB_ICONWARNING | MB_OK);
-			CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
-			CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
-			CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
-			CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON2);
-			CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON6);
-			button1->EnableWindow(FALSE);
-			button2->EnableWindow(FALSE);
-			button3->EnableWindow(FALSE);
-			button4->EnableWindow(FALSE);
-			button5->EnableWindow(FALSE);
-			this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
-			this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
-			this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
-			CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
-			static1->InvalidateRect(NULL, 1);
-			if (Waifu2xThreadFlag != FALSE) {
-				Waifu2xThreadFlag = FALSE;
-			}
-			if (ProgressThreadFlag != FALSE) {
-				ProgressThreadFlag = FALSE;
-			}
-			if (Waifu2xReUpscalingFlag != FALSE) {
-				Waifu2xReUpscalingFlag = FALSE;
-			}
-			if (SuspendFlag != FALSE) {
-				SuspendFlag = FALSE;
-			}
-			return;
-		}
-	}
-	while (pThread->m_Dlg.m_hWnd) {
-		if (pThread->m_Dlg.m_hWnd == 0) {
-			break;
-		}
-	}
-
-	if (ProgressThreadFlag != FALSE) {
-		ProgressThreadFlag = FALSE;
-	}
-	if (SuspendFlag != FALSE) {
-		SuspendFlag = FALSE;
-	}
+	}*/
 
 	if (EXT == L"JPG") {
 		CString prenameCom = L"/c ren *.png.jpg *.\nexit 0";
@@ -1653,31 +1524,8 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton3()
 		ShellExecute(NULL, L"open", L"cmd.exe", prenameComext, CURRENT_PATH + L"\\Resources\\takeout\\_temp-project\\image-frames2x\\", SW_HIDE);
 	}
 
-	if (Waifu2xReUpscalingFlag != FALSE) {
-		Waifu2xReUpscalingFlag = FALSE;
-	}
-	if (Waifu2xThreadFlag != FALSE) {
-		Waifu2xThreadFlag = FALSE;
-	}
-
-	if (UpscaleExceptionFlag == 1) {
-		UpscaleExceptionFlag = 0;
-		CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
-		CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
-		CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
-		CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON2);
-		CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON6);
-		button1->EnableWindow(FALSE);
-		button2->EnableWindow(FALSE);
-		button3->EnableWindow(FALSE);
-		button4->EnableWindow(FALSE);
-		button5->EnableWindow(FALSE);
-		this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
-		this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
-		this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
-		CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
-		static1->InvalidateRect(NULL, 1);
-		MessageBox(ERROR_REUPSCALE, ERROR_REUPSCALE_TITLE, MB_ICONINFORMATION | MB_OK);
+	UINT err = UpscaleExceptionCheck();
+	if (err == 1) {
 		return;
 	}
 	else {
@@ -1881,6 +1729,11 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton4()
 				DELETEDIALOG DIALOG;
 				DIALOG.DoModal();
 			}
+			UINT dexp = DeleteExceptionCheck();
+			if (dexp == 1) {
+				MessageBox(_T("An unexpected error has occurred.\nA static variable stopped with an unexpected value.\nSome files failed to be deleted."), _T("Error"), MB_ICONWARNING | MB_OK);
+				DeleteExceptionFlag = 0;
+			}
 		}
 		else {
 			OutputDebugString(_T("Path: '") + currentPath + _T("' file doesn't exist.\n"));
@@ -1961,6 +1814,11 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton4()
 
 				DELETEDIALOG DIALOG;
 				DIALOG.DoModal();
+			}
+			UINT dexp = DeleteExceptionCheck();
+			if (dexp == 1) {
+				MessageBox(_T("An unexpected error has occurred.\nA static variable stopped with an unexpected value.\nSome files failed to be deleted."), _T("Error"), MB_ICONWARNING | MB_OK);
+				DeleteExceptionFlag = 0;
 			}
 		}
 		else {
@@ -2330,6 +2188,11 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton2()
 						DELETEDIALOG DIALOG;
 						DIALOG.DoModal();
 					}
+					UINT dexp = DeleteExceptionCheck();
+					if (dexp == 1) {
+						MessageBox(_T("An unexpected error has occurred.\nA static variable stopped with an unexpected value.\nSome files failed to be deleted."), _T("Error"), MB_ICONWARNING | MB_OK);
+						DeleteExceptionFlag = 0;
+					}
 				}
 			}
 			else {
@@ -2393,6 +2256,11 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton2()
 
 								DELETEDIALOG DIALOG;
 								DIALOG.DoModal();
+							}
+							UINT dexp = DeleteExceptionCheck();
+							if (dexp == 1) {
+								MessageBox(_T("An unexpected error has occurred.\nA static variable stopped with an unexpected value.\nSome files failed to be deleted."), _T("Error"), MB_ICONWARNING | MB_OK);
+								DeleteExceptionFlag = 0;
 							}
 						}
 					}
@@ -2464,122 +2332,26 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton2()
 			pWaifu2xCountThread->m_pMainWnd = this;
 			pWaifu2xCountThread->m_bAutoDelete = TRUE;
 			pWaifu2xCountThread->ResumeThread();
-		}
-		CThreadWaitDlgThread* pThread = DYNAMIC_DOWNCAST(CThreadWaitDlgThread, AfxBeginThread(RUNTIME_CLASS(CThreadWaitDlgThread), 0, 0, CREATE_SUSPENDED));
-		pThread->m_bAutoDelete = TRUE;
-		pThread->ResumeThread();
-		while (pThread->m_Dlg.m_hWnd == 0) {
-			Sleep(0);
+			THREADWAITDIALOG DLG;
+			DLG.DoModal();
 		}
 
-		while (ProgressThreadFlag != TRUE) {
-			if (SuspendFlag == TRUE) {
-				while (pThread->m_Dlg.m_hWnd) {
-					if (pThread->m_Dlg.m_hWnd == 0) {
-						break;
-					}
-				}
-				if (PathFileExists(currentPath)) {
-					OutputDebugString(_T("Path: '") + currentPath + _T("' file exists.\n"));
-					DELETEPATH = currentPath;
-					DELETEMAINCOUNT = Utility->GetDirectoryFileCount(DELETEPATH.GetString());
-					if (DELETEMAINCOUNT <= 500) {
-						Utility->DeleteDirectory(DELETEPATH);
-					}
-					else {
-						pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
-						if (pDeleteThread)
-						{
-							pDeleteThread->m_pMainWnd = this;
-							pDeleteThread->m_bAutoDelete = TRUE;
-							if (DeleteFileThreadFlag != FALSE) {
-								DeleteFileThreadFlag = FALSE;
-							}
-							pDeleteThread->ResumeThread();
-
-							DELETEDIALOG DIALOG;
-							DIALOG.DoModal();
-						}
-					}
-				}
-				else {
-					OutputDebugString(_T("Path: '") + currentPath + _T("' file doesn't exist.\n"));
-				}
-
-				if (PathFileExists(OutPath)) {
-					OutputDebugString(_T("Path: '") + OutPath + _T("' file exists.\n"));
-					DELETEPATH = OutPath + _T("\\*.*");
-					DELETEMAINCOUNT = Utility->GetDirectoryFileCount(OutPath.GetString());
-					if (DELETEMAINCOUNT <= 500) {
-						Utility->DeleteALLFiles(DELETEPATH);
-					}
-					else {
-						pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
-						if (pDeleteThread)
-						{
-							pDeleteThread->m_pMainWnd = this;
-							pDeleteThread->m_bAutoDelete = TRUE;
-							if (DeleteFileThreadFlag != FALSE) {
-								DeleteFileThreadFlag = FALSE;
-							}
-							pDeleteThread->ResumeThread();
-
-							DELETEDIALOG DIALOG;
-							DIALOG.DoModal();
-						}
-					}
-				}
-				else {
-					OutputDebugString(_T("Path: '") + OutPath + _T("' file doesn't exist.\n"));
-				}
-
-				MessageBox(WARN_ABORT2, INFO_TITLE, MB_ICONWARNING | MB_OK);
-				CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
-				CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
-				CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
-				CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON2);
-				CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON6);
-				button1->EnableWindow(FALSE);
-				button2->EnableWindow(FALSE);
-				button3->EnableWindow(FALSE);
-				button4->EnableWindow(FALSE);
-				button5->EnableWindow(FALSE);
-				this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
-				this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
-				this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
-				CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
-				static1->InvalidateRect(NULL, 1);
-				SAFE_FREE(InPathT);
-				SAFE_FREE(OutPathT);
-				if (ImageUpScaleFlag != FALSE) {
-					ImageUpScaleFlag = FALSE;
-				}
-				if (Waifu2xThreadFlag != FALSE) {
-					Waifu2xThreadFlag = FALSE;
-				}
-				if (ProgressThreadFlag != FALSE) {
-					ProgressThreadFlag = FALSE;
-				}
-				if (SuspendFlag != FALSE) {
-					SuspendFlag = FALSE;
-				}
-				return;
+		UINT Suspcheck = SuspendCheckMulti(currentPath, OutPath);
+		if (Suspcheck == 1) {
+			SAFE_FREE(InPathT);
+			SAFE_FREE(OutPathT);
+			return;
+		}
+		else {
+			if (ProgressThreadFlag != FALSE) {
+				ProgressThreadFlag = FALSE;
 			}
-		}
-		while (pThread->m_Dlg.m_hWnd) {
-			if (pThread->m_Dlg.m_hWnd == 0) {
-				break;
+			if (ImageUpScaleFlag != FALSE) {
+				ImageUpScaleFlag = FALSE;
 			}
-		}
-
-		if (ProgressThreadFlag != FALSE) {
-			ProgressThreadFlag = FALSE;
-		}
-		if (ImageUpScaleFlag != FALSE) {
-			ImageUpScaleFlag = FALSE;
-		}
-		if (SuspendFlag != FALSE) {
-			SuspendFlag = FALSE;
+			if (SuspendFlag != FALSE) {
+				SuspendFlag = FALSE;
+			}
 		}
 
 		if (EXT == L"JPG") {
@@ -2640,6 +2412,11 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton2()
 					DELETEDIALOG DIALOG;
 					DIALOG.DoModal();
 				}
+				UINT dexp = DeleteExceptionCheck();
+				if (dexp == 1) {
+					MessageBox(_T("An unexpected error has occurred.\nA static variable stopped with an unexpected value.\nSome files failed to be deleted."), _T("Error"), MB_ICONWARNING | MB_OK);
+					DeleteExceptionFlag = 0;
+				}
 			}
 		}
 		else {
@@ -2648,32 +2425,23 @@ void Cwaifu2xncnnvulkanDlg::OnBnClickedButton2()
 
 		SAFE_FREE(InPathT);
 
-		CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
-		CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
-		CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
-		CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON2);
-		CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON6);
-		button1->EnableWindow(FALSE);
-		button2->EnableWindow(FALSE);
-		button3->EnableWindow(FALSE);
-		button4->EnableWindow(FALSE);
-		button5->EnableWindow(FALSE);
-
-		if (UpscaleExceptionFlag == 1) {
-			UpscaleExceptionFlag = 0;
+		UINT err = UpscaleExceptionCheck();
+		if (err == 1) {
 			SAFE_FREE(OutPathT);
-			MessageBox(INFO_SUCCESS, INFO_TITLE, MB_ICONINFORMATION | MB_OK);
-			this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
-			this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
-			this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
-			CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
-			static1->InvalidateRect(NULL, 1);
-			if (Waifu2xThreadFlag != FALSE) {
-				Waifu2xThreadFlag = FALSE;
-			}
 			return;
 		}
 		else {
+			CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
+			CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
+			CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
+			CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON2);
+			CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON6);
+			button1->EnableWindow(FALSE);
+			button2->EnableWindow(FALSE);
+			button3->EnableWindow(FALSE);
+			button4->EnableWindow(FALSE);
+			button5->EnableWindow(FALSE);
+
 			if (PathIsDirectoryEmpty(OutPathT)) {
 				SAFE_FREE(OutPathT);
 				MessageBox(ERROR_FAILED, ERROR_TITLE, MB_ICONERROR | MB_OK);
@@ -2924,6 +2692,11 @@ void Cwaifu2xncnnvulkanDlg::OnFileAlldelete()
 			DELETEDIALOG DIALOG;
 			DIALOG.DoModal();
 		}
+		UINT dexp = DeleteExceptionCheck();
+		if (dexp == 1) {
+			MessageBox(_T("An unexpected error has occurred.\nA static variable stopped with an unexpected value.\nSome files failed to be deleted."), _T("Error"), MB_ICONWARNING | MB_OK);
+			DeleteExceptionFlag = 0;
+		}
 	}
 	else {
 		OutputDebugString(_T("Path: '") + currentPath + _T("' file doesn't exist.\n"));
@@ -3001,16 +2774,7 @@ void Cwaifu2xncnnvulkanDlg::OnVideoresize()
 					}
 				}
 
-				STARTUPINFO si/* = { sizeof(STARTUPINFO) }*/;
-				memset(&si, 0, sizeof(STARTUPINFO));
-				PROCESS_INFORMATION pi;
-				memset(&pi, 0, sizeof(PROCESS_INFORMATION));
-				si.dwFlags = STARTF_USESHOWWINDOW;
-				si.wShowWindow = SW_SHOW;
-				::CreateProcess(NULL, ffmpegcmdT, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
-				CloseHandle(pi.hThread);
-				WaitForSingleObject(pi.hProcess, INFINITE);
-				CloseHandle(pi.hProcess);
+				Utility->RunProcess(ffmpegcmdT, SW_SHOW);
 
 				waitDlg->DestroyWindow();
 				SAFE_DELETE(waitDlg);
@@ -3113,16 +2877,7 @@ void Cwaifu2xncnnvulkanDlg::OnVideoaudioexport()
 				}
 			}
 
-			STARTUPINFO si/* = { sizeof(STARTUPINFO) }*/;
-			memset(&si, 0, sizeof(STARTUPINFO));
-			PROCESS_INFORMATION pi;
-			memset(&pi, 0, sizeof(PROCESS_INFORMATION));
-			si.dwFlags = STARTF_USESHOWWINDOW;
-			si.wShowWindow = SW_SHOW;
-			::CreateProcess(NULL, ffmpegcmdT, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
-			CloseHandle(pi.hThread);
-			WaitForSingleObject(pi.hProcess, INFINITE);
-			CloseHandle(pi.hProcess);
+			Utility->RunProcess(ffmpegcmdT, SW_SHOW);
 
 			waitDlg->DestroyWindow();
 			SAFE_DELETE(waitDlg);
@@ -3312,18 +3067,7 @@ void Cwaifu2xncnnvulkanDlg::waifu2xThread()
 		_tcscpy_s(&lpPath[0], 512, waifu2x_param);
 	}
 
-	STARTUPINFO si;
-	memset(&si, 0, sizeof(STARTUPINFO));
-	PROCESS_INFORMATION pi;
-	memset(&pi, 0, sizeof(PROCESS_INFORMATION));
-	si.dwFlags = STARTF_USESHOWWINDOW;
-	si.wShowWindow = SW_HIDE;
-	::CreateProcess(NULL, lpPath, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
-	OutputDebugString(_T("Process created.\n"));
-
-	CloseHandle(pi.hThread);
-	WaitForSingleObject(pi.hProcess, INFINITE);
-	CloseHandle(pi.hProcess);
+	Utility->RunProcess(lpPath, SW_HIDE);
 
 	SetCurrentDirectory(CURRENT_PATH);
 
@@ -3486,12 +3230,6 @@ void Cwaifu2xncnnvulkanDlg::waifu2xCountThread()
 
 void Cwaifu2xncnnvulkanDlg::waifu2xCountDlgThread()
 {
-	CFrameWnd* pWnd = new CFrameWnd;
-	pWnd->Create(NULL, L"CWinThread Test");
-	THREADWAITDIALOG* dlg = new THREADWAITDIALOG(CWnd::FromHandle(pWnd->GetSafeHwnd()));
-	dlg->DoModal();
-
-	SAFE_DELETE(dlg);
 	this->PostMessage(WM_USER_COMPLETE_COUNT_DLG_THREAD);
 }
 
@@ -3529,7 +3267,7 @@ void Cwaifu2xncnnvulkanDlg::DLCountThread()
 		}
 	}
 
-	this->PostMessage(WM_USER_COMPLETE_DOWNLOAD_LOAD_XML);
+	this->PostMessage(WM_USER_COMPLETE_DOWNLOAD_COUNT_LOAD_XML);
 	OutputDebugString(_T("DLCountThread Ended.\n"));
 }
 
@@ -3592,8 +3330,7 @@ afx_msg LRESULT Cwaifu2xncnnvulkanDlg::OnCompleteFFmpegThread(WPARAM wParam, LPA
 afx_msg LRESULT Cwaifu2xncnnvulkanDlg::OnCompleteWaifu2xCountThread(WPARAM wParam, LPARAM lParam)
 {
 	OutputDebugString(_T("Thread: OnCompleteWaifu2xCountThread\n"));
-	UPSCALE_COUNT = 0;
-	ProgressThreadFlag = FALSE;
+	
 
 	return 0;
 }
@@ -3806,6 +3543,11 @@ void Cwaifu2xncnnvulkanDlg::OnDestroy()
 			DELETEDIALOG DIALOG;
 			DIALOG.DoModal();
 		}
+		UINT dexp = DeleteExceptionCheck();
+		if (dexp == 1) {
+			MessageBox(_T("An unexpected error has occurred.\nA static variable stopped with an unexpected value.\nSome files failed to be deleted."), _T("Error"), MB_ICONWARNING | MB_OK);
+			DeleteExceptionFlag = 0;
+		}
 	}
 	else {
 		OutputDebugString(_T("Path: '") + currentPath + _T("' file doesn't exist.\n"));
@@ -3991,6 +3733,222 @@ void Cwaifu2xncnnvulkanDlg::OnLanguageEnglish()
 			this->GetMenu()->CheckMenuItem(ID_LANGUAGE_ENGLISH, MF_BYCOMMAND | MF_CHECKED);
 			return;
 		}
+	}
+}
+
+
+UINT Cwaifu2xncnnvulkanDlg::SuspendCheck(LPCTSTR Path1, UINT Flag)
+{
+	CString DP = Path1;
+	if (SuspendFlag == TRUE) {
+		if (PathFileExists(DP)) {
+			OutputDebugString(_T("Path: '") + DP + _T("' file exists.\n"));
+			if (Flag == 0) {
+				DELETEPATH = DP;
+			}
+			else {
+				DELETEPATH = DP + _T("\\*.*");
+			}
+			DELETEMAINCOUNT = Utility->GetDirectoryFileCount(DP.GetString());
+			pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+			if (pDeleteThread)
+			{
+				pDeleteThread->m_pMainWnd = this;
+				pDeleteThread->m_bAutoDelete = TRUE;
+				if (DeleteFileThreadFlag != FALSE) {
+					DeleteFileThreadFlag = FALSE;
+				}
+				pDeleteThread->ResumeThread();
+
+				DELETEDIALOG DIALOG;
+				DIALOG.DoModal();
+			}
+			UINT dexp = DeleteExceptionCheck();
+			if (dexp == 1) {
+				MessageBox(_T("An unexpected error has occurred.\nA static variable stopped with an unexpected value.\nSome files failed to be deleted."), _T("Error"), MB_ICONWARNING | MB_OK);
+				DeleteExceptionFlag = 0;
+			}
+		}
+		else {
+			OutputDebugString(_T("Path: '") + DP + _T("' file doesn't exist.\n"));
+		}
+
+		MessageBox(WARN_ABORT, INFO_TITLE, MB_ICONWARNING | MB_OK);
+		CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
+		CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
+		CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
+		CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON2);
+		CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON6);
+		button1->EnableWindow(FALSE);
+		button2->EnableWindow(FALSE);
+		button3->EnableWindow(FALSE);
+		button4->EnableWindow(FALSE);
+		button5->EnableWindow(FALSE);
+		this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+		this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+		this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
+		CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
+		static1->InvalidateRect(NULL, 1);
+		if (Waifu2xThreadFlag != FALSE) {
+			Waifu2xThreadFlag = FALSE;
+		}
+		if (ProgressThreadFlag != FALSE) {
+			ProgressThreadFlag = FALSE;
+		}
+		if (Waifu2xReUpscalingFlag != FALSE) {
+			Waifu2xReUpscalingFlag = FALSE;
+		}
+		if (SuspendFlag != FALSE) {
+			SuspendFlag = FALSE;
+		}
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
+
+UINT Cwaifu2xncnnvulkanDlg::SuspendCheckMulti(LPCTSTR Path1, LPCTSTR Path2)
+{
+	CString DP1 = Path1, DP2 = Path2;
+	if (SuspendFlag == TRUE) {
+		if (PathFileExists(DP1)) {
+			OutputDebugString(_T("Path: '") + DP1 + _T("' file exists.\n"));
+			DELETEPATH = DP1;
+			DELETEMAINCOUNT = Utility->GetDirectoryFileCount(DELETEPATH.GetString());
+			if (DELETEMAINCOUNT <= 500) {
+				Utility->DeleteDirectory(DELETEPATH);
+			}
+			else {
+				pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+				if (pDeleteThread)
+				{
+					pDeleteThread->m_pMainWnd = this;
+					pDeleteThread->m_bAutoDelete = TRUE;
+					if (DeleteFileThreadFlag != FALSE) {
+						DeleteFileThreadFlag = FALSE;
+					}
+					pDeleteThread->ResumeThread();
+
+					DELETEDIALOG DIALOG;
+					DIALOG.DoModal();
+				}
+				UINT dexp = DeleteExceptionCheck();
+				if (dexp == 1) {
+					MessageBox(_T("An unexpected error has occurred.\nA static variable stopped with an unexpected value.\nSome files failed to be deleted."), _T("Error"), MB_ICONWARNING | MB_OK);
+					DeleteExceptionFlag = 0;
+				}
+			}
+		}
+		else {
+			OutputDebugString(_T("Path: '") + DP1 + _T("' file doesn't exist.\n"));
+		}
+
+		if (PathFileExists(DP2)) {
+			OutputDebugString(_T("Path: '") + DP2 + _T("' file exists.\n"));
+			DELETEPATH = DP2 + _T("\\*.*");
+			DELETEMAINCOUNT = Utility->GetDirectoryFileCount(DP2.GetString());
+			if (DELETEMAINCOUNT <= 500) {
+				Utility->DeleteALLFiles(DELETEPATH);
+			}
+			else {
+				pDeleteThread = AfxBeginThread(DeleteThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
+				if (pDeleteThread)
+				{
+					pDeleteThread->m_pMainWnd = this;
+					pDeleteThread->m_bAutoDelete = TRUE;
+					if (DeleteFileThreadFlag != FALSE) {
+						DeleteFileThreadFlag = FALSE;
+					}
+					pDeleteThread->ResumeThread();
+
+					DELETEDIALOG DIALOG;
+					DIALOG.DoModal();
+				}
+				UINT dexp = DeleteExceptionCheck();
+				if (dexp == 1) {
+					MessageBox(_T("An unexpected error has occurred.\nA static variable stopped with an unexpected value.\nSome files failed to be deleted."), _T("Error"), MB_ICONWARNING | MB_OK);
+					DeleteExceptionFlag = 0;
+				}
+			}
+		}
+		else {
+			OutputDebugString(_T("Path: '") + DP2 + _T("' file doesn't exist.\n"));
+		}
+
+		MessageBox(WARN_ABORT2, INFO_TITLE, MB_ICONWARNING | MB_OK);
+		CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
+		CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
+		CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
+		CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON2);
+		CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON6);
+		button1->EnableWindow(FALSE);
+		button2->EnableWindow(FALSE);
+		button3->EnableWindow(FALSE);
+		button4->EnableWindow(FALSE);
+		button5->EnableWindow(FALSE);
+		this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+		this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+		this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
+		CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
+		static1->InvalidateRect(NULL, 1);
+		if (ImageUpScaleFlag != FALSE) {
+			ImageUpScaleFlag = FALSE;
+		}
+		if (Waifu2xThreadFlag != FALSE) {
+			Waifu2xThreadFlag = FALSE;
+		}
+		if (ProgressThreadFlag != FALSE) {
+			ProgressThreadFlag = FALSE;
+		}
+		if (SuspendFlag != FALSE) {
+			SuspendFlag = FALSE;
+		}
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
+
+UINT Cwaifu2xncnnvulkanDlg::DeleteExceptionCheck()
+{
+	if (DeleteExceptionFlag == TRUE) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
+
+UINT Cwaifu2xncnnvulkanDlg::UpscaleExceptionCheck()
+{
+	if (UpscaleExceptionFlag == 1) {
+		MessageBox(_T("An unexpected error has occurred.\nA static variable stopped with an unexpected value.\nCheck the waifu2x conversion settings."), _T("Error"), MB_ICONERROR | MB_OK);
+		UpscaleExceptionFlag = 0;
+		CButton* button1 = (CButton*)GetDlgItem(IDC_BUTTON1);
+		CButton* button2 = (CButton*)GetDlgItem(IDC_BUTTON3);
+		CButton* button3 = (CButton*)GetDlgItem(IDC_BUTTON4);
+		CButton* button4 = (CButton*)GetDlgItem(IDC_BUTTON2);
+		CButton* button5 = (CButton*)GetDlgItem(IDC_BUTTON6);
+		button1->EnableWindow(FALSE);
+		button2->EnableWindow(FALSE);
+		button3->EnableWindow(FALSE);
+		button4->EnableWindow(FALSE);
+		button5->EnableWindow(FALSE);
+		this->xv_Static_ReadStatus.SetWindowText(STATIC_NOTREAD);
+		this->xv_Static_File.SetWindowText(STATIC_NOTREAD);
+		this->xv_Static_FilePath.SetWindowText(STATIC_NOTREAD);
+		CStatic* static1 = (CStatic*)GetDlgItem(IDC_STATIC_READSTATUS);
+		static1->InvalidateRect(NULL, 1);
+		MessageBox(ERROR_EXCEPTION, ERROR_TITLE, MB_ICONINFORMATION | MB_OK);
+		return 1;
+	}
+	else {
+		return 0;
 	}
 }
 

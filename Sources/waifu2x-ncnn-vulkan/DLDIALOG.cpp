@@ -7,7 +7,6 @@
 #include "DLDIALOG.h"
 #include "afxdialogex.h"
 
-#define WM_USER_COMPLETE_MAIN (WM_USER + 0x30)
 
 // DLDIALOG ダイアログ
 
@@ -41,7 +40,6 @@ void DLDIALOG::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(DLDIALOG, CDialogEx)
 	ON_WM_TIMER()
 	ON_WM_DESTROY()
-	ON_MESSAGE(WM_USER_COMPLETE_MAIN, DLDIALOG::OnCompleteMainThread)
 END_MESSAGE_MAP()
 
 
@@ -51,7 +49,7 @@ BOOL DLDIALOG::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	UINT Lang;
+	UINT Lang{};
 	Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
 	if (Lang == 0) {
 		Core->LoadJPNLangLibrary();
@@ -79,63 +77,15 @@ BOOL DLDIALOG::OnInitDialog()
 	hDCStatic = ::GetDC(this->m_Static);
 	this->m_Static.GetClientRect(&rc);
 
-	CWinThread* pMainThread = NULL;
-	pMainThread = AfxBeginThread(MainThread, (LPVOID)this, THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED, NULL);
-	if (pMainThread)
-	{
-		pMainThread->m_pMainWnd = this;
-		pMainThread->m_bAutoDelete = TRUE;
-		pMainThread->ResumeThread();
-	}
-
 	return TRUE;
-}
-
-
-UINT DLDIALOG::MainThread(LPVOID pParam)
-{
-	DLDIALOG* pFileView = dynamic_cast<DLDIALOG*>(reinterpret_cast<CWnd*>(pParam));
-	if (pFileView)
-	{
-		pFileView->MainThread();
-	}
-	return 0;
-}
-
-
-void DLDIALOG::MainThread()
-{
-	INT cur, max;
-	CFileFind find;
-
-	xv_Progress1.GetRange(cur, max);
-	while (max >= static_cast<INT>(Cwaifu2xncnnvulkanDlg::DLCount)) {
-		if (max <= static_cast<INT>(Cwaifu2xncnnvulkanDlg::DLCount)) {
-			Sleep(1000);
-			break;
-		}
-		if (ExceptionCounter > 40) {
-			Cwaifu2xncnnvulkanDlg::DLErrorFlag = 1;
-			MessageBox(_T("An error occurred while downloading.\nPlease make sure that you have an Internet connection."), _T("Error"), MB_ICONWARNING | MB_OK);
-			break;
-		}
-	}
-	PostMessage(WM_USER_COMPLETE_MAIN);
-}
-
-
-LRESULT DLDIALOG::OnCompleteMainThread(WPARAM wParam, LPARAM lParam)
-{
-	PostMessage(WM_CLOSE);
-	return 0;
 }
 
 
 void DLDIALOG::UpdateProgressText()
 {
-	HDC hdc;
-	PAINTSTRUCT ps;
-	UINT Lang;
+	HDC hdc{};
+	PAINTSTRUCT ps{};
+	UINT Lang{};
 	Lang = GetPrivateProfileInt(L"LANGUAGE", L"0x0000", INFINITE, L".\\settings.ini");
 
 	CUR_POS = Cwaifu2xncnnvulkanDlg::DLCount;
@@ -199,6 +149,7 @@ void DLDIALOG::OnDestroy()
 
 	FreeLibrary(Core->Lang_hinst);
 	SAFE_DELETE(CORE_FUNC);
+	SAFE_DELETE(COREUTIL_FUNC);
 	KillTimer(m_TimerID);
 	KillTimer(m_hTimerID);
 	m_TimerID = 0;
@@ -214,6 +165,9 @@ void DLDIALOG::OnTimer(UINT_PTR nIDEvent)
 	// TODO: ここにメッセージ ハンドラー コードを追加するか、既定の処理を呼び出します。
 
 	if (nIDEvent == m_TimerID) {
+		INT cur{}, max{};
+
+		xv_Progress1.GetRange(cur, max);
 		xv_Progress1.SetPos(Cwaifu2xncnnvulkanDlg::DLCount);
 		UpdateProgressText();
 		if (ValueFlag != Cwaifu2xncnnvulkanDlg::DLCount) {
@@ -221,6 +175,13 @@ void DLDIALOG::OnTimer(UINT_PTR nIDEvent)
 		}
 		else {
 			ExceptionCounter++;
+		}
+		if (static_cast<UINT>(max) <= Cwaifu2xncnnvulkanDlg::DLCount) {
+			PostMessage(WM_CLOSE);
+		}
+		if (ExceptionCounter > 40) {
+			Cwaifu2xncnnvulkanDlg::DLErrorFlag = 1;
+			PostMessage(WM_CLOSE);
 		}
 	}
 	if (nIDEvent == m_hTimerID) {

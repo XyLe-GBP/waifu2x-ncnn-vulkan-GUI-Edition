@@ -10,9 +10,6 @@ class DLDIALOG : public CDialogEx
 public:
 	DLDIALOG(CWnd* pParent = nullptr);   // 標準コンストラクター
 	virtual ~DLDIALOG();
-	static UINT MainThread(LPVOID pParam);
-	void MainThread();
-	void UpdateProgressText();
 
 // ダイアログ データ
 #ifdef AFX_DESIGN_TIME
@@ -23,6 +20,7 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
 	virtual BOOL OnInitDialog();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnDestroy();
 	NEW_CORE;
 	NEW_COREUTIL;
@@ -32,7 +30,9 @@ private:
 	HDC hDCBackBuffer;
 	HDC hDCStatic;
 	HBRUSH m_Hbrush;
+	CProgressCtrl xv_Progress1;
 	CRect rc;
+	CStatic m_Static;
 	CString MAX;
 	CString POS;
 	CString PROGRESSTEXT;
@@ -42,9 +42,5 @@ private:
 	UINT CUR_POS;
 	UINT ExceptionCounter;
 	UINT ValueFlag;
-public:
-	afx_msg void OnTimer(UINT_PTR nIDEvent);
-	afx_msg LRESULT OnCompleteMainThread(WPARAM wParam, LPARAM lParam);
-	CProgressCtrl xv_Progress1;
-	CStatic m_Static;
+	void UpdateProgressText();
 };
