@@ -1,4 +1,5 @@
 # waifu2x-ncnn-vulkan-GUI-Edition
+![Downloads](https://img.shields.io/github/downloads/XyLe-GBP/waifu2x-ncnn-vulkan-GUI-Edition/total.svg)
 
 [Japanese README](https://github.com/XyLe-GBP/waifu2x-ncnn-vulkan-GUI-Edition/blob/master/README.md)
 
