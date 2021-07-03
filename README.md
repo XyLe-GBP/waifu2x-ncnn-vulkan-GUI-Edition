@@ -1,5 +1,7 @@
 # waifu2x-ncnn-vulkan-GUI-Edition
 
+[Japanese README](https://github.com/XyLe-GBP/waifu2x-ncnn-vulkan-GUI-Edition/README.md)
+
 GUI version of the image upscaling tool ([waifu2x-ncnn-vulkan](https://github.com/nihui/waifu2x-ncnn-vulkan)).
 <p>Provides user interface functionality to waifu2x-ncnn-vulkan (command line). </p>
 <p>This tool can upscale not only images but also videos. </p>
@@ -51,7 +53,7 @@ Examples:
 <kbd><img src="https://user-images.githubusercontent.com/59692068/124343766-0d3f4a00-dc09-11eb-8ed6-53f80b983930.png" width="350"><br>**waifu2x (1280x1600, Reduction Level2, Photo)**</kbd>
 <kbd><img src="https://user-images.githubusercontent.com/59692068/124343864-c4d45c00-dc09-11eb-97fd-337a68323bd4.png" width="350"><br>**waifu2x (1280x1600, Reduction Level3, CUnet, TTA)**</kbd>
 
-Image Source: **THE IDOLM@STER: Haruka Amami**  
+Image Character: **THE IDOLM@STER: Haruka Amami**  
 
 Image upscaling is the main focus, but video upscaling is also possible.  
 See the comparison video below.  
@@ -68,14 +70,18 @@ This means that upscaling a video with a long duration and relatively high resol
 However, if your PC is equipped with a powerful GPU, this process can be shortened.  
 Upscaling speed is highly dependent on the performance of the GPU.  
 The higher the performance of the GPU, the faster the upscaling speed will be.  
-It is not recommended to use the CPU's built-in graphics (iGPU).  
-NVIDIA or AMD (RADEON) GPU is preferred.
+We do not recommend using the CPU's built-in graphics (iGPU), but that does not mean it cannot be converted.
+However, if you use the built-in graphics, it may take a lot of time.
+For this reason, NVIDIA or AMD (RADEON) GPUs are recommended.
 
 ---
 
 ### System Requirements
 
-<p>OS: Windows 7 or higher 64bit PC (There is no 32-bit exe.)</p>
+OS: Windows 7 or higher 64bit PC.  
+
+**There is no application for 32-bit (x86).  
+If you need a 32-bit (x86) version, please build it yourself from the C++ source.**  
 
 ### Recommended
 
