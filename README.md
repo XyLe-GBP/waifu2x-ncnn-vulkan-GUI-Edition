@@ -96,10 +96,11 @@ NVIDIA or AMD (RADEON) GPU is preferred.
 
 ### Others
 
-<p>Used tools</p>
-<p>OpenCV: https://opencv.org/</p>
-<p>FFmpeg: https://ffmpeg.org</p>
-<p>waifu2x-ncnn-vulkan: https://github.com/nihui/waifu2x-ncnn-vulkan</p>
+Used tools  
+
+[OpenCV](https://opencv.org/)  
+[FFmpeg](https://ffmpeg.org)  
+[waifu2x-ncnn-vulkan](https://github.com/nihui/waifu2x-ncnn-vulkan)  
 
 ---
 
