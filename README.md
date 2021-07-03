@@ -1,6 +1,6 @@
 # waifu2x-ncnn-vulkan-GUI-Edition
 
-[English readme](https://github.com/XyLe-GBP/waifu2x-ncnn-vulkan-GUI-Edition/README-en.md)
+[English README](https://github.com/XyLe-GBP/waifu2x-ncnn-vulkan-GUI-Edition/blob/master/README-en.md)
 
 [waifu2x-ncnn-vulkan](https://github.com/nihui/waifu2x-ncnn-vulkan)のGUIバージョン。  
 <p>waifu2x-ncnn-vulkan (コマンドライン版)にユーザーインターフェース機能を提供します。  
