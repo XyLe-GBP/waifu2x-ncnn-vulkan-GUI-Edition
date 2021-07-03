@@ -42,13 +42,14 @@ Examples:
 <kbd><img src="https://user-images.githubusercontent.com/59692068/124342813-b6824200-dc01-11eb-9603-7e5127ef55af.jpg" width="350"><br>**Original (640x800)**</kbd>
 <kbd><img src="https://user-images.githubusercontent.com/59692068/124342863-2395d780-dc02-11eb-94e7-05e4ba0f8b6a.png" width="350"><br>**waifu2x (640x800, Reduction Level2, CUnet)**</kbd>
 
-<kbd><img src="https://user-images.githubusercontent.com/59692068/124342967-fa297b80-dc02-11eb-845f-90fb6236dd82.png" width="230"><br>**Enlarged (1280x1600, Bilinear interpolation)**</kbd>
-<kbd><img src="https://user-images.githubusercontent.com/59692068/124342972-0ca3b500-dc03-11eb-8ac5-ba8cf4b21ca6.png" width="230"><br>**Enlarged (1280x1600, Lanczos3 interpolation)**</kbd>
-<kbd><img src="https://user-images.githubusercontent.com/59692068/124342976-14635980-dc03-11eb-8207-feb18e0e36de.png" width="230"><br>**waifu2x (1280x1600, Reduction Level2, CUnet)**</kbd>
+<kbd><img src="https://user-images.githubusercontent.com/59692068/124342967-fa297b80-dc02-11eb-845f-90fb6236dd82.png" width="350"><br>**Enlarged (1280x1600, Bilinear interpolation)**</kbd>
+<kbd><img src="https://user-images.githubusercontent.com/59692068/124342972-0ca3b500-dc03-11eb-8ac5-ba8cf4b21ca6.png" width="350"><br>**Enlarged (1280x1600, Lanczos3 interpolation)**</kbd>
 
-<kbd><img src="https://user-images.githubusercontent.com/59692068/124343761-07496900-dc09-11eb-8465-ca91b6839623.png" width="230"><br>**waifu2x (1280x1600, Reduction Level2, RGB)**</kbd>
-<kbd><img src="https://user-images.githubusercontent.com/59692068/124343766-0d3f4a00-dc09-11eb-8ed6-53f80b983930.png" width="230"><br>**waifu2x (1280x1600, Reduction Level2, Photo)**</kbd>
-<kbd><img src="https://user-images.githubusercontent.com/59692068/124343864-c4d45c00-dc09-11eb-97fd-337a68323bd4.png" width="230"><br>**waifu2x (1280x1600, Reduction Level3, CUnet, TTA)**</kbd>
+<kbd><img src="https://user-images.githubusercontent.com/59692068/124342976-14635980-dc03-11eb-8207-feb18e0e36de.png" width="350"><br>**waifu2x (1280x1600, Reduction Level2, CUnet)**</kbd>
+<kbd><img src="https://user-images.githubusercontent.com/59692068/124343761-07496900-dc09-11eb-8465-ca91b6839623.png" width="350"><br>**waifu2x (1280x1600, Reduction Level2, RGB)**</kbd>
+
+<kbd><img src="https://user-images.githubusercontent.com/59692068/124343766-0d3f4a00-dc09-11eb-8ed6-53f80b983930.png" width="350"><br>**waifu2x (1280x1600, Reduction Level2, Photo)**</kbd>
+<kbd><img src="https://user-images.githubusercontent.com/59692068/124343864-c4d45c00-dc09-11eb-97fd-337a68323bd4.png" width="350"><br>**waifu2x (1280x1600, Reduction Level3, CUnet, TTA)**</kbd>
 
 Image Source: **THE IDOLM@STER: Haruka Amami**  
 
