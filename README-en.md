@@ -1,6 +1,6 @@
 # waifu2x-ncnn-vulkan-GUI-Edition
 
-[Japanese README](https://github.com/XyLe-GBP/waifu2x-ncnn-vulkan-GUI-Edition/README.md)
+[Japanese README](https://github.com/XyLe-GBP/waifu2x-ncnn-vulkan-GUI-Edition/blob/master/README.md)
 
 GUI version of the image upscaling tool ([waifu2x-ncnn-vulkan](https://github.com/nihui/waifu2x-ncnn-vulkan)).
 <p>Provides user interface functionality to waifu2x-ncnn-vulkan (command line). </p>
