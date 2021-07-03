@@ -25,7 +25,7 @@
 まだインストールされていない場合は上記からダウンロードし、インストールを行ってください。  
 再頒布可能パッケージをインストールしたくない、という方は <code>C:\Windows\System32</code> 内に以下のDLLを配置するか、  
 またはEXEと同階層に以下のDLLを配置することでも起動可能です。  
-最低でも <code>MSVCP140.DLL</code>, <code>VCRUNTIME140.DLL</code>, and <code>MFC140U.DLL</code> が必要です。  
+最低でも <code>MSVCP140.DLL</code>, <code>VCRUNTIME140.DLL</code>, <code>MFC140U.DLL</code> が必要です。  
 (1.3以前のバージョンでは必要ありません。)  
 
 ---
