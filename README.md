@@ -1,3 +1,13 @@
+# 重要なお知らせ
+
+waifu2x-ncnn-vulkan-GUI-Editionは.NET 5.0版に移植されました。  
+その為、今後こちらのC++版はサポート対象外となります。  
+今後は[移植版](https://github.com/XyLe-GBP/waifu2x-ncnn-vulkan-GUI-Edition-Reloaded)の方を使用して頂きますよう、お願いします。  
+こちらのバージョンも引き続き使用することは可能ですが  
+何らかの不具合が出た場合でもサポートは致しかねますのでご了承ください。  
+
+---
+
 # waifu2x-ncnn-vulkan-GUI-Edition
 ![Downloads](https://img.shields.io/github/downloads/XyLe-GBP/waifu2x-ncnn-vulkan-GUI-Edition/total.svg)
 
