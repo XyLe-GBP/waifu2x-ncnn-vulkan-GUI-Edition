@@ -1,48 +1,38 @@
-# 重要なお知らせ
+## 重要
 
-waifu2x-ncnn-vulkan-GUI-Editionは.NET 5.0版に移植されました。  
-その為、今後こちらのC++版はサポート対象外となります。  
+waifu2x-ncnn-vulkan-GUI-Editionは.NETに移植されました。  
+その為、今後こちらはサポート対象外となります。  
 今後は[移植版](https://github.com/XyLe-GBP/waifu2x-ncnn-vulkan-GUI-Edition-Reloaded)の方を使用して頂きますよう、お願いします。  
-こちらのバージョンも引き続き使用することは可能ですが  
+こちらのバージョンも引き続き使用することは可能です。  
 何らかの不具合が出た場合でもサポートは致しかねますのでご了承ください。  
 
----
 
 # waifu2x-ncnn-vulkan-GUI-Edition
 ![Downloads](https://img.shields.io/github/downloads/XyLe-GBP/waifu2x-ncnn-vulkan-GUI-Edition/total.svg)
+[![GitHub (pre-)release](https://img.shields.io/github/release/XyLe-GBP/waifu2x-ncnn-vulkan-GUI-Edition/all.svg)](https://github.com/XyLe-GBP/waifu2x-ncnn-vulkan-GUI-Edition/releases)
 
 
 [English README](https://github.com/XyLe-GBP/waifu2x-ncnn-vulkan-GUI-Edition/blob/master/README-en.md)
 
-[waifu2x-ncnn-vulkan](https://github.com/nihui/waifu2x-ncnn-vulkan)のGUIバージョン。  
-<p>waifu2x-ncnn-vulkan (コマンドライン版)にユーザーインターフェース機能を提供します。  
-<p>本ツールは画像だけでなく動画もアップスケーリングすることが可能です。  
+nihui氏開発の [waifu2x-ncnn-vulkan](https://github.com/nihui/waifu2x-ncnn-vulkan) をGUI(グラフィカルユーザーインターフェース)化したもの。  
 
----
+直感的に画像を変換できるようにすることを目指して作られたアプリケーションです。  
+尚、画像を綺麗に拡大変換することが主な要点ですが、本ツールは画像だけでなく動画もアップスケーリングすることが可能です。  
 
-## ダウンロード
+**ダウンロード:**
 
 [リリースビルド](https://github.com/XyLe-GBP/waifu2x-ncnn-vulkan-GUI/releases)
 
----
-
-## 説明
-
-本アプリケーションを実行する際、以下の再頒布可能パッケージのインストールが必要です。  
+本アプリケーションを実行する際、以下の再頒布可能パッケージのインストールが必須です。  
 
 [Microsoft Visual C++ 再頒布可能パッケージ](https://aka.ms/vs/16/release/VC_redist.x64.exe)
 
-まだインストールされていない場合は上記からダウンロードし、インストールを行ってください。  
-再頒布可能パッケージをインストールしたくない、という方は <code>C:\Windows\System32</code> 内に以下のDLLを配置するか、  
-またはEXEと同階層に以下のDLLを配置することでも起動可能です。  
-最低でも <code>MSVCP140.DLL</code>, <code>VCRUNTIME140.DLL</code>, <code>MFC140U.DLL</code> が必要です。  
-(1.3以前のバージョンでは必要ありません。)  
+まだインストールを行っていない場合、上記から再頒布可能パッケージをダウンロードし、PCにインストールしてください。  
 
----
 
-### これは何？
+## これは何？
 
-画像の鮮明さを保ちつつ、綺麗に拡大できます。  
+AIを用いて画像の鮮明さを保ちつつ、綺麗に拡大できます。  
 
 例：  
 **※クリックすることで画像を拡大できます。**  
@@ -80,14 +70,12 @@ CPU内臓のグラフィック(iGPU)の使用はお勧めしませんが、変�
 ただし、内臓グラフィックで処理を行った場合、膨大な時間が掛かる恐れがあります。  
 その為、NVIDIA もしくは AMD (RADEON) 製GPUの使用が推薦されます。  
 
----
-
-### システム条件
+## システム条件
 
 OS: Windows 7 以上の 64bit PC  
 
-32-bit(x86)用アプリケーションはありません。 
-32-bit(x86)用が必要な場合、C++ソースからご自身でビルドを行ってください。  
+x86(32bit)用アプリケーションはありません。 
+x86用が必要な場合、C++ソースからご自身でビルドを行ってください。  
 
 ### 推薦
 
@@ -96,17 +84,7 @@ OS: Windows 7 以上の 64bit PC
 <p>RAM: 8GB またはそれ以上</p>
 <p>GPU: NVIDIA GeForce GTX 1060 またはそれ以上</p>
 
-### 自身のテスト環境
-
-<p>開発： Microsoft Visual Studio 2019</p>
-<p>OS: Windows10 Pro 64bit, 20H2</p>
-<p>CPU: Intel(R) Core(TM) i9-9900K CPU @ 3.60GHz</p>
-<p>GPU: NVIDIA Geforce GTX 1070Ti</p>
-<p>RAM: 32GB</p>
-
----
-
-### その他
+## その他
 
 使用ツール  
 
@@ -114,8 +92,6 @@ OS: Windows 7 以上の 64bit PC
 [FFmpeg](https://ffmpeg.org)  
 [waifu2x-ncnn-vulkan](https://github.com/nihui/waifu2x-ncnn-vulkan)  
 
----
+## ライセンス
 
-### ライセンスについて
-
-本ツールはMITライセンスでリリースされています。  
+MIT
