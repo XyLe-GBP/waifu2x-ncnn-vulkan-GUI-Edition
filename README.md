@@ -1,9 +1,9 @@
-## 重要
+# 重要
 
-waifu2x-ncnn-vulkan-GUI-Editionは.NETに移植されました。  
-その為、今後こちらはサポート対象外となります。  
-今後は[移植版](https://github.com/XyLe-GBP/waifu2x-ncnn-vulkan-GUI-Edition-Reloaded)の方を使用して頂きますよう、お願いします。  
-こちらのバージョンも引き続き使用することは可能です。  
+## このプロジェクトはサポート及び更新を終了しました。  
+今後は.NET版の [waifu2x-nvger](https://github.com/XyLe-GBP/waifu2x-ncnn-vulkan-GUI-Edition-Reloaded) の方を使用して頂きますよう、お願いします。  
+移植バージョンでは複数の機能追加及び、バグ修正が含まれています。  
+こちらのバージョンも引き続き使用することは可能ですが  
 何らかの不具合が出た場合でもサポートは致しかねますのでご了承ください。  
 
 
